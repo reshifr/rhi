@@ -1,6 +1,6 @@
 /**
  * Reshifr Hash Index
- * Copyright (c) 2019 Renol P. Hanafi <reshifr@gmail.com>
+ * Copyright (c) 2019 Renol P. H. <reshifr@gmail.com>
  *
  * MIT License
  *
@@ -25,21 +25,12 @@
  * SOFTWARE.
  */
 
-/**
- * \file   rhi.c
- *
- * \brief  Implementations of sets and maps
- *
- * Contains the data structure implementation for `void*`
- */
-
 #include <rhi.h>
-#include <math.h>
 #include <stdlib.h>
 
 #ifdef RHI_PRIME_METHOD
- const rhiuint c_range[] = {
-   RHIUINT_C(7), /* 2^3 */
+ const rhiuint range[] = {
+   RHIUINT_C(7),
    RHIUINT_C(17),
    RHIUINT_C(31),
    RHIUINT_C(67),
@@ -67,12 +58,12 @@
    RHIUINT_C(268435459),
    RHIUINT_C(536870909),
    RHIUINT_C(1073741827),
-   RHIUINT_C(2147483647), /* 2^31 */
+   RHIUINT_C(2147483647),
  };
 
 # define BEGIN_INDEX 0
 # define END_INDEX 28
-# define GET_SIZE(_index) (c_range[_index])
+# define GET_SIZE(_index) (range[_index])
 # define HASHVAL_INDEX(_hashval, _size) ((rhiuint)((_hashval)%(_size)))
 #else
 # define BEGIN_INDEX 3
@@ -82,7 +73,7 @@
 #endif
 
 #define DEFVAL NULL
-#define DEFVAL_INDEX RHIUINT_MAX
+#define DEFVAL_ITER RHIUINT_MAX
 #define MIN_LOAD 0.24
 #define MAX_LOAD 0.72
 #define BEGIN_EXPONENT 3
@@ -93,6 +84,7 @@
   RHIUINT_C(0) : ((rhiuint)((double)GET_SIZE(_index)*MIN_LOAD)))
 #define MAX_OCCUPIED(_index) ((rhiuint)((double)GET_SIZE(_index)*MAX_LOAD))
 #define COUNT(_obj) ((obj)->is_def_key ? (obj)->occupied+1 : (obj)->occupied)
+
 #define SET_BOUND(_obj, _index, _size) \
   do { \
     (_obj)->index = (uint8_t)(_index); \
@@ -101,16 +93,29 @@
     (_obj)->size = _size; \
   } while(0)
 
+static inline int msb_index(rhiuint n) {
+  int i = 0;
+  if( n>=RHIUINT_C(0x00010000) )
+    i += 16, n >>= 16;
+  if( n>=RHIUINT_C(0x00000100) )
+    i += 8, n >>= 8;
+  if( n>=RHIUINT_C(0x00000010) )
+    i += 4, n >>= 4;
+  if( n>=RHIUINT_C(0x00000004) )
+    i += 2, n >>= 2;
+  if( n>=RHIUINT_C(0x00000002) )
+    i += 1, n >>= 1;
+  return i;
+}
+
 static inline int get_index(rhiuint size) {
-  int index = (int)round(
-    log2((double)size/MAX_LOAD))-(BEGIN_EXPONENT-BEGIN_INDEX);
-#ifdef RHI_PRIME_POLICY
-  if( index>=BEGIN_INDEX && size>MAX_OCCUPIED(index) )
-#else
-  if( size>MAX_OCCUPIED(index) )
-#endif
+  int index = msb_index((rhiuint)((double)size/MAX_LOAD))-
+    (BEGIN_EXPONENT-BEGIN_INDEX);
+  if( index<BEGIN_INDEX )
+    index = BEGIN_INDEX;
+  while( index<END_INDEX && size>MAX_OCCUPIED(index) )
     ++index;
-  return index<BEGIN_INDEX ? BEGIN_INDEX : index;
+  return index;
 }
 
 #define MOVE_NODES(_obj, _newsize, _newnodes) \
@@ -187,7 +192,7 @@ static inline int get_index(rhiuint size) {
   void _func_name(_obj_type* obj) { \
     if( obj->is_def_key ) { \
       obj->is_end = false; \
-      obj->iter = DEFVAL_INDEX; \
+      obj->iter = DEFVAL_ITER; \
       return; \
     } \
     for(rhiuint i=0; i<obj->size; ++i) { \
@@ -201,7 +206,7 @@ static inline int get_index(rhiuint size) {
 
 #define DECL_NEXT(_func_name, _obj_type) \
   void _func_name(_obj_type* obj) { \
-    rhiuint i = obj->iter==DEFVAL_INDEX ? 0 : obj->iter+1; \
+    rhiuint i = obj->iter==DEFVAL_ITER ? 0 : obj->iter+1; \
     for(; i<obj->size; ++i) { \
       if( IS_EMPTY(obj->nodes[i]) ) \
         continue; \
@@ -226,7 +231,7 @@ static inline int get_index(rhiuint size) {
       return NULL; \
     rhiuint start = 0; \
     if( obj->is_def_key ) \
-      iter[start++] = DEFVAL_INDEX; \
+      iter[start++] = DEFVAL_ITER; \
     for(rhiuint i=0, prob=start; i<obj->size; ++i) { \
       if( IS_EMPTY(obj->nodes[i]) ) \
         continue; \
@@ -535,7 +540,7 @@ void rhis_free(struct rhis *set) {
  ************************************/
 
 #define RHIS_GET(_set, _iter) \
-  ((_iter)==DEFVAL_INDEX ? DEFVAL : (_set)->nodes[_iter].key)
+  ((_iter)==DEFVAL_ITER ? DEFVAL : (_set)->nodes[_iter].key)
 
 DECL_BEGIN(rhis_begin, struct rhis)
 DECL_NEXT(rhis_next, struct rhis)
@@ -910,13 +915,13 @@ void rhim_free(struct rhim *map) {
  ************************************/
 
 #define RHIM_GET(_map, _iter) \
-  ((_iter)==DEFVAL_INDEX ? \
+  ((_iter)==DEFVAL_ITER ? \
    CONSTPAIR(DEFVAL, map->def_val) : \
    CONSTPAIR((_map)->nodes[_iter].key, (_map)->nodes[_iter].val))
 #define RHIM_KGET(_map, _iter) \
-  ((_iter)==DEFVAL_INDEX ? DEFVAL : (_map)->nodes[_iter].key)
+  ((_iter)==DEFVAL_ITER ? DEFVAL : (_map)->nodes[_iter].key)
 #define RHIM_VGET(_map, _iter) \
-  ((_iter)==DEFVAL_INDEX ? map->def_val : (_map)->nodes[_iter].val)
+  ((_iter)==DEFVAL_ITER ? map->def_val : (_map)->nodes[_iter].val)
 
 DECL_BEGIN(rhim_begin, struct rhim)
 DECL_NEXT(rhim_next, struct rhim)
