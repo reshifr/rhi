@@ -1,24 +1,15 @@
 CC ?= cc
-FLAGS += \
-	-O2 \
-	-std=c99 \
-	-Wall \
-	-Wconversion \
-	-Wextra \
-	-Wshadow
-
-RHI_FLAGS += \
-	-Wpedantic
+FLAGS += -O2 -std=c99 -Wall -Wconversion -Wextra -Wshadow
+RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHODX
 
 ifneq (,$(filter Windows%,$(OS)))
-	RHI_DIR := ..\rhi
+	RHI_DIR := ..\src
 else
-	RHI_DIR := ../rhi
+	RHI_DIR := ../src
 endif
 
 TEST_DIR := .
 INCLUDES := -I $(RHI_DIR)
-LIBS +=
 
 ifneq (,$(filter Windows%,$(OS)))
 	RHI_HEADERS := $(shell dir /A-D /B /S "$(RHI_DIR)\*.h")
@@ -27,7 +18,6 @@ ifneq (,$(filter Windows%,$(OS)))
 	TEST_OBJS := $(patsubst %.c,%.o,$(shell dir /A-D /B /S "$(TEST_DIR)\*.c"))
 	TARGET := main.exe
 else
-	LIBS += -lm
 	RHI_HEADERS := $(shell find $(RHI_DIR) -type f -name "*.h")
 	TEST_HEADERS := $(shell find $(TEST_DIR) -type f -name "*.h")
 	RHI_OBJS := $(patsubst %.c,%.o,$(shell find $(RHI_DIR) -type f -name "*.c"))
