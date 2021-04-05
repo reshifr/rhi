@@ -74,7 +74,7 @@
 
 #define DEFVAL NULL
 #define DEFVAL_ITER RHIUINT_MAX
-#define MIN_LOAD 0.24
+#define MIN_LOAD 0.18
 #define MAX_LOAD 0.72
 #define BEGIN_EXPONENT 3
 #define IS_EMPTY(_node) ((_node).key==DEFVAL)
