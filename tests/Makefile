@@ -9,7 +9,7 @@ else
 endif
 
 TEST_DIR := .
-INCLUDES := -I $(RHI_DIR)
+INCLUDES := -I$(RHI_DIR)
 
 ifneq (,$(filter Windows%,$(OS)))
 	RHI_HEADERS := $(shell dir /A-D /B /S "$(RHI_DIR)\*.h")
