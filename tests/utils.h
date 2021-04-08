@@ -45,6 +45,9 @@ struct objs {
   void* objs[];
 };
 
+/* Clock */
+int64_t get_clock(void);
+
 /* Objs */
 struct objs* objs_init(int min, int max, rhiuint count, int mode);
 void objs_free(struct objs* objs);
@@ -62,7 +65,7 @@ void map_mprint(struct rhim* map);
 size_t murmur_hash(const void* key);
 bool equal(const void* key1, const void* key2);
 
-#include "set.h"
+#include "tests.h"
 
 #endif /* TEST_H */
 

@@ -1,5 +1,12 @@
 #include "utils.h"
 
+static struct timespec utils_clock;
+
+int64_t get_clock(void) {
+  HANDLE(clock_gettime(CLOCK_MONOTONIC, &utils_clock)==-1, "Get time failed.");
+  return (utils_clock.tv_sec*1000)+(utils_clock.tv_nsec/1000000);
+}
+
 #define OVERHEAD_LEN 1
 #define MAX_COMB 26
 
