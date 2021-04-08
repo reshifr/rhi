@@ -3,7 +3,7 @@
 void set_reserve(struct rhifunc func) {
   struct rhis* set;
 
-#if 0
+#if 1
   HANDLE((set=rhis_reserve(&func, 10,
     RHI_FIXED))==NULL, "Set reserve failed.");
   set_print(set);
