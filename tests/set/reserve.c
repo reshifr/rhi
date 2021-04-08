@@ -1,49 +1,51 @@
-#include "../corrects.h"
+#include "../tests.h"
 
-void set_reserve(struct rhifunc func) {
+void set_reserve(struct rhifunc* func) {
   struct rhis* set;
 
+/* Consistency tests */
 #if 1
-  /* Reserve with fixed */
-  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
+  /* Fixed mode */
+  HANDLE((set=rhis_reserve(func, CONS_RESERVE_SIZE,
     RHI_FIXED))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
 
-  /* Reserve with shrink */
-  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
+  /* Shrink mode */
+  HANDLE((set=rhis_reserve(func, CONS_RESERVE_SIZE,
     RHI_SHRINK))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
-  /* Reserve with extend */
-  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
+  /* Extend mode*/
+  HANDLE((set=rhis_reserve(func, CONS_RESERVE_SIZE,
     RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
-  /* Reserve with shrink and extend */
-  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
+  /* Shrink and extend mode */
+  HANDLE((set=rhis_reserve(func, CONS_RESERVE_SIZE,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
 #endif
 
+/* Consistency tests for random sizes */
 #if 1
-  /* Reserve at least 1000 */
-  HANDLE((set=rhis_reserve(&func, 1000,
+  /* At least 1000 */
+  HANDLE((set=rhis_reserve(func, 1000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);
 
-  /* Reserve at least 1000_000 */
-  HANDLE((set=rhis_reserve(&func, 1000000,
+  /* At least 1000_000 */
+  HANDLE((set=rhis_reserve(func, 1000000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);
 
-  /* Reserve at least 100_000_000 */
-  HANDLE((set=rhis_reserve(&func, 100000000,
+  /* At least 100_000_000 */
+  HANDLE((set=rhis_reserve(func, 100000000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);

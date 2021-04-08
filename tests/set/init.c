@@ -1,29 +1,30 @@
-#include "../set.h"
+#include "../tests.h"
 
-void set_init(struct rhifunc func) {
+void set_init(struct rhifunc* func) {
   struct rhis* set;
 
+/* Consistency tests */
 #if 1
-  /* Initial with fixed */
-  HANDLE((set=rhis_init(&func,
+  /* Fixed mode */
+  HANDLE((set=rhis_init(func,
     RHI_FIXED))==NULL, "Set init failed.");
   set_print(set);
   rhis_free(set);
 
-  /* Initial with shrink */
-  HANDLE((set=rhis_init(&func,
+  /* Shrink mode */
+  HANDLE((set=rhis_init(func,
     RHI_SHRINK))==NULL, "Set init failed.");
   set_print(set);
   rhis_free(set);
 
-  /* Initial with extend */
-  HANDLE((set=rhis_init(&func,
+  /* Extend mode */
+  HANDLE((set=rhis_init(func,
     RHI_EXTEND))==NULL, "Set init failed.");
   set_print(set);
   rhis_free(set);
 
-  /* Initial with shrink and extend */
-  HANDLE((set=rhis_init(&func,
+  /* Shrink and extend mode */
+  HANDLE((set=rhis_init(func,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   set_print(set);
   rhis_free(set);
