@@ -29,4 +29,3 @@ void set_init(struct rhifunc func) {
   rhis_free(set);
 #endif
 }
-
