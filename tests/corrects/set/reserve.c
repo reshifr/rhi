@@ -3,40 +3,51 @@
 void set_reserve(struct rhifunc func) {
   struct rhis* set;
 
+#define SIZE 10
+
 #if 1
-  HANDLE((set=rhis_reserve(&func, 10,
+  /* Reserve with fixed */
+  HANDLE((set=rhis_reserve(&func, SIZE,
     RHI_FIXED))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
-  
-  HANDLE((set=rhis_reserve(&func, 10,
+
+  /* Reserve with shrink */
+  HANDLE((set=rhis_reserve(&func, SIZE,
     RHI_SHRINK))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
-  HANDLE((set=rhis_reserve(&func, 10,
+  /* Reserve with extend */
+  HANDLE((set=rhis_reserve(&func, SIZE,
     RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
-  HANDLE((set=rhis_reserve(&func, 10,
+  /* Reserve with shrink and extend */
+  HANDLE((set=rhis_reserve(&func, SIZE,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
 #endif
 
+#undef SIZE
+
 #if 1
-  HANDLE((set=rhis_reserve(&func, 100,
+  /* Reserve at least 1000 */
+  HANDLE((set=rhis_reserve(&func, 1000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);
 
+  /* Reserve at least 1000_000 */
   HANDLE((set=rhis_reserve(&func, 1000000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);
 
-  HANDLE((set=rhis_reserve(&func, 500000000,
+  /* Reserve at least 100_000_000 */
+  HANDLE((set=rhis_reserve(&func, 100000000,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_mprint(set);
   rhis_free(set);
