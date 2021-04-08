@@ -1,11 +1,10 @@
 #include "utils.h"
-#include <string.h>
-#include <inttypes.h>
 
 #define OVERHEAD_LEN 1
 #define MAX_COMB 26
 
 struct objs* objs_init(int min, int max, rhiuint count, int mode) {
+  srand((unsigned)time(NULL));
   struct objs* objs;
   HANDLE((objs=malloc(sizeof(struct objs)+
     sizeof(void*)*count))==NULL, "Objs bad alloc.");
@@ -15,12 +14,12 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
   int off_char = mode==LOWER ? ('a') : ('A');
   HANDLE((buf=malloc((size_t)
     (max+OVERHEAD_LEN)))==NULL, "Buf bad alloc.");
+  buf[max] = 0;
   for(rhiuint i=0; i<count; ++i) {
-    int m;
     memset(buf, 0, (size_t)max);
     int rands_len = rand()%range+min;
-    for(m=0; m<rands_len; ++m) {
-      if( mode&(LOWER|UPPER) )
+    for(int m=0; m<rands_len; ++m) {
+      if( mode==(LOWER|UPPER) )
         off_char = rand()&1 ? ('a') : ('A');
       buf[m] = (char)(rand()%MAX_COMB+off_char);
     }
