@@ -3,35 +3,31 @@
 void set_reserve(struct rhifunc func) {
   struct rhis* set;
 
-#define SIZE 10
-
 #if 1
   /* Reserve with fixed */
-  HANDLE((set=rhis_reserve(&func, SIZE,
+  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
     RHI_FIXED))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
 
   /* Reserve with shrink */
-  HANDLE((set=rhis_reserve(&func, SIZE,
+  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
     RHI_SHRINK))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
   /* Reserve with extend */
-  HANDLE((set=rhis_reserve(&func, SIZE,
+  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
     RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
   
   /* Reserve with shrink and extend */
-  HANDLE((set=rhis_reserve(&func, SIZE,
+  HANDLE((set=rhis_reserve(&func, RESERVE_SIZE,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set reserve failed.");
   set_print(set);
   rhis_free(set);
 #endif
-
-#undef SIZE
 
 #if 1
   /* Reserve at least 1000 */
