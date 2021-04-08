@@ -1,4 +1,4 @@
-#include "../corrects.h"
+#include "../set.h"
 
 void set_init(struct rhifunc func) {
   struct rhis* set;

@@ -2,14 +2,17 @@
 #define TEST_H
 
 #include <rhi.h>
+#include <time.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #define SEED 28731
 #define BUFSIZE 0xFFFF
-#define LOWER 0x00
-#define UPPER 0x01
+#define LOWER 0x01
+#define UPPER 0x02
 
 #define TEST(_callback, _exp)  \
   if( _exp ) \
@@ -59,7 +62,7 @@ void map_mprint(struct rhim* map);
 size_t murmur_hash(const void* key);
 bool equal(const void* key1, const void* key2);
 
-#include "corrects/corrects.h"
+#include "set.h"
 
 #endif /* TEST_H */
 
