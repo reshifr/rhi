@@ -1,6 +1,6 @@
 /**
  * Reshifr Hash Index
- * Copyright (c) 2019 Renol P. Hanafi <reshifr@gmail.com>
+ * Copyright (c) 2019 Renol P. H. <reshifr@gmail.com>
  *
  * MIT License
  *
@@ -193,7 +193,7 @@ typedef void (*rhivalfree)(void* val);
  * Structures *
  **************/
 
-/* Collection of functions */
+/* Function container */
 struct rhifunc {
   /**
    * \note  Required fields.
@@ -242,18 +242,44 @@ struct rhim;
 /* ===================================Set=================================== */
 
 
-/***************************
- * Initial functions (set) *
- ***************************/
- 
+/*********************
+ * Initial functions *
+ *********************/
+
+/**
+ * \brief   Initial set
+ *
+ * Set will be initialized to the default size.
+ *
+ * \param   func  Collection of overridable functions
+ * \param   mode  Set mode
+ *
+ * \return  On success, the pointer of the set is returned. In
+ *          error, NULL is returned.
+ */
 RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
-RHI_API struct rhis* rhis_reserve(
-  const struct rhifunc* func, rhiuint size, int mode);
+
+/**
+ * \brief   Reserve set
+ *
+ * Set will be initialized to the specified size, the size to
+ * be set >= the specified size. the maximum set size for
+ * prime method is 1546188225, and the default method is
+ * 1546188226.
+ *
+ * \param   func  Collection of overridable functions
+ * \param   size  Specific size reserved
+ * \param   mode  Set mode
+ *
+ * \return  On success, the pointer of the set is returned. In
+ *          error, NULL is returned.
+ */
+RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode);
 
 
-/**************************
- * Insert functions (set) *
- **************************/
+/********************
+ * Insert functions *
+ ********************/
 
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
