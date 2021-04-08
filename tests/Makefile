@@ -1,6 +1,7 @@
-CC ?= cc
-FLAGS += -O2 -std=c99 -Wall -Wconversion -Wextra -Wshadow
-RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHODX
+CC = cc
+FLAGS += -O2 -Wall -Wconversion -Wextra -Wshadow
+TEST_FLAGS += -std=c99 -D_POSIX_C_SOURCE=199309L
+RHI_FLAGS += -std=c99 -Wpedantic -DRHI_PRIME_METHODX
 
 ifneq (,$(filter Windows%,$(OS)))
 	RHI_DIR := ..\src
@@ -40,11 +41,11 @@ else
 	@rm -f $(OBJS) $(TARGET)
 endif
 
-$(RHI_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS)
+$(RHI_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS) Makefile
 	@$(CC) -c $< -o $@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
 
 %.o: %.c $(HEADERS)
-	@$(CC) -c $< -o $@ $(FLAGS) $(INCLUDES)
+	@$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(TARGET): $(OBJS)
 	@$(CC) $(OBJS) -o $(TARGET) $(LIBS)
