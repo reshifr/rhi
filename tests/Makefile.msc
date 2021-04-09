@@ -1,0 +1,68 @@
+# Reshifr Hash Index
+# NMake
+
+CL = cl
+LINK = link
+
+FLAGS = /O2
+RHI_FLAGS = /Wall
+TEST_FLAGS =
+
+RHI_DIR = ..\src
+TEST_DIR = .
+BUILD_DIR = build
+
+INCLUDES = /I$(RHI_DIR)
+LIBS =
+TARGET = main.exe
+
+RHI_HEADERS = \
+	$(RHI_DIR)\rhi.h
+
+TEST_HEADERS = \
+	$(TEST_DIR)\tests.h \
+	$(TEST_DIR)\utils.h
+
+HEADERS = $(RHI_HEADERS) $(TEST_HEADERS)
+
+OBJS = \
+	$(BUILD_DIR)\rhi.obj \
+	$(BUILD_DIR)\main.obj \
+	$(BUILD_DIR)\utils.obj \
+	$(BUILD_DIR)\setinit.obj \
+	$(BUILD_DIR)\setreserve.obj \
+	$(BUILD_DIR)\setinsert.obj
+
+all: $(OBJS) $(TARGET)
+
+clean:
+	del $(OBJS) $(TARGET)
+
+# Compile the source on the src directory
+#
+$(BUILD_DIR)\rhi.obj: $(RHI_DIR)\rhi.c $(RHI_HEADERS)
+	$(CL) /c $(RHI_DIR)\rhi.c /Fo:$@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
+
+# Compile the source on the tests directory
+#
+$(BUILD_DIR)\main.obj: $(TEST_DIR)\main.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\main.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\utils.obj: $(TEST_DIR)\utils.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\utils.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+# Compile the source on the tests/set directory
+#
+$(BUILD_DIR)\setinit.obj: $(TEST_DIR)\set\init.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\init.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\setreserve.obj: $(TEST_DIR)\set\reserve.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\reserve.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\setinsert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\insert.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+# Create executable
+#
+$(TARGET): $(OBJS)
+	$(LINK) $(OBJS) /OUT:$(TARGET)
