@@ -1,51 +1,82 @@
-CC = cc
-FLAGS += -O2 -Wall -Wconversion -Wextra -Wshadow
-TEST_FLAGS += -std=c99 -D_POSIX_C_SOURCE=199309L
-RHI_FLAGS += -std=c99 -Wpedantic -DRHI_PRIME_METHODX
+# Reshifr Hash Index
+# Make
 
-ifneq (,$(filter Windows%,$(OS)))
-	RHI_DIR := ..\src
-else
-	RHI_DIR := ../src
-endif
+CC := cc
 
+FLAGS += -std=c99 -O2 -Wall -Wconversion -Wextra -Wshadow
+RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHODX
+TEST_FLAGS +=
+
+RHI_DIR := ../src
 TEST_DIR := .
-INCLUDES := -I$(RHI_DIR)
+BUILD_DIR := build
 
+INCLUDES += -I$(RHI_DIR)
+LIBS +=
+TARGET := main
+
+# Add the executable suffix for Windows
+#
 ifneq (,$(filter Windows%,$(OS)))
-	RHI_HEADERS := $(shell dir /A-D /B /S "$(RHI_DIR)\*.h")
-	TEST_HEADERS := $(shell dir /A-D /B /S "$(TEST_DIR)\*.h")
-	RHI_OBJS := $(patsubst %.c,%.o,$(shell dir /A-D /B /S "$(RHI_DIR)\*.c"))
-	TEST_OBJS := $(patsubst %.c,%.o,$(shell dir /A-D /B /S "$(TEST_DIR)\*.c"))
-	TARGET := main.exe
-else
-	RHI_HEADERS := $(shell find $(RHI_DIR) -type f -name "*.h")
-	TEST_HEADERS := $(shell find $(TEST_DIR) -type f -name "*.h")
-	RHI_OBJS := $(patsubst %.c,%.o,$(shell find $(RHI_DIR) -type f -name "*.c"))
-	TEST_OBJS := $(patsubst %.c,%.o,$(shell find $(TEST_DIR) -type f -name "*.c"))
-	TARGET := main
+	TARGET := $(TARGET).exe
 endif
+
+RHI_HEADERS = \
+	$(RHI_DIR)/rhi.h
+
+TEST_HEADERS = \
+	$(TEST_DIR)/tests.h \
+	$(TEST_DIR)/utils.h
 
 HEADERS := $(RHI_HEADERS) $(TEST_HEADERS)
-OBJS := $(RHI_OBJS) $(TEST_OBJS)
+
+OBJS = \
+	$(BUILD_DIR)/rhi.o \
+	$(BUILD_DIR)/main.o \
+	$(BUILD_DIR)/utils.o \
+	$(BUILD_DIR)/setinit.o \
+	$(BUILD_DIR)/setreserve.o \
+	$(BUILD_DIR)/setinsert.o
 
 .PHONY: all clean
 .NOTPARALLEL: $(TARGET)
 
-all: $(RHI_DIR)/rhi.o $(OBJS) $(TARGET)
+all: $(OBJS) $(TARGET)
 
 clean:
+# Change `/` to `\` for Windows
+#
 ifneq (,$(filter Windows%,$(OS)))
-	@del $(OBJS) $(TARGET)
+	del $(subst /,\,$(OBJS) $(TARGET))
 else
-	@rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 endif
 
-$(RHI_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS) Makefile
-	@$(CC) -c $< -o $@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
+# Compile the source on the src directory
+#
+$(BUILD_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
 
-%.o: %.c $(HEADERS)
-	@$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+# Compile the source on the tests directory
+#
+$(BUILD_DIR)/main.o: $(TEST_DIR)/main.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
+$(BUILD_DIR)/utils.o: $(TEST_DIR)/utils.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+# Compile the source on the tests/set directory
+#
+$(BUILD_DIR)/setinit.o: $(TEST_DIR)/set/init.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)/setreserve.o: $(TEST_DIR)/set/reserve.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)/setinsert.o: $(TEST_DIR)/set/insert.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+# Create executable
+#
 $(TARGET): $(OBJS)
-	@$(CC) $(OBJS) -o $(TARGET) $(LIBS)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
