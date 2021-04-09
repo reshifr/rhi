@@ -1,2 +1,9 @@
 *.o
-*.msvc
+*.a
+*.so
+*.obj
+*.lib
+*.def
+*.dll
+*.exe
+tests/build
