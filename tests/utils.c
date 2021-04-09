@@ -1,10 +1,11 @@
 #include "utils.h"
 
-static struct timespec utils_clock;
-
-int64_t get_clock(void) {
-  HANDLE(clock_gettime(CLOCK_MONOTONIC, &utils_clock)==-1, "Get time failed.");
-  return (utils_clock.tv_sec*1000)+(utils_clock.tv_nsec/1000000);
+long get_clock(void) {
+#if defined _WIN32 || defined _WIN64
+  return clock();
+#elif defined __unix__ || (defined __APPLE__ && defined __MACH__)
+  return clock()/1000;
+#endif
 }
 
 #define OVERHEAD_LEN 1

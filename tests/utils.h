@@ -46,7 +46,7 @@ struct objs {
 };
 
 /* Clock */
-int64_t get_clock(void);
+long get_clock(void);
 
 /* Objs */
 struct objs* objs_init(int min, int max, rhiuint count, int mode);
