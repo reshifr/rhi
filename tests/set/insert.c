@@ -1,12 +1,12 @@
 #include "../tests.h"
 
 void set_insert(struct rhifunc* func) {
+  long start;
   struct rhis* set;
   struct objs* keys;
-  int64_t start;
 
 /* Consistency tests for `rhi_init` */
-#if 1
+#if 0
   /* Fixed mode */
   HANDLE((set=rhis_init(func,
     RHI_FIXED))==NULL, "Set init failed.");
@@ -80,7 +80,7 @@ void set_insert(struct rhifunc* func) {
 #endif
 
 /* Performance tests for `rhis_init` */
-#if 0
+#if 1
   HANDLE((set=rhis_init(func,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
@@ -90,14 +90,14 @@ void set_insert(struct rhifunc* func) {
   start = get_clock();
   for(rhiuint i=0; i<keys->count; ++i)
     rhis_insert(set, keys->objs[i]);
-  printf("Insert time in `rhi_init`: %"PRId64" ms\n", get_clock()-start);
+  printf("Insert time in `rhi_init`: %ld ms\n", get_clock()-start);
   set_mprint(set);
   rhis_free(set);
   objs_destroy(keys);
 #endif
 
 /* Performance tests for `rhis_reserve` */
-#if 0
+#if 1
   HANDLE((set=rhis_reserve(func, PERF_RESERVE_SIZE,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
@@ -107,7 +107,7 @@ void set_insert(struct rhifunc* func) {
   start = get_clock();
   for(rhiuint i=0; i<keys->count; ++i)
     rhis_insert(set, keys->objs[i]);
-  printf("Insert time in `rhis_reserve`: %"PRId64" ms\n", get_clock()-start);
+  printf("Insert time in `rhis_reserve`: %ld ms\n", get_clock()-start);
   set_mprint(set);
   rhis_free(set);
   objs_destroy(keys);
