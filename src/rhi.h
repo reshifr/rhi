@@ -28,9 +28,6 @@
 #ifndef RHI_H
 #define RHI_H
 
-// --------------------------------------------------------------------
-// -----------------------------------------------------------
-
 #include <stddef.h>
 #include <stdbool.h>
 #include <inttypes.h>
@@ -38,7 +35,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**************************
  * Macros for Windows DLL *
@@ -58,14 +54,12 @@ extern "C" {
 #ifndef _RHI_MACRO_DEFINED
 #define _RHI_MACRO_DEFINED
 
-
-/****************
- * Used integer *
- ****************/
+/***********
+ * Integer *
+ ***********/
 
 typedef int32_t rhiint;
 typedef uint32_t rhiuint;
-
 
 /**********************
  * Macros for integer *
@@ -101,7 +95,6 @@ typedef uint32_t rhiuint;
 #define SCNrhiu SCNu32
 #define SCNrhix SCNx32
 
-
 /*********
  * Modes *
  *********/
@@ -134,7 +127,6 @@ typedef uint32_t rhiuint;
 
 #endif /* _RHI_MACRO_DEFINED */
 
-
 /*************************
  * Overridable functions *
  *************************/
@@ -142,28 +134,26 @@ typedef uint32_t rhiuint;
 /**
  * \brief   Hash function
  *
- * Generates the hash value of the key, if the set/map uses a
- * pointer, the operation of the null key will not call this
- * function.
+ * Generates the hash value of the key, the operation of a
+ * NULL key will not call this function.
  *
- * \param   key  Key to be calculated
+ * \param   key  Key to calculate
  *
- * \return  The calculated hash value of the key, width of the
- *          resulting hash value is equal to sizeof(size_t).
+ * \return  The calculated hash value of the key.
  */
 typedef size_t (*rhihash)(const void* key);
 
 /**
  * \brief   Equaling keys
- * 
- * Is the key equal or not? If the set/map uses a pointer, the
- * operation of the null key will not call this function.
+ *
+ * Is the key equal or not? The operation of a NULL key will
+ * not call this function.
  *
  * \param   first_key   First key
  * \param   second_key  Second key
  *
- * \return  - true: Key is equal.
- *          - false: Key is not equal.
+ * \return  Equal, true is returned. Not equal false is
+ *          returned.
  */
 typedef bool (*rhiequal)(const void* first_key, const void* second_key);
 
@@ -171,10 +161,10 @@ typedef bool (*rhiequal)(const void* first_key, const void* second_key);
  * \brief  Key destroyer
  *
  * Destroy the key when the delete function or destructor
- * function is called. If the set/map uses a pointer, the
- * operation of the null key will not call this function.
+ * function is called. The operation of a NULL key will not
+ * call this function.
  *
- * \param  key  Key to be destroyed
+ * \param  key  Key to destroy
  */
 typedef void (*rhikeyfree)(void* key);
 
@@ -184,14 +174,19 @@ typedef void (*rhikeyfree)(void* key);
  * Destroy the value when the delete function or destructor
  * function is called.
  *
- * \param  key  Value to be destroyed
+ * \param  key  Value to destroy
  */
 typedef void (*rhivalfree)(void* val);
-
 
 /**************
  * Structures *
  **************/
+
+/* Set */
+struct rhis;
+
+/* Map */
+struct rhim;
 
 /* Function container */
 struct rhifunc {
@@ -232,15 +227,7 @@ struct rhiconstpair {
   void* val;
 };
 
-/* Set */
-struct rhis;
-
-/* Map */
-struct rhim;
-
-
-/* ===================================Set=================================== */
-
+/* ===== Set ===== */
 
 /*********************
  * Initial functions *
@@ -254,8 +241,8 @@ struct rhim;
  * \param   func  Collection of overridable functions
  * \param   mode  Set mode
  *
- * \return  On success, the pointer of the set is returned. In
- *          error, NULL is returned.
+ * \return  On success, the pointer of the set is returned. On
+ *          fail, NULL is returned.
  */
 RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
 
@@ -271,18 +258,32 @@ RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
  * \param   size  Specific size reserved
  * \param   mode  Set mode
  *
- * \return  On success, the pointer of the set is returned. In
- *          error, NULL is returned.
+ * \return  On success, the pointer of the set is returned. On
+ *          fail, NULL is returned.
  */
 RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode);
-
 
 /********************
  * Insert functions *
  ********************/
 
+/**
+ * \brief   Insert key into the set
+ *
+ * The insertion failed because the key existed previously or
+ * in a condition where the set cannot extend because of a
+ * memory allocation failure.
+ *
+ * \param   set  Set for insertion
+ * \param   key  Set mode
+ *
+ * \return  On success, true is returned. On fail, false is
+ *          returned.
+ */
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
+// --------------------------------------------------------------------
+// -----------------------------------------------------------
 
 /*************************
  * Place functions (set) *
@@ -291,7 +292,6 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
 RHI_API bool rhis_place(struct rhis* set, void* key);
 RHI_API void* rhis_kplace(struct rhis* set, void* key);
 
-
 /**************************
  * Search functions (set) *
  **************************/
@@ -299,13 +299,11 @@ RHI_API void* rhis_kplace(struct rhis* set, void* key);
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
 RHI_API void* rhis_ksearch(const struct rhis* set, const void* key);
 
-
 /**************************
  * Delete functions (set) *
  **************************/
 
 RHI_API bool rhis_delete(struct rhis* set, void* key);
-
 
 /*********************************
  * Miscellaneous functions (set) *
@@ -313,7 +311,6 @@ RHI_API bool rhis_delete(struct rhis* set, void* key);
 
 RHI_API rhiuint rhis_count(const struct rhis* set);
 RHI_API void rhis_free(struct rhis* set);
-
 
 /************************************
  * Forward traverse functions (set) *
@@ -324,7 +321,6 @@ RHI_API void rhis_next(struct rhis* set);
 RHI_API bool rhis_end(struct rhis* set);
 RHI_API const void* rhis_current(const struct rhis* set);
 
-
 /***********************************
  * Random traverse functions (set) *
  ***********************************/
@@ -332,9 +328,7 @@ RHI_API const void* rhis_current(const struct rhis* set);
 RHI_API rhiuint* rhis_iters(const struct rhis* set);
 RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
 
-
-/* ===================================Map=================================== */
-
+/* ===== Map ===== */
 
 /***************************
  * Initial functions (map) *
