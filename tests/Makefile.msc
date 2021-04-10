@@ -14,7 +14,7 @@ BUILD_DIR = build
 
 INCLUDES = /I$(RHI_DIR)
 LIBS =
-TARGET = main.exe
+TARGET = tests.exe
 
 RHI_HEADERS = \
 	$(RHI_DIR)\rhi.h

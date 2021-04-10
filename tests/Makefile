@@ -13,7 +13,7 @@ BUILD_DIR := build
 
 INCLUDES += -I$(RHI_DIR)
 LIBS +=
-TARGET := main
+TARGET := tests
 
 # Add the executable suffix for Windows
 #
