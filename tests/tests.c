@@ -21,9 +21,11 @@ struct rhifunc ffunc = {
 };
 
 int main(void) {
-  TEST(set_init, 0);
-  TEST(set_reserve, 1);
-  TEST(set_insert, 0);
+  srand((unsigned)time(NULL));
 
-  return 0;
+  TEST(set_init(), 0);
+  TEST(set_reserve(), 0);
+  TEST(set_insert(), 0);
+
+  return EXIT_SUCCESS;
 }

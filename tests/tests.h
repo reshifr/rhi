@@ -24,7 +24,7 @@ extern "C" {
 #define CONS_MAX_OBJLEN 5
 #define CONS_OBJCASE UPPER
 #define CONS_RESERVE_SIZE 10
-#define CONS_NUM_KEYS 10
+#define CONS_NUM_KEYS 14
 
 /* Performance tests macros */
 #define PERF_MIN_OBJLEN 16
@@ -35,7 +35,7 @@ extern "C" {
 
 #define TEST(_callback, _exp)  \
   if( _exp ) \
-    _callback()
+    _callback
 
 #define ABORT(_msg) \
   do { \
@@ -59,9 +59,9 @@ extern "C" {
     } \
   } while(0)
 
-/**********
- * Object *
- **********/
+/******************
+ * String objects *
+ ******************/
 
 struct objs {
   rhiuint count;
