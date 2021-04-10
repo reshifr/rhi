@@ -4,7 +4,7 @@
 CC := cc
 
 FLAGS += -std=c99 -O2 -Wall -Wconversion -Wextra -Wshadow
-RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHOD
+RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHODX
 TEST_FLAGS +=
 
 RHI_DIR := ../src
