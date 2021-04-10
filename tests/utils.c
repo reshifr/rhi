@@ -1,16 +1,16 @@
-#include "utils.h"
+#include "tests.h"
 
-long get_clock(void) {
-#if defined _WIN32 || defined _WIN64
-  return clock();
-#elif defined __unix__ || (defined __APPLE__ && defined __MACH__)
-  return clock()/1000;
-#endif
-}
+/**********
+ * Object *
+ **********/
 
 #define OVERHEAD_LEN 1
 #define MAX_COMB 26
 
+/**
+ * Generate string object with minimum length = `min`, maximum
+ * length = `max` count = `count`, with case = `mode`.
+ */
 struct objs* objs_init(int min, int max, rhiuint count, int mode) {
   srand((unsigned)time(NULL));
   struct objs* objs;
@@ -19,7 +19,7 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
   char* buf;
   objs->count = count;
   int range = max-min+1;
-  int off_char = mode==LOWER ? ('a') : ('A');
+  int off_char = mode==LOWER ? 'a' : 'A';
   HANDLE((buf=malloc((size_t)
     (max+OVERHEAD_LEN)))==NULL, "Buf bad alloc.");
   buf[max] = 0;
@@ -28,7 +28,7 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
     int rands_len = rand()%range+min;
     for(int m=0; m<rands_len; ++m) {
       if( mode==(LOWER|UPPER) )
-        off_char = rand()&1 ? ('a') : ('A');
+        off_char = rand()&1 ? 'a' : 'A';
       buf[m] = (char)(rand()%MAX_COMB+off_char);
     }
     objs->objs[i] = malloc(sizeof(char)*(size_t)(max+OVERHEAD_LEN));
@@ -37,22 +37,43 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
   return objs;
 }
 
+/**
+ * Free memory only for `objs`.
+ */
 void objs_free(struct objs* objs) {
   free(objs);
 }
 
+/**
+ * Free memory for `objs[]` and `objs`.
+ */
 void objs_destroy(struct objs* objs) {
   for(rhiuint i=0; i<objs->count; ++i)
     free(objs->objs[i]);
   free(objs);
 }
 
+/*********
+ * Clock *
+ *********/
+
+/**
+ * Get the current time in milliseconds.
+ */
+long get_clock(void) {
+#if defined _WIN32 || defined _WIN64
+  return clock();
+#elif defined __unix__ || (defined __APPLE__ && defined __MACH__)
+  return clock()/1000;
+#endif
+}
+
 #define HASHVAL_INDEX(_hashval, _size) ((rhiuint)((_hashval)%(_size)))
 #define IS_EMPTY(_node) ((_node).key==NULL)
 
-/*******************
- * Set definitions *
- *******************/
+/*******
+ * Set *
+ *******/
 
 struct rhisnode {
   size_t hashval;
@@ -76,6 +97,9 @@ struct rhis {
   struct rhisnode* nodes;
 };
 
+/**
+ * Print set.
+ */
 void set_print(struct rhis* set) {
   char* mode;
   switch( set->mode ) {
@@ -117,6 +141,9 @@ void set_print(struct rhis* set) {
   printf("\n");
 }
 
+/**
+ * Print only set metadata.
+ */
 void set_mprint(struct rhis* set) {
   char* mode;
   switch( set->mode ) {
@@ -147,9 +174,9 @@ void set_mprint(struct rhis* set) {
   );
 }
 
-/*******************
- * Map definitions *
- *******************/
+/*******
+ * Map *
+ *******/
 
 struct rhimnode {
   size_t hashval;
@@ -176,6 +203,9 @@ struct rhim {
   struct rhimnode* nodes;
 };
 
+/**
+ * Print map.
+ */
 void map_print(struct rhim* map) {
   char* mode;
   switch( map->mode ) {
@@ -219,6 +249,9 @@ void map_print(struct rhim* map) {
   printf("\n");
 }
 
+/**
+ * Print only map metadata.
+ */
 void map_mprint(struct rhim* map) {
   char* mode;
   switch( map->mode ) {
@@ -250,13 +283,20 @@ void map_mprint(struct rhim* map) {
   );
 }
 
-size_t murmur_hash(const void* key) {
-  size_t len = strlen(key);
+/*****************
+ * Miscellaneous *
+ *****************/
+
+/**
+ * Hash function for string object.
+ */
+size_t murmur_hash(const void* obj) {
+  size_t len = strlen(obj);
 #if SIZE_MAX == UINT64_MAX
   const int r = 47;
   const uint64_t m = UINT64_C(0xc6a4a7935bd1e995);
   uint64_t h = SEED^(len*m);
-  const uint64_t* data0 = (const uint64_t*)key;
+  const uint64_t* data0 = (const uint64_t*)obj;
   const uint64_t* end = data0+(len>>3);
   while( data0!=end ) {
     uint64_t k = *data0++;
@@ -293,7 +333,7 @@ size_t murmur_hash(const void* key) {
   const int r = 24;
   const uint32_t m = UINT32_C(0x5bd1e995);
   uint32_t h = SEED^len;
-  const uint8_t* data = (const uint8_t*)key;
+  const uint8_t* data = (const uint8_t*)obj;
   while( len>=4 ) {
     uint32_t k = *(uint32_t*)data;
     k *= m;
@@ -322,6 +362,9 @@ size_t murmur_hash(const void* key) {
   return h;
 }
 
-bool equal(const void* key1, const void* key2) {
-  return strcmp(key1, key2)==0;
+/**
+ * Equal function for string object.
+ */
+bool equal(const void* first_obj, const void* second_obj) {
+  return strcmp(first_obj, second_obj)==0;
 }
