@@ -1,14 +1,15 @@
 #include "../tests.h"
 
-void set_insert(struct rhifunc* func) {
-  long start;
+extern struct rhifunc func;
+
+static void cons_tests(void) {
   struct rhis* set;
   struct objs* keys;
 
-/* Consistency tests for `rhi_init` */
-#if 0
+/* Using `rhi_init` */
+#if 1
   /* Fixed mode */
-  HANDLE((set=rhis_init(func,
+  HANDLE((set=rhis_init(&func,
     RHI_FIXED))==NULL, "Set init failed.");
   /* Initial list of keys */
   HANDLE((keys=objs_init(CONS_MIN_OBJLEN, CONS_MAX_OBJLEN,
@@ -25,7 +26,7 @@ void set_insert(struct rhifunc* func) {
   objs_destroy(keys);
 
   /* Extend mode */
-  HANDLE((set=rhis_init(func,
+  HANDLE((set=rhis_init(&func,
     RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
   HANDLE((keys=objs_init(CONS_MIN_OBJLEN, CONS_MAX_OBJLEN,
@@ -42,7 +43,7 @@ void set_insert(struct rhifunc* func) {
   objs_destroy(keys);
 
   /* Shrink and extend mode */
-  HANDLE((set=rhis_init(func,
+  HANDLE((set=rhis_init(&func,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
   HANDLE((keys=objs_init(CONS_MIN_OBJLEN, CONS_MAX_OBJLEN,
@@ -59,7 +60,7 @@ void set_insert(struct rhifunc* func) {
   objs_destroy(keys);
 #endif
 
-/* Consistency tests for `rhi_reserve` */
+/* Using `rhi_reserve` */
 #if 0
   /* Reserve with fixed */
   HANDLE((set=rhis_init(&func,
@@ -78,10 +79,16 @@ void set_insert(struct rhifunc* func) {
   rhis_free(set);
   objs_destroy(keys);
 #endif
+}
 
-/* Performance tests for `rhis_init` */
+static void perf_tests(void) {
+  long start;
+  struct rhis* set;
+  struct objs* keys;
+
+/* Using `rhis_init` */
 #if 1
-  HANDLE((set=rhis_init(func,
+  HANDLE((set=rhis_init(&func,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
   HANDLE((keys=objs_init(PERF_MIN_OBJLEN, PERF_MAX_OBJLEN,
@@ -96,9 +103,9 @@ void set_insert(struct rhifunc* func) {
   objs_destroy(keys);
 #endif
 
-/* Performance tests for `rhis_reserve` */
+/* Using `rhis_reserve` */
 #if 1
-  HANDLE((set=rhis_reserve(func, PERF_RESERVE_SIZE,
+  HANDLE((set=rhis_reserve(&func, PERF_RESERVE_SIZE,
     RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
   /* Initial list of keys */
   HANDLE((keys=objs_init(PERF_MIN_OBJLEN, PERF_MAX_OBJLEN,
@@ -112,4 +119,9 @@ void set_insert(struct rhifunc* func) {
   rhis_free(set);
   objs_destroy(keys);
 #endif
+}
+
+void set_insert(void) {
+  cons_tests();
+  // perf_tests();
 }
