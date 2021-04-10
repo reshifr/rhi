@@ -72,8 +72,89 @@
 # define HASHVAL_INDEX(_hashval, _size) ((rhiuint)((_hashval)&((_size)-1)))
 #endif
 
+/************
+ * Set node *
+ ************/
+
+struct rhisnode {
+  size_t hashval;
+  void* key;
+};
+
+/*******
+ * Set *
+ *******/
+
+struct rhis {
+  uint8_t mode;
+  uint8_t index;
+  uint8_t begin_index;
+  uint8_t is_def_key: 4;
+  uint8_t is_end: 4;
+  rhiuint iter;
+  rhiuint min;
+  rhiuint max;
+  rhiuint size;
+  rhiuint occupied;
+  rhihash hash;
+  rhiequal equal;
+  rhikeyfree keyfree;
+  struct rhisnode* nodes;
+};
+
+#define RHIS_NODE(_hashval, _key) \
+  ((struct rhisnode){ .hashval=_hashval, .key=_key })
+
+/************
+ * Map node *
+ ************/
+
+struct rhimnode {
+  size_t hashval;
+  void* key;
+  void* val;
+};
+
+/*******
+ * Map *
+ *******/
+
+struct rhim {
+  uint8_t mode;
+  uint8_t index;
+  uint8_t begin_index;
+  uint8_t is_def_key: 4;
+  uint8_t is_end: 4;
+  rhiuint iter;
+  rhiuint min;
+  rhiuint max;
+  rhiuint size;
+  rhiuint occupied;
+  rhihash hash;
+  rhiequal equal;
+  rhikeyfree keyfree;
+  rhivalfree valfree;
+  void* def_val;
+  struct rhimnode* nodes;
+};
+
+#define PAIR(_key, _val) ((struct rhipair){ .key=_key, .val=_val })
+#define CONSTPAIR(_key, _val) ((struct rhiconstpair){ .key=_key, .val=_val })
+#define DEFPAIR PAIR(DEFVAL, DEFVAL)
+#define DEFCONSTPAIR CONSTPAIR(DEFVAL, DEFVAL)
+#define RHIM_NODE(_hashval, _key, _val) \
+  ((struct rhimnode){ .hashval=_hashval, .key=_key, .val=_val })
+
+/******************
+ * Generic macros *
+ ******************/
+
+/* Default values for key and value */
 #define DEFVAL NULL
-#define DEFVAL_ITER RHIUINT_MAX
+
+/* Value handler of `iter` for `def_val` */
+#define DEFITER RHIUINT_MAX
+
 #define MIN_LOAD 0.18
 #define MAX_LOAD 0.72
 #define BEGIN_EXPONENT 3
@@ -85,6 +166,9 @@
 #define MAX_OCCUPIED(_index) ((rhiuint)((double)GET_SIZE(_index)*MAX_LOAD))
 #define COUNT(_obj) ((obj)->is_def_key ? (obj)->occupied+1 : (obj)->occupied)
 
+/**
+ * Set size constraints for set/map.
+ */
 #define SET_BOUND(_obj, _index, _size) \
   do { \
     (_obj)->index = (uint8_t)(_index); \
@@ -93,6 +177,9 @@
     (_obj)->size = _size; \
   } while(0)
 
+/**
+ * Obtain floor(log2(n)) value.
+ */
 static inline int msb_index(rhiuint n) {
   int i = 0;
   if( n>=RHIUINT_C(0x00010000) )
@@ -108,6 +195,9 @@ static inline int msb_index(rhiuint n) {
   return i;
 }
 
+/**
+ * Obtain the appropriate index for the specified size.
+ */
 static inline int get_index(rhiuint size) {
   int index = msb_index((rhiuint)((double)size/MAX_LOAD))-
     (BEGIN_EXPONENT-BEGIN_INDEX);
@@ -118,6 +208,9 @@ static inline int get_index(rhiuint size) {
   return index;
 }
 
+/**
+ * Move current elements to the new `nodes`
+ */
 #define MOVE_NODES(_obj, _newsize, _newnodes) \
   do { \
     for(rhiuint _i=0, _prob; _i<(_obj)->size; ++_i) { \
@@ -136,6 +229,9 @@ static inline int get_index(rhiuint size) {
     (_obj)->nodes = _newnodes; \
   } while(0)
 
+/**
+ * Extend `nodes` size when `size` > `max`
+ */
 #define DECL_EXTEND_NODES(_func_name, _obj_type, _node_type) \
   static bool _func_name(_obj_type* obj) { \
     if( obj->index==END_INDEX ) \
@@ -150,6 +246,9 @@ static inline int get_index(rhiuint size) {
     return true; \
   }
 
+/**
+ * Shrink `nodes` size when `size` < `min`
+ */
 #define SHRINK_NODES(_obj, _node_type) \
   do { \
     if( (_obj)->index==(_obj)->begin_index ) \
@@ -163,6 +262,11 @@ static inline int get_index(rhiuint size) {
     SET_BOUND(_obj, _newindex, _newsize); \
   } while(0)
 
+/**
+ * If the subsequent element is in prob sequence shift the
+ * element to an empty node, do until finding an empty node
+ * when continuing the step for the next subsequent element.
+ */
 #define BACKWARD_SHIFT(_obj, _equal_prob) \
   do { \
     rhiuint _empty = _equal_prob; \
@@ -192,7 +296,7 @@ static inline int get_index(rhiuint size) {
   void _func_name(_obj_type* obj) { \
     if( obj->is_def_key ) { \
       obj->is_end = false; \
-      obj->iter = DEFVAL_ITER; \
+      obj->iter = DEFITER; \
       return; \
     } \
     for(rhiuint i=0; i<obj->size; ++i) { \
@@ -206,7 +310,7 @@ static inline int get_index(rhiuint size) {
 
 #define DECL_NEXT(_func_name, _obj_type) \
   void _func_name(_obj_type* obj) { \
-    rhiuint i = obj->iter==DEFVAL_ITER ? 0 : obj->iter+1; \
+    rhiuint i = obj->iter==DEFITER ? 0 : obj->iter+1; \
     for(; i<obj->size; ++i) { \
       if( IS_EMPTY(obj->nodes[i]) ) \
         continue; \
@@ -231,7 +335,7 @@ static inline int get_index(rhiuint size) {
       return NULL; \
     rhiuint start = 0; \
     if( obj->is_def_key ) \
-      iter[start++] = DEFVAL_ITER; \
+      iter[start++] = DEFITER; \
     for(rhiuint i=0, prob=start; i<obj->size; ++i) { \
       if( IS_EMPTY(obj->nodes[i]) ) \
         continue; \
@@ -240,80 +344,11 @@ static inline int get_index(rhiuint size) {
     return iter; \
   }
 
+/* ===== Set ===== */
 
-/*******************
- * Structure (set) *
- *******************/
-
-struct rhisnode {
-  size_t hashval;
-  void* key;
-};
-
-struct rhis {
-  uint8_t mode;
-  uint8_t index;
-  uint8_t begin_index;
-  uint8_t is_def_key: 4;
-  uint8_t is_end: 4;
-  rhiuint iter;
-  rhiuint min;
-  rhiuint max;
-  rhiuint size;
-  rhiuint occupied;
-  rhihash hash;
-  rhiequal equal;
-  rhikeyfree keyfree;
-  struct rhisnode* nodes;
-};
-
-#define RHIS_NODE(_hashval, _key) \
-  ((struct rhisnode){ .hashval=_hashval, .key=_key })
-
-
-/*******************
- * Structure (map) *
- *******************/
-
-struct rhimnode {
-  size_t hashval;
-  void* key;
-  void* val;
-};
-
-struct rhim {
-  uint8_t mode;
-  uint8_t index;
-  uint8_t begin_index;
-  uint8_t is_def_key: 4;
-  uint8_t is_end: 4;
-  rhiuint iter;
-  rhiuint min;
-  rhiuint max;
-  rhiuint size;
-  rhiuint occupied;
-  rhihash hash;
-  rhiequal equal;
-  rhikeyfree keyfree;
-  rhivalfree valfree;
-  void* def_val;
-  struct rhimnode* nodes;
-};
-
-#define PAIR(_key, _val) ((struct rhipair){ .key=_key, .val=_val })
-#define CONSTPAIR(_key, _val) ((struct rhiconstpair){ .key=_key, .val=_val })
-#define DEFPAIR PAIR(DEFVAL, DEFVAL)
-#define DEFCONSTPAIR CONSTPAIR(DEFVAL, DEFVAL)
-#define RHIM_NODE(_hashval, _key, _val) \
-  ((struct rhimnode){ .hashval=_hashval, .key=_key, .val=_val })
-
-
-/* ===================================Set=================================== */
-
-
-/***************************
- * Initial functions (set) *
- ***************************/
+/*********************
+ * Initial functions *
+ *********************/
 
 #define RHIS_INIT(_func, _mode, _index) \
   do { \
@@ -335,23 +370,62 @@ struct rhim {
     return _set; \
   } while(0)
 
+/**
+ * \brief   Initial set
+ *
+ * Set will be initialized to the default size.
+ *
+ * \param   func  Collection of overridable functions
+ * \param   mode  Set mode
+ *
+ * \return  On success, the pointer of the set is returned. On
+ *          fail, NULL is returned.
+ */
 struct rhis* rhis_init(const struct rhifunc* func, int mode) {
   RHIS_INIT(func, mode, BEGIN_INDEX);
 }
 
+/**
+ * \brief   Reserve set
+ *
+ * Set will be initialized to the specified size, the size to
+ * be set >= the specified size. the maximum set size for
+ * prime method is 1546188225, and the default method is
+ * 1546188226.
+ *
+ * \param   func  Collection of overridable functions
+ * \param   size  Specific size reserved
+ * \param   mode  Set mode
+ *
+ * \return  On success, the pointer of the set is returned. On
+ *          fail, NULL is returned.
+ */
 struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode) {
   int index = get_index(size);
   RHIS_INIT(func, mode, index);
 }
 
-
-/**************************
- * Insert functions (set) *
- **************************/
+/********************
+ * Insert functions *
+ ********************/
 
 DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 
+/**
+ * \brief   Insert key into the set
+ *
+ * The insertion failed because the key existed previously or
+ * in a condition where the set cannot extend because of a
+ * memory allocation failure.
+ *
+ * \param   set  Set for insertion
+ * \param   key  Set mode
+ *
+ * \return  On success, true is returned. On fail, false is
+ *          returned.
+ */
 bool rhis_insert(struct rhis* set, void* key) {
+  /* handling of default key values */
   if( key==DEFVAL ) {
     if( set->is_def_key )
       return false;
@@ -377,7 +451,6 @@ bool rhis_insert(struct rhis* set, void* key) {
   return false;
 }
 
-
 /*************************
  * Place functions (set) *
  *************************/
@@ -399,6 +472,7 @@ bool rhis_insert(struct rhis* set, void* key) {
   } while(0)
 
 bool rhis_place(struct rhis* set, void* key) {
+  /* handling of default `key` values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return true;
@@ -427,6 +501,7 @@ bool rhis_place(struct rhis* set, void* key) {
 }
 
 void* rhis_kplace(struct rhis* set, void* key) {
+  /* Handling of default `key` values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return DEFVAL;
@@ -461,6 +536,7 @@ void* rhis_kplace(struct rhis* set, void* key) {
 #define RHIS_SEARCH(_set, _key, \
   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
   do { \
+    /* Handling of default `key` values */ \
     if( (_key)==DEFVAL ) \
       return _def_key_ret; \
     size_t _hashval = (_set)->hash(_key); \
@@ -490,6 +566,7 @@ void* rhis_ksearch(const struct rhis* set, const void* key) {
  **************************/
 
 bool rhis_delete(struct rhis* set, void* key) {
+  /* Handling of default `key` values */
   if( key==DEFVAL ) {
     if( set->is_def_key ) {
       set->is_def_key = false;
@@ -540,7 +617,7 @@ void rhis_free(struct rhis *set) {
  ************************************/
 
 #define RHIS_GET(_set, _iter) \
-  ((_iter)==DEFVAL_ITER ? DEFVAL : (_set)->nodes[_iter].key)
+  ((_iter)==DEFITER ? DEFVAL : (_set)->nodes[_iter].key)
 
 DECL_BEGIN(rhis_begin, struct rhis)
 DECL_NEXT(rhis_next, struct rhis)
@@ -915,13 +992,13 @@ void rhim_free(struct rhim *map) {
  ************************************/
 
 #define RHIM_GET(_map, _iter) \
-  ((_iter)==DEFVAL_ITER ? \
+  ((_iter)==DEFITER ? \
    CONSTPAIR(DEFVAL, map->def_val) : \
    CONSTPAIR((_map)->nodes[_iter].key, (_map)->nodes[_iter].val))
 #define RHIM_KGET(_map, _iter) \
-  ((_iter)==DEFVAL_ITER ? DEFVAL : (_map)->nodes[_iter].key)
+  ((_iter)==DEFITER ? DEFVAL : (_map)->nodes[_iter].key)
 #define RHIM_VGET(_map, _iter) \
-  ((_iter)==DEFVAL_ITER ? map->def_val : (_map)->nodes[_iter].val)
+  ((_iter)==DEFITER ? map->def_val : (_map)->nodes[_iter].val)
 
 DECL_BEGIN(rhim_begin, struct rhim)
 DECL_NEXT(rhim_next, struct rhim)
