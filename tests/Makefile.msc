@@ -20,18 +20,17 @@ RHI_HEADERS = \
 	$(RHI_DIR)\rhi.h
 
 TEST_HEADERS = \
-	$(TEST_DIR)\tests.h \
-	$(TEST_DIR)\utils.h
+	$(TEST_DIR)\tests.h
 
 HEADERS = $(RHI_HEADERS) $(TEST_HEADERS)
 
 OBJS = \
 	$(BUILD_DIR)\rhi.obj \
-	$(BUILD_DIR)\main.obj \
+	$(BUILD_DIR)\tests.obj \
 	$(BUILD_DIR)\utils.obj \
-	$(BUILD_DIR)\setinit.obj \
-	$(BUILD_DIR)\setreserve.obj \
-	$(BUILD_DIR)\setinsert.obj
+	$(BUILD_DIR)\set_init.obj \
+	$(BUILD_DIR)\set_reserve.obj \
+	$(BUILD_DIR)\set_insert.obj
 
 all: $(OBJS) $(TARGET)
 
@@ -45,21 +44,21 @@ $(BUILD_DIR)\rhi.obj: $(RHI_DIR)\rhi.c $(RHI_HEADERS)
 
 # Compile the source on the tests directory
 #
-$(BUILD_DIR)\main.obj: $(TEST_DIR)\main.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\main.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)\tests.obj: $(TEST_DIR)\tests.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\tests.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)\utils.obj: $(TEST_DIR)\utils.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\utils.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-# Compile the source on the tests/set directory
+# Compile the source on the tests\set directory
 #
-$(BUILD_DIR)\setinit.obj: $(TEST_DIR)\set\init.c $(HEADERS)
+$(BUILD_DIR)\set_init.obj: $(TEST_DIR)\set\init.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\init.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)\setreserve.obj: $(TEST_DIR)\set\reserve.c $(HEADERS)
+$(BUILD_DIR)\set_reserve.obj: $(TEST_DIR)\set\reserve.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\reserve.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)\setinsert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
+$(BUILD_DIR)\set_insert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\insert.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable

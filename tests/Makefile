@@ -4,7 +4,7 @@
 CC := cc
 
 FLAGS += -std=c99 -O2 -Wall -Wconversion -Wextra -Wshadow
-RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHODX
+RHI_FLAGS += -Wpedantic -DRHI_PRIME_METHOD
 TEST_FLAGS +=
 
 RHI_DIR := ../src
@@ -25,18 +25,17 @@ RHI_HEADERS = \
 	$(RHI_DIR)/rhi.h
 
 TEST_HEADERS = \
-	$(TEST_DIR)/tests.h \
-	$(TEST_DIR)/utils.h
+	$(TEST_DIR)/tests.h
 
 HEADERS := $(RHI_HEADERS) $(TEST_HEADERS)
 
 OBJS = \
 	$(BUILD_DIR)/rhi.o \
-	$(BUILD_DIR)/main.o \
+	$(BUILD_DIR)/tests.o \
 	$(BUILD_DIR)/utils.o \
-	$(BUILD_DIR)/setinit.o \
-	$(BUILD_DIR)/setreserve.o \
-	$(BUILD_DIR)/setinsert.o
+	$(BUILD_DIR)/set_init.o \
+	$(BUILD_DIR)/set_reserve.o \
+	$(BUILD_DIR)/set_insert.o
 
 .PHONY: all clean
 .NOTPARALLEL: $(TARGET)
@@ -59,7 +58,7 @@ $(BUILD_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS)
 
 # Compile the source on the tests directory
 #
-$(BUILD_DIR)/main.o: $(TEST_DIR)/main.c $(HEADERS)
+$(BUILD_DIR)/tests.o: $(TEST_DIR)/tests.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)/utils.o: $(TEST_DIR)/utils.c $(HEADERS)
@@ -67,13 +66,13 @@ $(BUILD_DIR)/utils.o: $(TEST_DIR)/utils.c $(HEADERS)
 
 # Compile the source on the tests/set directory
 #
-$(BUILD_DIR)/setinit.o: $(TEST_DIR)/set/init.c $(HEADERS)
+$(BUILD_DIR)/set_init.o: $(TEST_DIR)/set/init.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)/setreserve.o: $(TEST_DIR)/set/reserve.c $(HEADERS)
+$(BUILD_DIR)/set_reserve.o: $(TEST_DIR)/set/reserve.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)/setinsert.o: $(TEST_DIR)/set/insert.c $(HEADERS)
+$(BUILD_DIR)/set_insert.o: $(TEST_DIR)/set/insert.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
