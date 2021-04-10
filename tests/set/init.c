@@ -1,35 +1,18 @@
 #include "../tests.h"
 
+#define CONS_TESTS(func, mode, print) \
+  do { \
+    struct rhis* set; \
+    HANDLE((set=rhis_init(func, mode))==NULL, "Set init failed."); \
+    print(set); \
+    rhis_free(set); \
+  } while(0)
+
 extern struct rhifunc func;
 
-static void cons_tests(void) {
-  struct rhis* set;
-
-  /* Fixed mode */
-  HANDLE((set=rhis_init(&func,
-    RHI_FIXED))==NULL, "Set init failed.");
-  set_print(set);
-  rhis_free(set);
-
-  /* Shrink mode */
-  HANDLE((set=rhis_init(&func,
-    RHI_SHRINK))==NULL, "Set init failed.");
-  set_print(set);
-  rhis_free(set);
-
-  /* Extend mode */
-  HANDLE((set=rhis_init(&func,
-    RHI_EXTEND))==NULL, "Set init failed.");
-  set_print(set);
-  rhis_free(set);
-
-  /* Shrink and extend mode */
-  HANDLE((set=rhis_init(&func,
-    RHI_SHRINK|RHI_EXTEND))==NULL, "Set init failed.");
-  set_print(set);
-  rhis_free(set);
-}
-
 void set_init(void) {
-  cons_tests();
+  TEST(CONS_TESTS(&func, RHI_FIXED, set_print), 1);
+  TEST(CONS_TESTS(&func, RHI_SHRINK, set_print), 1);
+  TEST(CONS_TESTS(&func, RHI_EXTEND, set_print), 1);
+  TEST(CONS_TESTS(&func, RHI_SHRINK|RHI_EXTEND, set_print), 1);
 }
