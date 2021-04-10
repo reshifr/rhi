@@ -1,8 +1,8 @@
 #include "tests.h"
 
-/**********
- * Object *
- **********/
+/******************
+ * String objects *
+ ******************/
 
 #define OVERHEAD_LEN 1
 #define MAX_COMB 26
@@ -12,7 +12,6 @@
  * length = `max` count = `count`, with case = `mode`.
  */
 struct objs* objs_init(int min, int max, rhiuint count, int mode) {
-  srand((unsigned)time(NULL));
   struct objs* objs;
   HANDLE((objs=malloc(sizeof(struct objs)+
     sizeof(void*)*count))==NULL, "Objs bad alloc.");
@@ -102,7 +101,7 @@ struct rhis {
  */
 void set_print(struct rhis* set) {
   char* mode;
-  switch( set->mode ) {
+  switch( set->mode&(RHI_SHRINK|RHI_EXTEND) ) {
     case RHI_FIXED:
       mode = "FIXED";
       break;
@@ -146,7 +145,7 @@ void set_print(struct rhis* set) {
  */
 void set_mprint(struct rhis* set) {
   char* mode;
-  switch( set->mode ) {
+  switch( set->mode&(RHI_SHRINK|RHI_EXTEND) ) {
     case RHI_FIXED:
       mode = "FIXED";
       break;
@@ -208,7 +207,7 @@ struct rhim {
  */
 void map_print(struct rhim* map) {
   char* mode;
-  switch( map->mode ) {
+  switch( map->mode&(RHI_SHRINK|RHI_EXTEND) ) {
     case RHI_FIXED:
       mode = "FIXED";
       break;
@@ -254,7 +253,7 @@ void map_print(struct rhim* map) {
  */
 void map_mprint(struct rhim* map) {
   char* mode;
-  switch( map->mode ) {
+  switch( map->mode&(RHI_SHRINK|RHI_EXTEND) ) {
     case RHI_FIXED:
       mode = "FIXED";
       break;
