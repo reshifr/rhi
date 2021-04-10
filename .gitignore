@@ -1,3 +1,4 @@
+# Output file
 *.o
 *.a
 *.so
@@ -6,4 +7,6 @@
 *.def
 *.dll
 *.exe
+
+# Build directory
 tests/build
