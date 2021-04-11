@@ -1,9 +1,9 @@
 /**
  * Reshifr Hash Index
  * Copyright (c) 2019 Renol P. H. <reshifr@gmail.com>
- *
+ * 
  * MIT License
- *
+ * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without restriction,
@@ -11,10 +11,10 @@
  * publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -372,14 +372,14 @@ static inline int get_index(rhiuint size) {
 
 /**
  * \brief   Initial set
- *
+ * 
  * Set will be initialized to the default size.
- *
+ * 
  * \param   func  Collection of overridable functions
  * \param   mode  Set mode
- *
- * \return  On success, the pointer of the set is returned. On
- *          fail, NULL is returned.
+ * 
+ * \return  On success, the pointer of set is returned. On
+ *          failure, NULL is returned.
  */
 struct rhis* rhis_init(const struct rhifunc* func, int mode) {
   RHIS_INIT(func, mode, BEGIN_INDEX);
@@ -387,18 +387,18 @@ struct rhis* rhis_init(const struct rhifunc* func, int mode) {
 
 /**
  * \brief   Reserve set
- *
+ * 
  * Set will be initialized to the specified size, the size to
  * be set >= the specified size. the maximum set size for
  * prime method is 1546188225, and the default method is
  * 1546188226.
- *
+ * 
  * \param   func  Collection of overridable functions
  * \param   size  Specific size reserved
  * \param   mode  Set mode
- *
- * \return  On success, the pointer of the set is returned. On
- *          fail, NULL is returned.
+ * 
+ * \return  On success, the pointer of set is returned. On
+ *          failure, NULL is returned.
  */
 struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode) {
   int index = get_index(size);
@@ -412,16 +412,19 @@ struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode) {
 DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 
 /**
- * \brief   Insert key into the set
- *
- * The insertion failed because the key existed previously or
- * in a condition where the set cannot extend because of a
- * memory allocation failure.
- *
+ * \brief   Insert key into set
+ * 
+ * The insertion failed because
+ *  - Key was in set before.
+ *  - Maximum set limit has been reached but set mode is in
+ *    RHI_EXTEND.
+ *  - On rare condition, memory allocation may fail when set
+ *    is extended.
+ * 
  * \param   set  Set for insertion
  * \param   key  Set mode
- *
- * \return  On success, true is returned. On fail, false is
+ * 
+ * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
@@ -451,11 +454,11 @@ bool rhis_insert(struct rhis* set, void* key) {
   return false;
 }
 
-/*************************
- * Place functions (set) *
- *************************/
+/*********************
+ * Replace functions *
+ *********************/
 
-#define RHIS_PLACE(_set, _hashval, _key, _ret, _def_ret) \
+#define RHIS_REPLACE(_set, _hashval, _key, _ret, _def_ret) \
   do { \
     if( ((_set)->mode&RHI_EXTEND) && set_extend_nodes(_set) ) { \
       rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
@@ -471,7 +474,22 @@ bool rhis_insert(struct rhis* set, void* key) {
     return _def_ret; \
   } while(0)
 
-bool rhis_place(struct rhis* set, void* key) {
+/**
+ * \brief   Replace key into set
+ * 
+ * Replacement failed because key was unique
+ *  - But the maximum set limit has been reached with set
+ *    mode, not in RHI_EXTEND.
+ *  - On rare condition, memory allocation may fail when set
+ *    is extended.
+ * 
+ * \param   set  Set for replacement
+ * \param   key  Set mode
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhis_replace(struct rhis* set, void* key) {
   /* handling of default `key` values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
@@ -486,7 +504,7 @@ bool rhis_place(struct rhis* set, void* key) {
         set->nodes[prob] = RHIS_NODE(hashval, key);
         return true;
       }
-      RHIS_PLACE(set, hashval, key, true, false);
+      RHIS_REPLACE(set, hashval, key, true, false);
     }
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
@@ -500,7 +518,7 @@ bool rhis_place(struct rhis* set, void* key) {
   return false;
 }
 
-void* rhis_kplace(struct rhis* set, void* key) {
+void* rhis_kreplace(struct rhis* set, void* key) {
   /* Handling of default `key` values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
@@ -515,7 +533,7 @@ void* rhis_kplace(struct rhis* set, void* key) {
         set->nodes[prob] = RHIS_NODE(hashval, key);
         return DEFVAL;
       }
-      RHIS_PLACE(set, hashval, key, DEFVAL, DEFVAL);
+      RHIS_REPLACE(set, hashval, key, DEFVAL, DEFVAL);
     }
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
@@ -711,11 +729,11 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
 }
 
 
-/*************************
- * Place functions (map) *
- *************************/
+/*********************
+ * Replace functions *
+ *********************/
 
-#define RHIM_PLACE(_map, _hashval, _key, _val, _ret, _def_ret) \
+#define RHIM_REPLACE(_map, _hashval, _key, _val, _ret, _def_ret) \
   do { \
     if( ((_map)->mode&RHI_EXTEND) && map_extend_nodes(_map) ) { \
       rhiuint _prob = HASHVAL_INDEX(_hashval, (_map)->size); \
@@ -731,7 +749,7 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
     return _def_ret; \
   } while(0)
 
-bool rhim_place(struct rhim* map, void* key, void* val) {
+bool rhim_replace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
     if( map->is_def_key ) {
       if( map->valfree!=NULL )
@@ -752,7 +770,7 @@ bool rhim_place(struct rhim* map, void* key, void* val) {
         map->nodes[prob] = RHIM_NODE(hashval, key, val);
         return true;
       }
-      RHIM_PLACE(map, hashval, key, val, true, false);
+      RHIM_REPLACE(map, hashval, key, val, true, false);
     }
     if( hashval==map->nodes[prob].hashval &&
         map->equal(key, map->nodes[prob].key) ) {
@@ -768,7 +786,7 @@ bool rhim_place(struct rhim* map, void* key, void* val) {
   return false;
 }
 
-void* rhim_vplace(struct rhim* map, void* key, void* val) {
+void* rhim_vreplace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
     if( map->is_def_key ) {
       void* obtained_val = map->def_val;
@@ -788,7 +806,7 @@ void* rhim_vplace(struct rhim* map, void* key, void* val) {
         map->nodes[prob] = RHIM_NODE(hashval, key, val);
         return DEFVAL;
       }
-      RHIM_PLACE(map, hashval, key, val, DEFVAL, DEFVAL);
+      RHIM_REPLACE(map, hashval, key, val, DEFVAL, DEFVAL);
     }
     if( hashval==map->nodes[prob].hashval &&
         map->equal(key, map->nodes[prob].key) ) {
@@ -803,7 +821,7 @@ void* rhim_vplace(struct rhim* map, void* key, void* val) {
   return DEFVAL;
 }
 
-struct rhipair rhim_kvplace(struct rhim* map, void* key, void* val) {
+struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
     if( map->is_def_key ) {
       struct rhipair pair = PAIR(DEFVAL, map->def_val);
@@ -823,7 +841,7 @@ struct rhipair rhim_kvplace(struct rhim* map, void* key, void* val) {
         map->nodes[prob] = RHIM_NODE(hashval, key, val);
         return DEFPAIR;
       }
-      RHIM_PLACE(map, hashval, key, val, DEFPAIR, DEFPAIR);
+      RHIM_REPLACE(map, hashval, key, val, DEFPAIR, DEFPAIR);
     }
     if( hashval==map->nodes[prob].hashval &&
         map->equal(key, map->nodes[prob].key) ) {

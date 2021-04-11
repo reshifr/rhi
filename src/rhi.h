@@ -1,9 +1,9 @@
 /**
  * Reshifr Hash Index
  * Copyright (c) 2019 Renol P. H. <reshifr@gmail.com>
- *
+ * 
  * MIT License
- *
+ * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without restriction,
@@ -11,10 +11,10 @@
  * publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -101,17 +101,17 @@ typedef uint32_t rhiuint;
 
 /**
  * \brief  Fixed mode
- *
+ * 
  * Set/map will not shrink and extend. If the number of
- * elements exceeds the minimum limit, set/map size will not
+ * elements exceeds the minimum limit, Set/map size will not
  * shrink, and if the number of elements exceeds the maximum
- * limit set/map size will not extend.
+ * limit, Set/map size will not extend.
  */
 #define RHI_FIXED 0x00
 
 /**
  * \brief  Shrink mode
- *
+ * 
  * Set/map will shrink. If the number of elements exceeds the
  * minimum limit, set/map size will shrink.
  */
@@ -119,7 +119,7 @@ typedef uint32_t rhiuint;
 
 /**
  * \brief  Extend mode
- *
+ * 
  * Set/map will extend. If the number of elements exceeds the
  * maximum limit, set/map size will extend.
  */
@@ -133,25 +133,25 @@ typedef uint32_t rhiuint;
 
 /**
  * \brief   Hash function
- *
- * Generates the hash value of the key, the operation of a
- * NULL key will not call this function.
- *
+ * 
+ * Generate the hash value of key, the operation of a NULL key
+ * will not call this function.
+ * 
  * \param   key  Key to calculate
- *
- * \return  The calculated hash value of the key.
+ * 
+ * \return  Hash value from key calculation.
  */
 typedef size_t (*rhihash)(const void* key);
 
 /**
- * \brief   Equaling keys
- *
+ * \brief   Equal comparator for keys
+ * 
  * Is the key equal or not? The operation of a NULL key will
  * not call this function.
- *
+ * 
  * \param   first_key   First key
  * \param   second_key  Second key
- *
+ * 
  * \return  Equal, true is returned. Not equal false is
  *          returned.
  */
@@ -159,21 +159,21 @@ typedef bool (*rhiequal)(const void* first_key, const void* second_key);
 
 /**
  * \brief  Key destroyer
- *
- * Destroy the key when the delete function or destructor
- * function is called. The operation of a NULL key will not
- * call this function.
- *
+ * 
+ * Destroy key when the delete function or destructor function
+ * is called. The operation of a NULL key will not call this
+ * function.
+ * 
  * \param  key  Key to destroy
  */
 typedef void (*rhikeyfree)(void* key);
 
 /**
  * \brief  Value destroyer
- *
- * Destroy the value when the delete function or destructor
+ * 
+ * Destroy value when the delete function or destructor
  * function is called.
- *
+ * 
  * \param  key  Value to destroy
  */
 typedef void (*rhivalfree)(void* val);
@@ -197,8 +197,8 @@ struct rhifunc {
   rhiequal equal;
 
   /**
-   * \note  If these functions are not required, set the fields
-   *        as NULL.
+   * \note  If you don't want these functions to be used, set
+   *        the field as NULL.
    */
   rhikeyfree keyfree;
   rhivalfree valfree;
@@ -206,9 +206,6 @@ struct rhifunc {
 
 /* Mutable key-value pair */
 struct rhipair {
-  /**
-   * \note  The object pointed by these fields can be modified.
-   */
   void* key;
   void* val;
 };
@@ -220,10 +217,6 @@ struct rhiconstpair {
    *        modified.
    */
   const void* key;
-
-  /**
-   * \note  The object pointed by this field can be modified.
-   */
   void* val;
 };
 
@@ -235,31 +228,31 @@ struct rhiconstpair {
 
 /**
  * \brief   Initial set
- *
+ * 
  * Set will be initialized to the default size.
- *
+ * 
  * \param   func  Collection of overridable functions
  * \param   mode  Set mode
- *
- * \return  On success, the pointer of the set is returned. On
- *          fail, NULL is returned.
+ * 
+ * \return  On success, the pointer of set is returned. On
+ *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
 
 /**
  * \brief   Reserve set
- *
+ * 
  * Set will be initialized to the specified size, the size to
  * be set >= the specified size. the maximum set size for
  * prime method is 1546188225, and the default method is
  * 1546188226.
- *
+ * 
  * \param   func  Collection of overridable functions
  * \param   size  Specific size reserved
  * \param   mode  Set mode
- *
- * \return  On success, the pointer of the set is returned. On
- *          fail, NULL is returned.
+ * 
+ * \return  On success, the pointer of set is returned. On
+ *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode);
 
@@ -268,29 +261,47 @@ RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int 
  ********************/
 
 /**
- * \brief   Insert key into the set
- *
- * The insertion failed because the key existed previously or
- * in a condition where the set cannot extend because of a
- * memory allocation failure.
- *
+ * \brief   Insert key into set
+ * 
+ * Insertion failed because
+ *  - Key was in set before.
+ *  - Maximum set limit has been reached with set mode, not in
+ *    RHI_EXTEND.
+ *  - On rare condition, memory allocation may fail when set
+ *    is extended.
+ * 
  * \param   set  Set for insertion
  * \param   key  Set mode
- *
- * \return  On success, true is returned. On fail, false is
+ * 
+ * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
+/*********************
+ * Replace functions *
+ *********************/
+
+/**
+ * \brief   Replace key into set
+ * 
+ * Replacement failed because key was unique
+ *  - But the maximum set limit has been reached with set
+ *    mode, not in RHI_EXTEND.
+ *  - On rare condition, memory allocation may fail when set
+ *    is extended.
+ * 
+ * \param   set  Set for replacement
+ * \param   key  Set mode
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhis_replace(struct rhis* set, void* key);
+RHI_API void* rhis_kreplace(struct rhis* set, void* key);
+
 // --------------------------------------------------------------------
 // -----------------------------------------------------------
-
-/*************************
- * Place functions (set) *
- *************************/
-
-RHI_API bool rhis_place(struct rhis* set, void* key);
-RHI_API void* rhis_kplace(struct rhis* set, void* key);
 
 /**************************
  * Search functions (set) *
@@ -346,13 +357,13 @@ RHI_API struct rhim* rhim_reserve(const struct rhifunc* func, rhiuint size, int 
 RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 
 
-/*************************
- * Place functions (map) *
- *************************/
+/*********************
+ * Replace functions *
+ *********************/
 
-RHI_API bool rhim_place(struct rhim* map, void* key, void* val);
-RHI_API void* rhim_vplace(struct rhim* map, void* key, void* val);
-RHI_API struct rhipair rhim_kvplace(struct rhim* map, void* key, void* val);
+RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
+RHI_API void* rhim_vreplace(struct rhim* map, void* key, void* val);
+RHI_API struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val);
 
 
 /**************************
