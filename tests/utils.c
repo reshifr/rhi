@@ -30,7 +30,8 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
         off_char = rand()&1 ? 'a' : 'A';
       buf[m] = (char)(rand()%MAX_COMB+off_char);
     }
-    objs->objs[i] = malloc(sizeof(char)*(size_t)(max+OVERHEAD_LEN));
+    HANDLE((objs->objs[i]=malloc(
+      sizeof(char)*(size_t)(max+OVERHEAD_LEN)))==NULL, "Buf bad alloc.");
     memcpy(objs->objs[i], buf, sizeof(char)*(size_t)(max+OVERHEAD_LEN));
   }
   return objs;
@@ -46,7 +47,8 @@ struct objs* objs_dup(const struct objs* objs) {
   newobjs->count = objs->count;
   for(rhiuint i=0; i<objs->count; ++i) {
     int len = (size_t)strlen(objs->objs[i]);
-    newobjs->objs[i] = malloc(sizeof(char)*(size_t)(len+OVERHEAD_LEN));
+    HANDLE((newobjs->objs[i]=malloc(
+      sizeof(char)*(size_t)(len+OVERHEAD_LEN)))==NULL, "Buf bad alloc.");
     memcpy(newobjs->objs[i], objs->objs[i],
       sizeof(char)*(size_t)(len+OVERHEAD_LEN));
   }
