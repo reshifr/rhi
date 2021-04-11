@@ -678,7 +678,7 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
  * Initial functions (map) *
  ***************************/
 
-#define RHIM_INIT(_func, _mode, _index) \
+#define RHIM_INIT(_hash, _equal, _keyfree, _valfree, _mode, _index) \
   do { \
     struct rhim* _map; \
     if( (_map=(struct rhim*)calloc(1, sizeof(struct rhim)))==NULL ) \
@@ -692,20 +692,22 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
     _map->mode = (uint8_t)(_mode); \
     _map->begin_index = (uint8_t)(_index); \
     SET_BOUND(_map, _index, _initsize); \
-    _map->hash = (_func)->hash; \
-    _map->equal = (_func)->equal; \
-    _map->keyfree = (_func)->keyfree; \
-    _map->valfree = (_func)->valfree; \
+    _map->hash = _hash; \
+    _map->equal = _equal; \
+    _map->keyfree = _keyfree; \
+    _map->valfree = _valfree; \
     return _map; \
   } while(0)
 
-struct rhim* rhim_init(const struct rhifunc* func, int mode) {
-  RHIM_INIT(func, mode, BEGIN_INDEX);
+struct rhim* rhim_init(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode) {
+  RHIM_INIT(hash, equal, keyfree, valfree, mode, BEGIN_INDEX);
 }
 
-struct rhim* rhim_reserve(const struct rhifunc* func, rhiuint size, int mode) {
+struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
+  rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode) {
   int index = get_index(size);
-  RHIM_INIT(func, mode, index);
+  RHIM_INIT(hash, equal, keyfree, valfree, mode, index);
 }
 
 

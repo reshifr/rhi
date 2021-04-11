@@ -334,8 +334,11 @@ RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
  * Initial functions (map) *
  ***************************/
 
-RHI_API struct rhim* rhim_init(const struct rhifunc* func, int mode);
-RHI_API struct rhim* rhim_reserve(const struct rhifunc* func, rhiuint size, int mode);
+RHI_API struct rhim* rhim_init(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode);
+  
+RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
+  rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode);
 
 
 
