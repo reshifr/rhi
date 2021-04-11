@@ -35,7 +35,8 @@ OBJS = \
 	$(BUILD_DIR)/utils.o \
 	$(BUILD_DIR)/set_init.o \
 	$(BUILD_DIR)/set_reserve.o \
-	$(BUILD_DIR)/set_insert.o
+	$(BUILD_DIR)/set_insert.o \
+	$(BUILD_DIR)/set_replace.o
 
 .PHONY: all clean
 .NOTPARALLEL: $(TARGET)
@@ -73,6 +74,9 @@ $(BUILD_DIR)/set_reserve.o: $(TEST_DIR)/set/reserve.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)/set_insert.o: $(TEST_DIR)/set/insert.c $(HEADERS)
+	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)/set_replace.o: $(TEST_DIR)/set/replace.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
