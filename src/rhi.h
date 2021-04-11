@@ -134,8 +134,8 @@ typedef uint32_t rhiuint;
 /**
  * \brief   Hash function
  * 
- * Generate the hash value of key, the operation of a NULL key
- * will not call this function.
+ * Generate the hash value of key, the operation of a `NULL`
+ * key will not call this function.
  * 
  * \param   key  Key to calculate
  * 
@@ -146,13 +146,13 @@ typedef size_t (*rhihash)(const void* key);
 /**
  * \brief   Equal comparator for keys
  * 
- * Is the key equal or not? The operation of a NULL key will
- * not call this function.
+ * Is key equal or not? The operation of a `NULL` key will not
+ * call this function.
  * 
  * \param   first_key   First key
  * \param   second_key  Second key
  * 
- * \return  Equal, true is returned. Not equal false is
+ * \return  Equal, `true` is returned. Not equal `false` is
  *          returned.
  */
 typedef bool (*rhiequal)(const void* first_key, const void* second_key);
@@ -161,7 +161,7 @@ typedef bool (*rhiequal)(const void* first_key, const void* second_key);
  * \brief  Key destroyer
  * 
  * Destroy key when the delete function or destructor function
- * is called. The operation of a NULL key will not call this
+ * is called. The operation of a `NULL` key will not call this
  * function.
  * 
  * \param  key  Key to destroy
@@ -198,7 +198,7 @@ struct rhifunc {
 
   /**
    * \note  If you don't want these functions to be used, set
-   *        the field as NULL.
+   *        the field as `NULL`.
    */
   rhikeyfree keyfree;
   rhivalfree valfree;
@@ -235,7 +235,7 @@ struct rhiconstpair {
  * \param   mode  Set mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, NULL is returned.
+ *          failure, `NULL` is returned.
  */
 RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
 
@@ -252,7 +252,7 @@ RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
  * \param   mode  Set mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, NULL is returned.
+ *          failure, `NULL` is returned.
  */
 RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode);
 
@@ -273,8 +273,8 @@ RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int 
  * \param   set  Set for insertion
  * \param   key  Set mode
  * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
+ * \return  On success, `true` is returned. On failure,
+ *          `false` is returned.
  */
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
@@ -285,17 +285,20 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
 /**
  * \brief   Replace key into set
  * 
+ * When key will be replaced
+ *  - If `keyfree` is set, key will be destroyed.
+ * 
  * Replacement failed because key was unique
  *  - But the maximum set limit has been reached with set
- *    mode, not in RHI_EXTEND.
+ *    mode, not in `RHI_EXTEND`.
  *  - On rare condition, memory allocation may fail when set
  *    is extended.
  * 
  * \param   set  Set for replacement
  * \param   key  Set mode
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
+ * -----------------------------------------------------------
+ * \return  On success, `true` is returned. On failure,
+ *          `false` is returned.
  */
 RHI_API bool rhis_replace(struct rhis* set, void* key);
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
@@ -308,7 +311,7 @@ RHI_API void* rhis_kreplace(struct rhis* set, void* key);
  **************************/
 
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
-RHI_API void* rhis_ksearch(const struct rhis* set, const void* key);
+RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
 
 /**************************
  * Delete functions (set) *

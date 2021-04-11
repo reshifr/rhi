@@ -196,7 +196,7 @@ static inline int msb_index(rhiuint n) {
 }
 
 /**
- * Obtain the appropriate index for the specified size.
+ * Obtain the appropriate `index` for the specified size.
  */
 static inline int get_index(rhiuint size) {
   int index = msb_index((rhiuint)((double)size/MAX_LOAD))-
@@ -379,7 +379,7 @@ static inline int get_index(rhiuint size) {
  * \param   mode  Set mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, NULL is returned.
+ *          failure, `NULL` is returned.
  */
 struct rhis* rhis_init(const struct rhifunc* func, int mode) {
   RHIS_INIT(func, mode, BEGIN_INDEX);
@@ -398,7 +398,7 @@ struct rhis* rhis_init(const struct rhifunc* func, int mode) {
  * \param   mode  Set mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, NULL is returned.
+ *          failure, `NULL` is returned.
  */
 struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode) {
   int index = get_index(size);
@@ -414,9 +414,9 @@ DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 /**
  * \brief   Insert key into set
  * 
- * The insertion failed because
+ * Insertion failed because
  *  - Key was in set before.
- *  - Maximum set limit has been reached but set mode is in
+ *  - Maximum set limit has been reached with set mode, not in
  *    RHI_EXTEND.
  *  - On rare condition, memory allocation may fail when set
  *    is extended.
@@ -424,8 +424,8 @@ DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
  * \param   set  Set for insertion
  * \param   key  Set mode
  * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
+ * \return  On success, `true` is returned. On failure,
+ *          `false` is returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
   /* handling of default key values */
@@ -477,17 +477,20 @@ bool rhis_insert(struct rhis* set, void* key) {
 /**
  * \brief   Replace key into set
  * 
+ * When key will be replaced
+ *  - If `keyfree` is set, key will be destroyed.
+ * 
  * Replacement failed because key was unique
  *  - But the maximum set limit has been reached with set
- *    mode, not in RHI_EXTEND.
+ *    mode, not in `RHI_EXTEND`.
  *  - On rare condition, memory allocation may fail when set
  *    is extended.
  * 
  * \param   set  Set for replacement
  * \param   key  Set mode
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
+ * -----------------------------------------------------------
+ * \return  On success, `true` is returned. On failure,
+ *          `false` is returned.
  */
 bool rhis_replace(struct rhis* set, void* key) {
   /* handling of default `key` values */
@@ -574,10 +577,9 @@ bool rhis_search(const struct rhis* set, const void* key) {
   RHIS_SEARCH(set, key, set->is_def_key, false, true, false);
 }
 
-void* rhis_ksearch(const struct rhis* set, const void* key) {
+const void* rhis_ksearch(const struct rhis* set, const void* key) {
   RHIS_SEARCH(set, key, DEFVAL, DEFVAL, set->nodes[_prob].key, DEFVAL);
 }
-
 
 /**************************
  * Delete functions (set) *
