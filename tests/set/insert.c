@@ -41,11 +41,11 @@
     } \
     print(set); \
  \
-    /* [1] insert NULL */ \
+    /* [1] insert `NULL` */ \
     r = rhis_insert(set, NULL); \
     ASSERT(r, "[1] Insert %s success.", "NULL"); \
     ASSERT(!r, "[1] Insert %s failed.", "NULL"); \
-    /* [2] insert NULL 2*/ \
+    /* [2] insert `NULL` */ \
     r = rhis_insert(set, NULL); \
     ASSERT(r, "[2] Insert %s success.", "NULL"); \
     ASSERT(!r, "[2] Insert %s failed.", "NULL"); \
@@ -76,7 +76,7 @@
     HANDLE((keys=objs_init(PERF_MIN_OBJLEN, PERF_MAX_OBJLEN, \
       PERF_NUM_KEYS, PERF_OBJCASE))==NULL, "Keys init failed."); \
  \
-    /* initial keys */ \
+    /* insert keys */ \
     start = get_clock(); \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_insert(set, keys->objs[i]); \
@@ -96,17 +96,17 @@ void set_insert(void) {
   TEST(CONS_TESTS(INIT, &func, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
   TEST(CONS_TESTS(RESERVE, &func, RHI_FIXED, set_print), 0);
-  TEST(CONS_TESTS(RESERVE,&func, RHI_SHRINK, set_print), 0);
-  TEST(CONS_TESTS(RESERVE,&func, RHI_EXTEND, set_print), 0);
-  TEST(CONS_TESTS(RESERVE,&func, RHI_SHRINK|RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, &func, RHI_SHRINK, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, &func, RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, &func, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
   TEST(PERF_TESTS(INIT, &func, RHI_FIXED, set_mprint), 0);
   TEST(PERF_TESTS(INIT, &func, RHI_SHRINK, set_mprint), 0);
   TEST(PERF_TESTS(INIT, &func, RHI_EXTEND, set_mprint), 0);
   TEST(PERF_TESTS(INIT, &func, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(PERF_TESTS(RESERVE,&func, RHI_FIXED, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE,&func, RHI_SHRINK, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE,&func, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE,&func, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, &func, RHI_FIXED, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, &func, RHI_SHRINK, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, &func, RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, &func, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 }
