@@ -46,13 +46,13 @@ struct objs* objs_dup(const struct objs* objs) {
     sizeof(void*)*objs->count))==NULL, "Objs bad alloc.");
   newobjs->count = objs->count;
   for(rhiuint i=0; i<objs->count; ++i) {
-    int len = (size_t)strlen(objs->objs[i]);
+    int len = (int)strlen(objs->objs[i]);
     HANDLE((newobjs->objs[i]=malloc(
       sizeof(char)*(size_t)(len+OVERHEAD_LEN)))==NULL, "Buf bad alloc.");
     memcpy(newobjs->objs[i], objs->objs[i],
       sizeof(char)*(size_t)(len+OVERHEAD_LEN));
   }
-  return objs;
+  return newobjs;
 }
 
 /**
