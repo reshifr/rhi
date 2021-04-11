@@ -20,11 +20,11 @@
     } \
  \
     /* [1] initial list of keys */ \
-    HANDLE((keys[0]=objs_init(CONS_MIN_OBJLEN, CONS_MAX_OBJLEN, \
-      CONS_NUM_KEYS, CONS_OBJCASE))==NULL, "[1] Keys init failed."); \
+    keys[0] = objs_init(CONS_MIN_OBJLEN, \
+      CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
     /* [2] initial list of keys */ \
-    HANDLE((keys[1]=objs_init(CONS_MIN_OBJLEN, CONS_MAX_OBJLEN, \
-      CONS_NUM_KEYS, CONS_OBJCASE))==NULL, "[2] Keys init failed."); \
+    keys[1] = objs_init(CONS_MIN_OBJLEN, \
+      CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
     /* [1] insert keys */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
@@ -73,8 +73,8 @@
     } \
  \
     /* initial list of keys */ \
-    HANDLE((keys=objs_init(PERF_MIN_OBJLEN, PERF_MAX_OBJLEN, \
-      PERF_NUM_KEYS, PERF_OBJCASE))==NULL, "Keys init failed."); \
+    keys = objs_init(PERF_MIN_OBJLEN, \
+      PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
  \
     /* insert keys */ \
     start = get_clock(); \
