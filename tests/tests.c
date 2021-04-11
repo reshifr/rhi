@@ -25,7 +25,8 @@ int main(void) {
 
   TEST(set_init(), 0);
   TEST(set_reserve(), 0);
-  TEST(set_insert(), 0);
+  TEST(set_insert(), 1);
+  TEST(set_replace(), 1);
 
   return EXIT_SUCCESS;
 }

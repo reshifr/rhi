@@ -20,8 +20,8 @@ extern "C" {
 #define BUFSIZE 0xFFFF
 
 /* Consistency tests macros */
-#define CONS_MIN_OBJLEN 3
-#define CONS_MAX_OBJLEN 5
+#define CONS_MIN_OBJLEN 1
+#define CONS_MAX_OBJLEN 1
 #define CONS_OBJCASE UPPER
 #define CONS_RESERVE_SIZE 10
 #define CONS_NUM_KEYS 14
@@ -73,6 +73,11 @@ struct objs {
  * length = `max` count = `count`, with case = `mode`.
  */
 struct objs* objs_init(int min, int max, rhiuint count, int mode);
+
+/**
+ * Make an `objs` duplication.
+ */
+struct objs* objs_dup(const struct objs* objs);
 
 /**
  * Free memory only for `objs`.
@@ -142,6 +147,7 @@ bool equal(const void* first_obj, const void* second_obj);
 void set_init(void);
 void set_reserve(void);
 void set_insert(void);
+void set_replace(void);
 
 #ifdef __cplusplus
 }
