@@ -36,9 +36,9 @@
 extern "C" {
 #endif
 
-/**************************
- * Macros for Windows DLL *
- **************************/
+/*****************************
+ * Windows import and export *
+ *****************************/
 
 #if (defined _WIN32 || defined _WIN64) && \
     (defined RHI_EXPORT || defined RHI_IMPORT)
@@ -54,33 +54,39 @@ extern "C" {
 #ifndef _RHI_MACRO_DEFINED
 #define _RHI_MACRO_DEFINED
 
-/***********
- * Integer *
- ***********/
+/**************
+ * Data types *
+ **************/
 
 typedef int32_t rhiint;
 typedef uint32_t rhiuint;
 
-/**********************
- * Macros for integer *
- **********************/
-
-/* Suffixes */
+/**
+ * Suffixes.
+ */
 #define RHIINT_C INT32_C
 #define RHIUINT_C UINT32_C
 
-/* Maximum width */
+/**
+ * Maximum width.
+ */
 #define RHIINT_WIDTH INT32_WIDTH
 #define RHIUINT_WIDTH UINT32_WIDTH
 
-/* Minimum value */
+/**
+ * Minimum value.
+ */
 #define RHIINT_MIN UINT32_MIN
 
-/* Maximum value */
+/**
+ * Maximum value.
+ */
 #define RHIINT_MAX INT32_MAX
 #define RHIUINT_MAX UINT32_MAX
 
-/* Printing format specifiers */
+/**
+ * Printing format specifiers.
+ */
 #define PRIrhid PRId32
 #define PRIrhii PRIi32
 #define PRIrhio PRIo32
@@ -88,7 +94,9 @@ typedef uint32_t rhiuint;
 #define PRIrhix PRIx32
 #define PRIrhiX PRIX32
 
-/* Scanning format specifiers */
+/**
+ * Scanning format specifiers.
+ */
 #define SCNrhid SCNd32
 #define SCNrhii SCNi32
 #define SCNrhio SCNo32
@@ -102,26 +110,21 @@ typedef uint32_t rhiuint;
 /**
  * \brief  Fixed mode
  * 
- * Set/map will not shrink and extend. If the number of
- * elements exceeds the minimum limit, Set/map size will not
- * shrink, and if the number of elements exceeds the maximum
- * limit, Set/map size will not extend.
+ * The dictionary cannot shrink or extend.
  */
 #define RHI_FIXED 0x00
 
 /**
  * \brief  Shrink mode
  * 
- * Set/map will shrink. If the number of elements exceeds the
- * minimum limit, set/map size will shrink.
+ * The dictionary can shrink.
  */
 #define RHI_SHRINK 0x01
 
 /**
  * \brief  Extend mode
  * 
- * Set/map will extend. If the number of elements exceeds the
- * maximum limit, set/map size will extend.
+ * The dictionary can extend.
  */
 #define RHI_EXTEND 0x02
 
@@ -134,86 +137,76 @@ typedef uint32_t rhiuint;
 /**
  * \brief   Hash function
  * 
- * Generate the hash value of key, the operation of a `NULL`
- * key will not call this function.
+ * Get the hash value of the key. If the key is NULL then this
+ * function will not be called.
  * 
- * \param   key  Key to calculate
+ * \param   key  Key
  * 
- * \return  Hash value from key calculation.
+ * \return  Hash value.
  */
 typedef size_t (*rhihash)(const void* key);
 
 /**
- * \brief   Equal comparator for keys
+ * \brief   Equal function
  * 
- * Is key equal or not? The operation of a `NULL` key will not
- * call this function.
+ * Compare two keys, equal or not. If the key is NULL then
+ * this function will not be called.
  * 
  * \param   first_key   First key
  * \param   second_key  Second key
  * 
- * \return  Equal, `true` is returned. Not equal `false` is
+ * \return  Equal, true is returned. Not equal false is
  *          returned.
  */
 typedef bool (*rhiequal)(const void* first_key, const void* second_key);
 
 /**
- * \brief  Key destroyer
+ * \brief  Key destroyer function
  * 
- * Destroy key when the delete function or destructor function
- * is called. The operation of a `NULL` key will not call this
- * function.
+ * Destroy keys when replace, delete, destructor is called. If
+ * the key is NULL then this function will not be called.
  * 
- * \param  key  Key to destroy
+ * \param  key  Key
  */
 typedef void (*rhikeyfree)(void* key);
 
 /**
- * \brief  Value destroyer
+ * \brief  Value destroyer function
  * 
- * Destroy value when the delete function or destructor
- * function is called.
+ * Destroy values when replace, delete, destructor is called.
  * 
- * \param  key  Value to destroy
+ * \param  val  Value
  */
 typedef void (*rhivalfree)(void* val);
 
-/**************
- * Structures *
- **************/
+/*******************
+ * Data structures *
+ *******************/
 
-/* Set */
+/**
+ * Set.
+ */
 struct rhis;
 
-/* Map */
+/**
+ * Map.
+ */
 struct rhim;
 
-/* Function container */
-struct rhifunc {
-  /**
-   * \note  Required fields.
-   */
-  rhihash hash;
-  rhiequal equal;
-
-  /**
-   * \note  If you don't want these functions to be used, set
-   *        the field as `NULL`.
-   */
-  rhikeyfree keyfree;
-  rhivalfree valfree;
-};
-
-/* Mutable key-value pair */
+/**
+ * Mutable pair.
+ */
 struct rhipair {
   void* key;
   void* val;
 };
 
-/* Immutable key-value pair */
+/**
+ * Immutable pair.
+ */
 struct rhiconstpair {
   /**
-   * \note  The object pointed by this field can not be
+   * \note  The object pointed by the key field should not be
    *        modified.
    */
   const void* key;
@@ -222,83 +215,76 @@ struct rhiconstpair {
 
 /* ===== Set ===== */
 
-/*********************
- * Initial functions *
- *********************/
+/************************
+ * Initialize functions *
+ ************************/
 
 /**
- * \brief   Initial set
+ * \brief   Initialize dictionary
  * 
- * Set will be initialized to the default size.
+ * The dictionary will be initialized to the default size.
  * 
- * \param   func  Collection of overridable functions
- * \param   mode  Set mode
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   mode     Mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, `NULL` is returned.
+ *          failure, NULL is returned.
  */
-RHI_API struct rhis* rhis_init(const struct rhifunc* func, int mode);
+RHI_API struct rhis* rhis_init(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, int mode);
 
 /**
- * \brief   Reserve set
+ * \brief   Reserve dictionary
  * 
- * Set will be initialized to the specified size, the size to
- * be set >= the specified size. the maximum set size for
- * prime method is 1546188225, and the default method is
- * 1546188226.
+ * The dictionary will be initialized to the specified size,
+ * the size to be set >= the specified size. The maximum
+ * dictionary size for RHI_PRIME_METHOD enabled is 1546188225,
+ * and the default is 1546188226.
  * 
- * \param   func  Collection of overridable functions
- * \param   size  Specific size reserved
- * \param   mode  Set mode
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   size     Reserved size
+ * \param   mode     Mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, `NULL` is returned.
+ *          failure, NULL is returned.
  */
-RHI_API struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode);
+RHI_API struct rhis* rhis_reserve(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, rhiuint size, int mode);
 
-/********************
- * Insert functions *
- ********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
 /**
- * \brief   Insert key into set
+ * \brief   Insert the key into the dictionary
  * 
  * Insertion failed because
- *  - Key was in set before.
- *  - Maximum set limit has been reached with set mode, not in
- *    RHI_EXTEND.
- *  - On rare condition, memory allocation may fail when set
- *    is extended.
+ *  - The key has been inserted.
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
  * 
- * \param   set  Set for insertion
- * \param   key  Set mode
+ * \param   set  Dictionary
+ * \param   key  Key
  * 
- * \return  On success, `true` is returned. On failure,
- *          `false` is returned.
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
  */
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
-/*********************
- * Replace functions *
- *********************/
+/*************************
+ * Replacement functions *
+ *************************/
 
 /**
  * \brief   Replace key into set
- * 
- * When key will be replaced
- *  - If `keyfree` is set, key will be destroyed.
- * 
- * Replacement failed because key was unique
- *  - But the maximum set limit has been reached with set
- *    mode, not in `RHI_EXTEND`.
- *  - On rare condition, memory allocation may fail when set
- *    is extended.
- * 
- * \param   set  Set for replacement
- * \param   key  Set mode
- * 
- * \return  On success, `true` is returned. On failure,
- *          `false` is returned.
  */
 RHI_API bool rhis_replace(struct rhis* set, void* key);
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);

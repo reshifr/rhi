@@ -149,10 +149,14 @@ struct rhim {
  * Generic macros *
  ******************/
 
-/* Default values for key and value */
+/**
+ * Default values for keys and values.
+ */
 #define DEFVAL NULL
 
-/* Value handler of `iter` for `def_val` */
+/** 
+ * Iter index handler for NULL keys.
+ */
 #define DEFITER RHIUINT_MAX
 
 #define MIN_LOAD 0.18
@@ -167,7 +171,7 @@ struct rhim {
 #define COUNT(_obj) ((obj)->is_def_key ? (obj)->occupied+1 : (obj)->occupied)
 
 /**
- * Set size constraints for set/map.
+ * Set the index, min, max, and size fields.
  */
 #define SET_BOUND(_obj, _index, _size) \
   do { \
@@ -196,7 +200,7 @@ static inline int msb_index(rhiuint n) {
 }
 
 /**
- * Obtain the appropriate `index` for the specified size.
+ * Obtain the appropriate index for the given size.
  */
 static inline int get_index(rhiuint size) {
   int index = msb_index((rhiuint)((double)size/MAX_LOAD))-
@@ -209,7 +213,7 @@ static inline int get_index(rhiuint size) {
 }
 
 /**
- * Move current elements to the new `nodes`
+ * Move the current elements to the new array of nodes.
  */
 #define MOVE_NODES(_obj, _newsize, _newnodes) \
   do { \
@@ -230,7 +234,7 @@ static inline int get_index(rhiuint size) {
   } while(0)
 
 /**
- * Extend `nodes` size when `size` > `max`
+ * Extend the current array of nodes when size > max.
  */
 #define DECL_EXTEND_NODES(_func_name, _obj_type, _node_type) \
   static bool _func_name(_obj_type* obj) { \
@@ -247,7 +251,7 @@ static inline int get_index(rhiuint size) {
   }
 
 /**
- * Shrink `nodes` size when `size` < `min`
+ * Shrink the current array of nodes when size < min.
  */
 #define SHRINK_NODES(_obj, _node_type) \
   do { \
@@ -346,11 +350,11 @@ static inline int get_index(rhiuint size) {
 
 /* ===== Set ===== */
 
-/*********************
- * Initial functions *
- *********************/
+/************************
+ * Initialize functions *
+ ************************/
 
-#define RHIS_INIT(_func, _mode, _index) \
+#define RHIS_INIT(_hash, _equal, _keyfree, _mode, _index) \
   do { \
     struct rhis* _set; \
     if( (_set=(struct rhis*)calloc(1, sizeof(struct rhis)))==NULL ) \
@@ -364,68 +368,76 @@ static inline int get_index(rhiuint size) {
     _set->mode = (uint8_t)(_mode); \
     _set->begin_index = (uint8_t)(_index); \
     SET_BOUND(_set, _index, _initsize); \
-    _set->hash = (_func)->hash; \
-    _set->equal = (_func)->equal; \
-    _set->keyfree = (_func)->keyfree; \
+    _set->hash = _hash; \
+    _set->equal = _equal; \
+    _set->keyfree = _keyfree; \
     return _set; \
   } while(0)
 
 /**
- * \brief   Initial set
+ * \brief   Initialize dictionary
  * 
- * Set will be initialized to the default size.
+ * The dictionary will be initialized to the default size.
  * 
- * \param   func  Collection of overridable functions
- * \param   mode  Set mode
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   mode     Mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, `NULL` is returned.
+ *          failure, NULL is returned.
  */
-struct rhis* rhis_init(const struct rhifunc* func, int mode) {
-  RHIS_INIT(func, mode, BEGIN_INDEX);
+RHI_API struct rhis* rhis_init(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, int mode) {
+  RHIS_INIT(hash, equal, keyfree, mode, BEGIN_INDEX);
 }
 
 /**
- * \brief   Reserve set
+ * \brief   Reserve dictionary
  * 
- * Set will be initialized to the specified size, the size to
- * be set >= the specified size. the maximum set size for
- * prime method is 1546188225, and the default method is
- * 1546188226.
+ * The dictionary will be initialized to the specified size,
+ * the size to be set >= the specified size. The maximum
+ * dictionary size for RHI_PRIME_METHOD enabled is 1546188225,
+ * and the default is 1546188226.
  * 
- * \param   func  Collection of overridable functions
- * \param   size  Specific size reserved
- * \param   mode  Set mode
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   size     Reserved size
+ * \param   mode     Mode
  * 
  * \return  On success, the pointer of set is returned. On
- *          failure, `NULL` is returned.
+ *          failure, NULL is returned.
  */
-struct rhis* rhis_reserve(const struct rhifunc* func, rhiuint size, int mode) {
+struct rhis* rhis_reserve(rhihash hash,
+  rhiequal equal, rhikeyfree keyfree, rhiuint size, int mode) {
   int index = get_index(size);
-  RHIS_INIT(func, mode, index);
+  RHIS_INIT(hash, equal, keyfree, mode, BEGIN_INDEX);
 }
 
-/********************
- * Insert functions *
- ********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
 DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 
 /**
- * \brief   Insert key into set
+ * \brief   Insert the key into the dictionary
  * 
  * Insertion failed because
- *  - Key was in set before.
- *  - Maximum set limit has been reached with set mode, not in
- *    RHI_EXTEND.
- *  - On rare condition, memory allocation may fail when set
- *    is extended.
+ *  - The key has been inserted.
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
  * 
- * \param   set  Set for insertion
- * \param   key  Set mode
+ * \param   set  Dictionary
+ * \param   key  Key
  * 
- * \return  On success, `true` is returned. On failure,
- *          `false` is returned.
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
   /* handling of default key values */
@@ -454,9 +466,9 @@ bool rhis_insert(struct rhis* set, void* key) {
   return false;
 }
 
-/*********************
- * Replace functions *
- *********************/
+/*************************
+ * Replacement functions *
+ *************************/
 
 #define RHIS_REPLACE(_set, _hashval, _key, _ret, _def_ret) \
   do { \
