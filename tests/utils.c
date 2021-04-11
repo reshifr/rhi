@@ -37,6 +37,23 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
 }
 
 /**
+ * Make an `objs` duplication.
+ */
+struct objs* objs_dup(const struct objs* objs) {
+  struct objs* newobjs;
+  HANDLE((newobjs=malloc(sizeof(struct objs)+
+    sizeof(void*)*objs->count))==NULL, "Objs bad alloc.");
+  newobjs->count = objs->count;
+  for(rhiuint i=0; i<objs->count; ++i) {
+    int len = (size_t)strlen(objs->objs[i]);
+    newobjs->objs[i] = malloc(sizeof(char)*(size_t)(len+OVERHEAD_LEN));
+    memcpy(newobjs->objs[i], objs->objs[i],
+      sizeof(char)*(size_t)(len+OVERHEAD_LEN));
+  }
+  return objs;
+}
+
+/**
  * Free memory only for `objs`.
  */
 void objs_free(struct objs* objs) {
