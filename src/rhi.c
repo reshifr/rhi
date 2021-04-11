@@ -488,12 +488,12 @@ bool rhis_insert(struct rhis* set, void* key) {
  * 
  * \param   set  Set for replacement
  * \param   key  Set mode
- * -----------------------------------------------------------
+ * 
  * \return  On success, `true` is returned. On failure,
  *          `false` is returned.
  */
 bool rhis_replace(struct rhis* set, void* key) {
-  /* handling of default `key` values */
+  /* handling of default key values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return true;
@@ -522,7 +522,7 @@ bool rhis_replace(struct rhis* set, void* key) {
 }
 
 void* rhis_kreplace(struct rhis* set, void* key) {
-  /* Handling of default `key` values */
+  /* handling of default key values */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return DEFVAL;
@@ -557,7 +557,7 @@ void* rhis_kreplace(struct rhis* set, void* key) {
 #define RHIS_SEARCH(_set, _key, \
   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
   do { \
-    /* Handling of default `key` values */ \
+    /* handling of default key values */ \
     if( (_key)==DEFVAL ) \
       return _def_key_ret; \
     size_t _hashval = (_set)->hash(_key); \
@@ -586,7 +586,7 @@ const void* rhis_ksearch(const struct rhis* set, const void* key) {
  **************************/
 
 bool rhis_delete(struct rhis* set, void* key) {
-  /* Handling of default `key` values */
+  /* handling of default key values */
   if( key==DEFVAL ) {
     if( set->is_def_key ) {
       set->is_def_key = false;

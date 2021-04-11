@@ -296,7 +296,7 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  * 
  * \param   set  Set for replacement
  * \param   key  Set mode
- * -----------------------------------------------------------
+ * 
  * \return  On success, `true` is returned. On failure,
  *          `false` is returned.
  */
