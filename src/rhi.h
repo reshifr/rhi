@@ -300,14 +300,29 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  *          returned.
  */
 RHI_API bool rhis_replace(struct rhis* set, void* key);
+
+/**
+ * \brief   Replace the key into the dictionary
+ * 
+ * The old key is replaced by the given key.
+ * 
+ * Replacement failed due to:
+ *  - Unique key insertion when the mode is not set with
+ *    RHI_EXTEND and the maximum limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
 
-// --------------------------------------------------------------------
-// -----------------------------------------------------------
-
-/**************************
- * Search functions (set) *
- **************************/
+/********************
+ * Search functions *
+ ********************/
 
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
 RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);

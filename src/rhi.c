@@ -533,6 +533,23 @@ bool rhis_replace(struct rhis* set, void* key) {
   return false;
 }
 
+/**
+ * \brief   Replace the key into the dictionary
+ * 
+ * The old key is replaced by the given key.
+ * 
+ * Replacement failed due to:
+ *  - Unique key insertion when the mode is not set with
+ *    RHI_EXTEND and the maximum limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
 void* rhis_kreplace(struct rhis* set, void* key) {
   /* handling of NULL keys */
   if( key==DEFVAL ) {
@@ -561,10 +578,9 @@ void* rhis_kreplace(struct rhis* set, void* key) {
   return DEFVAL;
 }
 
-
-/**************************
- * Search functions (set) *
- **************************/
+/********************
+ * Search functions *
+ ********************/
 
 #define RHIS_SEARCH(_set, _key, \
   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
