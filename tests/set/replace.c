@@ -3,7 +3,7 @@
 #define INIT 0
 #define RESERVE 1
 
-#define CONS_TESTS(initial, func, mode, print) \
+#define CONS_TESTS(initial, funcs, mode, print) \
   do { \
     bool r; \
     struct rhis* set; \
@@ -12,10 +12,11 @@
     /* initial set */ \
     if( initial==INIT ) { \
       /* using `rhi_init` */ \
-      HANDLE((set=rhis_init(func, mode))==NULL, "Set init failed."); \
+      HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
+        funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
       /* using `rhi_reserve` */ \
-      HANDLE((set=rhis_reserve(func, \
+      HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
@@ -56,7 +57,7 @@
     objs_destroy(keys[1]); \
   } while(0)
 
-#define PERF_TESTS(initial, func, mode, print) \
+#define PERF_TESTS(initial, funcs, mode, print) \
   do { \
     long start; \
     struct rhis* set; \
@@ -65,10 +66,11 @@
     /* initial set */ \
     if( initial==INIT ) { \
       /* using `rhi_init` */ \
-      HANDLE((set=rhis_init(func, mode))==NULL, "Set init failed."); \
+      HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
+        funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
       /* using `rhi_reserve` */ \
-      HANDLE((set=rhis_reserve(func, \
+      HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
@@ -87,7 +89,7 @@
     objs_destroy(keys); \
   } while(0)
 
-#define MEMORY_TESTS(initial, func, mode, print) \
+#define MEMORY_TESTS(initial, funcs, mode, print) \
   do { \
     struct rhis* set; \
     struct objs* keys; \
@@ -95,10 +97,11 @@
     /* initial set */ \
     if( initial==INIT ) { \
       /* using `rhi_init` */ \
-      HANDLE((set=rhis_init(func, mode))==NULL, "Set init failed."); \
+      HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
+        funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
       /* using `rhi_reserve` */ \
-      HANDLE((set=rhis_reserve(func, \
+      HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
@@ -124,30 +127,30 @@
     getchar(); \
   } while(0)
 
-extern struct rhifunc func;
-extern struct rhifunc ffunc;
+extern struct funcs funcs;
+extern struct funcs kfuncs;
 
 void set_replace(void) {
-  TEST(CONS_TESTS(INIT, &func, RHI_FIXED, set_print), 0);
-  TEST(CONS_TESTS(INIT, &func, RHI_SHRINK, set_print), 0);
-  TEST(CONS_TESTS(INIT, &func, RHI_EXTEND, set_print), 0);
-  TEST(CONS_TESTS(INIT, &func, RHI_SHRINK|RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(INIT, funcs, RHI_FIXED, set_print), 0);
+  TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK, set_print), 0);
+  TEST(CONS_TESTS(INIT, funcs, RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
-  TEST(CONS_TESTS(RESERVE, &func, RHI_FIXED, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, &func, RHI_SHRINK, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, &func, RHI_EXTEND, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, &func, RHI_SHRINK|RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, funcs, RHI_FIXED, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, funcs, RHI_EXTEND, set_print), 0);
+  TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
-  TEST(PERF_TESTS(INIT, &func, RHI_FIXED, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, &func, RHI_SHRINK, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, &func, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, &func, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(INIT, funcs, RHI_FIXED, set_mprint), 0);
+  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK, set_mprint), 0);
+  TEST(PERF_TESTS(INIT, funcs, RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(PERF_TESTS(RESERVE, &func, RHI_FIXED, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, &func, RHI_SHRINK, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, &func, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, &func, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, funcs, RHI_FIXED, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, funcs, RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(MEMORY_TESTS(INIT, &ffunc, RHI_SHRINK|RHI_EXTEND, set_mprint), 1);
-  TEST(MEMORY_TESTS(RESERVE, &ffunc, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 1);
+  TEST(MEMORY_TESTS(RESERVE, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 }
