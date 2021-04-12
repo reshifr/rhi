@@ -62,30 +62,30 @@ typedef int32_t rhiint;
 typedef uint32_t rhiuint;
 
 /**
- * Suffixes.
+ * Suffixes
  */
 #define RHIINT_C INT32_C
 #define RHIUINT_C UINT32_C
 
 /**
- * Maximum width.
+ * Maximum width
  */
 #define RHIINT_WIDTH INT32_WIDTH
 #define RHIUINT_WIDTH UINT32_WIDTH
 
 /**
- * Minimum value.
+ * Minimum value
  */
 #define RHIINT_MIN UINT32_MIN
 
 /**
- * Maximum value.
+ * Maximum value
  */
 #define RHIINT_MAX INT32_MAX
 #define RHIUINT_MAX UINT32_MAX
 
 /**
- * Printing format specifiers.
+ * Printing format specifiers
  */
 #define PRIrhid PRId32
 #define PRIrhii PRIi32
@@ -95,7 +95,7 @@ typedef uint32_t rhiuint;
 #define PRIrhiX PRIX32
 
 /**
- * Scanning format specifiers.
+ * Scanning format specifiers
  */
 #define SCNrhid SCNd32
 #define SCNrhii SCNi32
@@ -110,21 +110,23 @@ typedef uint32_t rhiuint;
 /**
  * \brief  Fixed mode
  * 
- * The dictionary cannot shrink or extend.
+ * The dictionary size is fixed, will not shrink or extend.
  */
 #define RHI_FIXED 0x00
 
 /**
  * \brief  Shrink mode
  * 
- * The dictionary can shrink.
+ * Dictionary will be shrunk when the number of elements
+ * reaches the minimum limit.
  */
 #define RHI_SHRINK 0x01
 
 /**
  * \brief  Extend mode
  * 
- * The dictionary can extend.
+ * Dictionary will be extended when the number of elements
+ * reaches the maximum limit.
  */
 #define RHI_EXTEND 0x02
 
@@ -137,20 +139,20 @@ typedef uint32_t rhiuint;
 /**
  * \brief   Hash function
  * 
- * Get the hash value of the key. If the key is NULL then this
- * function will not be called.
+ * Generate the hash value of the key. If the key is NULL,
+ * then this function is not called.
  * 
  * \param   key  Key
  * 
- * \return  Hash value.
+ * \return  Hash value
  */
 typedef size_t (*rhihash)(const void* key);
 
 /**
  * \brief   Equal function
  * 
- * Compare two keys, equal or not. If the key is NULL then
- * this function will not be called.
+ * Compare two keys, equal or not. If the key is NULL, then
+ * this function is not called.
  * 
  * \param   first_key   First key
  * \param   second_key  Second key
@@ -164,7 +166,7 @@ typedef bool (*rhiequal)(const void* first_key, const void* second_key);
  * \brief  Key destroyer function
  * 
  * Destroy keys when replace, delete, destructor is called. If
- * the key is NULL then this function will not be called.
+ * the key is NULL, then this function is not called.
  * 
  * \param  key  Key
  */
@@ -184,17 +186,17 @@ typedef void (*rhivalfree)(void* val);
  *******************/
 
 /**
- * Set.
+ * Set
  */
 struct rhis;
 
 /**
- * Map.
+ * Map
  */
 struct rhim;
 
 /**
- * Mutable pair.
+ * Mutable pair
  */
 struct rhipair {
   void* key;
@@ -202,13 +204,9 @@ struct rhipair {
 };
 
 /**
- * Immutable pair.
+ * Read only key pair
  */
 struct rhiconstpair {
-  /**
-   * \note  The object pointed by the key field should not be
-   *        modified.
-   */
   const void* key;
   void* val;
 };
@@ -220,29 +218,29 @@ struct rhiconstpair {
  ************************/
 
 /**
- * \brief   Initialize dictionary
+ * \brief   Create dictionary
  * 
- * The dictionary will be initialized to the default size.
+ * Dictionary is initialized to the default size.
  * 
  * \param   hash     Hash function
  * \param   equal    Equal function
  * \param   keyfree  Key destroyer function. If not needed,
- *                   set the argument as NULL
+ *                   set the argument as NULL.
  * \param   mode     Mode
  * 
- * \return  On success, the pointer of set is returned. On
+ * \return  On success, pointer of dictionary is returned. On
  *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_init(rhihash hash,
   rhiequal equal, rhikeyfree keyfree, int mode);
 
 /**
- * \brief   Reserve dictionary
+ * \brief   Reserve dictionary according to size
  * 
- * The dictionary will be initialized to the specified size,
- * the size to be set >= the specified size. The maximum
- * dictionary size for RHI_PRIME_METHOD enabled is 1546188225,
- * and the default is 1546188226.
+ * Dictionary is initialized to the specified size, the size
+ * of which is set >= specified size. The maximum dictionary
+ * size (RHI_PRIME_METHOD enabled) is 1546188225, and the
+ * default is 1546188226.
  * 
  * \param   hash     Hash function
  * \param   equal    Equal function
@@ -251,7 +249,7 @@ RHI_API struct rhis* rhis_init(rhihash hash,
  * \param   size     Reserved size
  * \param   mode     Mode
  * 
- * \return  On success, the pointer of set is returned. On
+ * \return  On success, pointer of dictionary is returned. On
  *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_reserve(rhihash hash,
@@ -284,7 +282,20 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  *************************/
 
 /**
- * \brief   Replace key into set
+ * \brief   Replace the key into the dictionary
+ * -----------------------------------------------------------
+ * If keyfree is not set to NULL, the key will be destroyed.
+ * Replacement failed because the key was unique:
+ *  - But the maximum set limit has been reached with set
+ *    mode, not in `RHI_EXTEND`.
+ *  - On rare condition, memory allocation may fail when set
+ *    is extended.
+ * 
+ * \param   set  Set for replacement
+ * \param   key  Set mode
+ * 
+ * \return  On success, `true` is returned. On failure,
+ *          `false` is returned.
  */
 RHI_API bool rhis_replace(struct rhis* set, void* key);
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
