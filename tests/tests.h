@@ -13,20 +13,26 @@ extern "C" {
 #include <stdbool.h>
 #include <inttypes.h>
 
-/* Utils macros */
+/**
+ * Utils macros
+ */
 #define SEED 28731
 #define LOWER 0x01
 #define UPPER 0x02
 #define BUFSIZE 0xFFFF
 
-/* Consistency tests macros */
+/**
+ * Consistency tests macros
+ */
 #define CONS_MIN_OBJLEN 1
 #define CONS_MAX_OBJLEN 1
 #define CONS_OBJCASE UPPER
 #define CONS_RESERVE_SIZE 10
 #define CONS_NUM_KEYS 14
 
-/* Performance tests macros */
+/**
+ * Performance tests macros
+ */
 #define PERF_MIN_OBJLEN 16
 #define PERF_MAX_OBJLEN 32
 #define PERF_OBJCASE (LOWER|UPPER)
@@ -59,9 +65,20 @@ extern "C" {
     } \
   } while(0)
 
-/******************
- * String objects *
- ******************/
+/**********************
+ * Function container *
+ **********************/
+
+struct funcs {
+  rhihash hash;
+  rhiequal equal;
+  rhikeyfree keyfree;
+  rhivalfree valfree;
+};
+
+/*******************
+ * List of objects *
+ *******************/
 
 struct objs {
   rhiuint count;
@@ -69,23 +86,23 @@ struct objs {
 };
 
 /**
- * Generate string object with minimum length = `min`, maximum
- * length = `max` count = `count`, with case = `mode`.
+ * Generate objects with minimum length (min), maximum length
+ * (max), count (count), with case (mode).
  */
 struct objs* objs_init(int min, int max, rhiuint count, int mode);
 
 /**
- * Make an `objs` duplication.
+ * Make objs duplication.
  */
 struct objs* objs_dup(const struct objs* objs);
 
 /**
- * Free memory only for `objs`.
+ * Destroy objs.
  */
 void objs_free(struct objs* objs);
 
 /**
- * Free memory for `objs[]` and `objs`.
+ * Destroy objs[] and objs.
  */
 void objs_destroy(struct objs* objs);
 
@@ -103,12 +120,12 @@ long get_clock(void);
  *******/
 
 /**
- * Print set.
+ * Print dictionary.
  */
 void set_print(struct rhis* set);
 
 /**
- * Print only set metadata.
+ * Print only dictionary metadata.
  */
 void set_mprint(struct rhis* set);
 
@@ -117,12 +134,12 @@ void set_mprint(struct rhis* set);
  *******/
 
 /**
- * Print map.
+ * Print dictionary.
  */
 void map_print(struct rhim* map);
 
 /**
- * Print only map metadata.
+ * Print only dictionary metadata.
  */
 void map_mprint(struct rhim* map);
 
@@ -131,12 +148,12 @@ void map_mprint(struct rhim* map);
  *****************/
 
 /**
- * Hash function for string object.
+ * String hash function.
  */
 size_t murmur_hash(const void* obj);
 
 /**
- * Equal function for string object.
+ * String equal function.
  */
 bool equal(const void* first_obj, const void* second_obj);
 

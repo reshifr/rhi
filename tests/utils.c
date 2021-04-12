@@ -1,15 +1,15 @@
 #include "tests.h"
 
-/******************
- * String objects *
- ******************/
+/*******************
+ * List of objects *
+ *******************/
 
 #define OVERHEAD_LEN 1
 #define MAX_COMB 26
 
 /**
- * Generate string object with minimum length = `min`, maximum
- * length = `max` count = `count`, with case = `mode`.
+ * Generate objects with minimum length (min), maximum length
+ * (max), count (count), with case (mode).
  */
 struct objs* objs_init(int min, int max, rhiuint count, int mode) {
   struct objs* objs;
@@ -38,7 +38,7 @@ struct objs* objs_init(int min, int max, rhiuint count, int mode) {
 }
 
 /**
- * Make an `objs` duplication.
+ * Make objs duplication.
  */
 struct objs* objs_dup(const struct objs* objs) {
   struct objs* newobjs;
@@ -56,14 +56,14 @@ struct objs* objs_dup(const struct objs* objs) {
 }
 
 /**
- * Free memory only for `objs`.
+ * Destroy objs.
  */
 void objs_free(struct objs* objs) {
   free(objs);
 }
 
 /**
- * Free memory for `objs[]` and `objs`.
+ * Destroy objs[] and objs.
  */
 void objs_destroy(struct objs* objs) {
   for(rhiuint i=0; i<objs->count; ++i)
@@ -116,7 +116,7 @@ struct rhis {
 };
 
 /**
- * Print set.
+ * Print dictionary.
  */
 void set_print(struct rhis* set) {
   char* mode;
@@ -160,7 +160,7 @@ void set_print(struct rhis* set) {
 }
 
 /**
- * Print only set metadata.
+ * Print only dictionary metadata.
  */
 void set_mprint(struct rhis* set) {
   char* mode;
@@ -222,7 +222,7 @@ struct rhim {
 };
 
 /**
- * Print map.
+ * Print dictionary.
  */
 void map_print(struct rhim* map) {
   char* mode;
@@ -268,7 +268,7 @@ void map_print(struct rhim* map) {
 }
 
 /**
- * Print only map metadata.
+ * Print only dictionary metadata.
  */
 void map_mprint(struct rhim* map) {
   char* mode;
@@ -306,7 +306,7 @@ void map_mprint(struct rhim* map) {
  *****************/
 
 /**
- * Hash function for string object.
+ * String hash function.
  */
 size_t murmur_hash(const void* obj) {
   size_t len = strlen(obj);
@@ -381,7 +381,7 @@ size_t murmur_hash(const void* obj) {
 }
 
 /**
- * Equal function for string object.
+ * String equal function.
  */
 bool equal(const void* first_obj, const void* second_obj) {
   return strcmp(first_obj, second_obj)==0;
