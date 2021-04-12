@@ -505,7 +505,7 @@ bool rhis_insert(struct rhis* set, void* key) {
  *          returned.
  */
 bool rhis_replace(struct rhis* set, void* key) {
-  /* handling of default key values */
+  /* handling of NULL keys */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return true;
@@ -534,7 +534,7 @@ bool rhis_replace(struct rhis* set, void* key) {
 }
 
 void* rhis_kreplace(struct rhis* set, void* key) {
-  /* handling of default key values */
+  /* handling of NULL keys */
   if( key==DEFVAL ) {
     set->is_def_key = true;
     return DEFVAL;
@@ -569,7 +569,7 @@ void* rhis_kreplace(struct rhis* set, void* key) {
 #define RHIS_SEARCH(_set, _key, \
   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
   do { \
-    /* handling of default key values */ \
+    /* handling of NULL keys */ \
     if( (_key)==DEFVAL ) \
       return _def_key_ret; \
     size_t _hashval = (_set)->hash(_key); \
@@ -598,7 +598,7 @@ const void* rhis_ksearch(const struct rhis* set, const void* key) {
  **************************/
 
 bool rhis_delete(struct rhis* set, void* key) {
-  /* handling of default key values */
+  /* handling of NULL keys */
   if( key==DEFVAL ) {
     if( set->is_def_key ) {
       set->is_def_key = false;
