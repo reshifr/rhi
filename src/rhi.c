@@ -414,7 +414,7 @@ RHI_API struct rhis* rhis_init(rhihash hash,
 struct rhis* rhis_reserve(rhihash hash,
   rhiequal equal, rhikeyfree keyfree, rhiuint size, int mode) {
   int index = get_index(size);
-  RHIS_INIT(hash, equal, keyfree, mode, BEGIN_INDEX);
+  RHIS_INIT(hash, equal, keyfree, mode, index);
 }
 
 /***********************
