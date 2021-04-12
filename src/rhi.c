@@ -155,7 +155,7 @@ struct rhim {
 #define DEFVAL NULL
 
 /** 
- * NULL key iter index handler
+ * NULL keys iter index handler
  */
 #define DEFITER RHIUINT_MAX
 
@@ -426,7 +426,7 @@ DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 /**
  * \brief   Insert the key into the dictionary
  * 
- * Insertion failed because
+ * Insertion failed due to:
  *  - The key has been inserted.
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    limit of elements is reached.
@@ -440,7 +440,7 @@ DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
  *          returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
-  /* handling of default key values */
+  /* handling of NULL keys */
   if( key==DEFVAL ) {
     if( set->is_def_key )
       return false;
@@ -486,7 +486,24 @@ bool rhis_insert(struct rhis* set, void* key) {
     return _def_ret; \
   } while(0)
 
-
+/**
+ * \brief   Replace the key into the dictionary
+ * 
+ * If keyfree is not set as NULL, the old key is replaced by
+ * the given key. The old key destroyed by keyfree.
+ * 
+ * Replacement failed due to:
+ *  - Unique key insertion when the mode is not set with
+ *    RHI_EXTEND and the maximum limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 bool rhis_replace(struct rhis* set, void* key) {
   /* handling of default key values */
   if( key==DEFVAL ) {

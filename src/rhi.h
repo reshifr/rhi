@@ -262,7 +262,7 @@ RHI_API struct rhis* rhis_reserve(rhihash hash,
 /**
  * \brief   Insert the key into the dictionary
  * 
- * Insertion failed because
+ * Insertion failed due to:
  *  - The key has been inserted.
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    limit of elements is reached.
@@ -283,19 +283,21 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
 
 /**
  * \brief   Replace the key into the dictionary
- * -----------------------------------------------------------
- * If keyfree is not set to NULL, the key will be destroyed.
- * Replacement failed because the key was unique:
- *  - But the maximum set limit has been reached with set
- *    mode, not in `RHI_EXTEND`.
- *  - On rare condition, memory allocation may fail when set
- *    is extended.
  * 
- * \param   set  Set for replacement
- * \param   key  Set mode
+ * If keyfree is not set as NULL, the old key is replaced by
+ * the given key. The old key destroyed by keyfree.
  * 
- * \return  On success, `true` is returned. On failure,
- *          `false` is returned.
+ * Replacement failed due to:
+ *  - Unique key insertion when the mode is not set with
+ *    RHI_EXTEND and the maximum limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
  */
 RHI_API bool rhis_replace(struct rhis* set, void* key);
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
