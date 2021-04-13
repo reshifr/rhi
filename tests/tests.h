@@ -164,6 +164,8 @@ bool equal(const void* first_obj, const void* second_obj);
 void set_init(void);
 void set_reserve(void);
 void set_insert(void);
+void set_search(void);
+void set_ksearch(void);
 void set_replace(void);
 void set_kreplace(void);
 
