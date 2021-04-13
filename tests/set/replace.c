@@ -151,6 +151,6 @@ void set_replace(void) {
   TEST(PERF_TESTS(RESERVE, funcs, RHI_EXTEND, set_mprint), 0);
   TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 1);
+  TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
   TEST(MEMORY_TESTS(RESERVE, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 }

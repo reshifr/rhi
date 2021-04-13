@@ -5,7 +5,7 @@ CL = cl
 LINK = link
 
 FLAGS = /O2
-RHI_FLAGS = /Wall
+RHI_FLAGS = /Wall /DRHI_PRIME_METHODX
 TEST_FLAGS =
 
 RHI_DIR = ..\src
