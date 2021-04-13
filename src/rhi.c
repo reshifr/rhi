@@ -466,6 +466,37 @@ bool rhis_insert(struct rhis* set, void* key) {
   return false;
 }
 
+/********************
+ * Search functions *
+ ********************/
+
+#define RHIS_SEARCH(_set, _key, \
+  _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
+  do { \
+    /* handling of NULL keys */ \
+    if( (_key)==DEFVAL ) \
+      return _def_key_ret; \
+    size_t _hashval = (_set)->hash(_key); \
+    rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
+    for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
+      if( IS_EMPTY((_set)->nodes[_prob]) ) \
+        return _empty_ret; \
+      if( _hashval==(_set)->nodes[_prob].hashval && \
+          (_set)->equal(_key, (_set)->nodes[_prob].key) ) \
+        return _equal_ret; \
+      _prob = HASHVAL_PROB(_prob, (_set)->size); \
+    } \
+    return _def_ret; \
+  } while(0)
+
+bool rhis_search(const struct rhis* set, const void* key) {
+  RHIS_SEARCH(set, key, set->is_def_key, false, true, false);
+}
+
+const void* rhis_ksearch(const struct rhis* set, const void* key) {
+  RHIS_SEARCH(set, key, DEFVAL, DEFVAL, set->nodes[_prob].key, DEFVAL);
+}
+
 /*************************
  * Replacement functions *
  *************************/
@@ -576,37 +607,6 @@ void* rhis_kreplace(struct rhis* set, void* key) {
     prob = HASHVAL_PROB(prob, set->size);
   }
   return DEFVAL;
-}
-
-/********************
- * Search functions *
- ********************/
-
-#define RHIS_SEARCH(_set, _key, \
-  _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
-  do { \
-    /* handling of NULL keys */ \
-    if( (_key)==DEFVAL ) \
-      return _def_key_ret; \
-    size_t _hashval = (_set)->hash(_key); \
-    rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
-    for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-      if( IS_EMPTY((_set)->nodes[_prob]) ) \
-        return _empty_ret; \
-      if( _hashval==(_set)->nodes[_prob].hashval && \
-          (_set)->equal(_key, (_set)->nodes[_prob].key) ) \
-        return _equal_ret; \
-      _prob = HASHVAL_PROB(_prob, (_set)->size); \
-    } \
-    return _def_ret; \
-  } while(0)
-
-bool rhis_search(const struct rhis* set, const void* key) {
-  RHIS_SEARCH(set, key, set->is_def_key, false, true, false);
-}
-
-const void* rhis_ksearch(const struct rhis* set, const void* key) {
-  RHIS_SEARCH(set, key, DEFVAL, DEFVAL, set->nodes[_prob].key, DEFVAL);
 }
 
 /**************************

@@ -277,6 +277,13 @@ RHI_API struct rhis* rhis_reserve(rhihash hash,
  */
 RHI_API bool rhis_insert(struct rhis* set, void* key);
 
+/********************
+ * Search functions *
+ ********************/
+
+RHI_API bool rhis_search(const struct rhis* set, const void* key);
+RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
+
 /*************************
  * Replacement functions *
  *************************/
@@ -319,13 +326,6 @@ RHI_API bool rhis_replace(struct rhis* set, void* key);
  *          NULL is returned.
  */
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
-
-/********************
- * Search functions *
- ********************/
-
-RHI_API bool rhis_search(const struct rhis* set, const void* key);
-RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
 
 /**************************
  * Delete functions (set) *
