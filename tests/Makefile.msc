@@ -31,6 +31,7 @@ OBJS = \
 	$(BUILD_DIR)\set_init.obj \
 	$(BUILD_DIR)\set_reserve.obj \
 	$(BUILD_DIR)\set_insert.obj \
+	$(BUILD_DIR)\set_search.obj \
 	$(BUILD_DIR)\set_replace.obj \
 	$(BUILD_DIR)\set_kreplace.obj
 
@@ -62,6 +63,9 @@ $(BUILD_DIR)\set_reserve.obj: $(TEST_DIR)\set\reserve.c $(HEADERS)
 
 $(BUILD_DIR)\set_insert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\insert.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\set_search.obj: $(TEST_DIR)\set\search.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\search.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)\set_replace.obj: $(TEST_DIR)\set\replace.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\replace.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
