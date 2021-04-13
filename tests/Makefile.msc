@@ -31,7 +31,8 @@ OBJS = \
 	$(BUILD_DIR)\set_init.obj \
 	$(BUILD_DIR)\set_reserve.obj \
 	$(BUILD_DIR)\set_insert.obj \
-	$(BUILD_DIR)\set_replace.obj
+	$(BUILD_DIR)\set_replace.obj \
+	$(BUILD_DIR)\set_kreplace.obj
 
 all: $(OBJS) $(TARGET)
 
@@ -64,6 +65,9 @@ $(BUILD_DIR)\set_insert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
 
 $(BUILD_DIR)\set_replace.obj: $(TEST_DIR)\set\replace.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\replace.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\set_kreplace.obj: $(TEST_DIR)\set\kreplace.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\kreplace.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
 #
