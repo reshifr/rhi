@@ -165,6 +165,7 @@ void set_init(void);
 void set_reserve(void);
 void set_insert(void);
 void set_replace(void);
+void set_kreplace(void);
 
 #ifdef __cplusplus
 }
