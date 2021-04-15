@@ -23,6 +23,7 @@
     /* [1] initial list of keys */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
+ \
     /* [2] initial list of keys */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
@@ -34,6 +35,7 @@
       ASSERT(!r, "[1] Replace %s failed.", (const char*)keys[0]->objs[i]); \
     } \
     print(set); \
+ \
     /* [2] replace keys */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_replace(set, keys[1]->objs[i]); \
@@ -46,6 +48,7 @@
     r = rhis_replace(set, NULL); \
     ASSERT(r, "[1] Replace %s success.", "NULL"); \
     ASSERT(!r, "[1] Replace %s failed.", "NULL"); \
+ \
     /* [2] replace `NULL` */ \
     r = rhis_replace(set, NULL); \
     ASSERT(r, "[2] Replace %s success.", "NULL"); \
@@ -82,9 +85,9 @@
     start = get_clock(); \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_replace(set, keys->objs[i]); \
- \
     printf("Replace time: %ld ms\n", get_clock()-start); \
     print(set); \
+ \
     rhis_free(set); \
     objs_destroy(keys); \
   } while(0)
