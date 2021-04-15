@@ -82,9 +82,9 @@
     start = get_clock(); \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_insert(set, keys->objs[i]); \
- \
     printf("Insert time: %ld ms\n", get_clock()-start); \
     print(set); \
+ \
     rhis_free(set); \
     objs_destroy(keys); \
   } while(0)
