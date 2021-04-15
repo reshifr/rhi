@@ -23,6 +23,7 @@
     /* [1] initial list of keys */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
+ \
     /* [2] initial list of keys */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
@@ -34,6 +35,7 @@
       ASSERT(!r, "[1] Insert %s failed.", (const char*)keys[0]->objs[i]); \
     } \
     print(set); \
+ \
     /* [2] insert keys */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_insert(set, keys[1]->objs[i]); \
@@ -46,6 +48,7 @@
     r = rhis_insert(set, NULL); \
     ASSERT(r, "[1] Insert %s success.", "NULL"); \
     ASSERT(!r, "[1] Insert %s failed.", "NULL"); \
+ \
     /* [2] insert `NULL` */ \
     r = rhis_insert(set, NULL); \
     ASSERT(r, "[2] Insert %s success.", "NULL"); \
