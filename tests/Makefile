@@ -46,7 +46,7 @@ OBJS = \
 all: $(OBJS) $(TARGET)
 
 clean:
-# Change `/` to `\` for Windows
+# Change '/' to '\' for Windows
 #
 ifneq (,$(filter Windows%,$(OS)))
 	del $(subst /,\,$(OBJS) $(TARGET))
