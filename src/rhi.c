@@ -423,6 +423,22 @@ struct rhis* rhis_reserve(rhihash hash,
 
 DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 
+#define RHIS_INSERT(_set, _hashval, _key, _ret, _def_ret) \
+  do { \
+    if( ((_set)->mode&RHI_EXTEND) && set_extend_nodes(_set) ) { \
+      rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
+      for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
+        if( IS_EMPTY((_set)->nodes[_prob]) ) { \
+          ++(_set)->occupied; \
+          (_set)->nodes[_prob] = RHIS_NODE(_hashval, _key); \
+          return _ret; \
+        } \
+        _prob = HASHVAL_PROB(_prob, (_set)->size); \
+      } \
+    } \
+    return _def_ret; \
+  } while(0)
+
 /**
  * \brief   Insert the key into the dictionary
  * 
@@ -447,21 +463,21 @@ bool rhis_insert(struct rhis* set, void* key) {
     set->is_def_key = true;
     return true;
   }
-  if( set->occupied<set->max ||
-      ((set->mode&RHI_EXTEND) && set_extend_nodes(set)) ) {
-    size_t hashval = set->hash(key);
-    rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-    for(rhiuint i=0; i<set->size; ++i) {
-      if( IS_EMPTY(set->nodes[prob]) ) {
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) ) {
+      if( set->occupied<set->max ) {
         ++set->occupied;
         set->nodes[prob] = RHIS_NODE(hashval, key);
         return true;
       }
-      if( hashval==set->nodes[prob].hashval &&
-          set->equal(key, set->nodes[prob].key) )
-        return false;
-      prob = HASHVAL_PROB(prob, set->size);
+      RHIS_INSERT(set, hashval, key, true, false);
     }
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) )
+      return false;
+    prob = HASHVAL_PROB(prob, set->size);
   }
   return false;
 }
@@ -501,22 +517,6 @@ const void* rhis_ksearch(const struct rhis* set, const void* key) {
  * Replacement functions *
  *************************/
 
-#define RHIS_REPLACE(_set, _hashval, _key, _ret, _def_ret) \
-  do { \
-    if( ((_set)->mode&RHI_EXTEND) && set_extend_nodes(_set) ) { \
-      rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
-      for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-        if( IS_EMPTY((_set)->nodes[_prob]) ) { \
-          ++(_set)->occupied; \
-          (_set)->nodes[_prob] = RHIS_NODE(_hashval, _key); \
-          return _ret; \
-        } \
-        _prob = HASHVAL_PROB(_prob, (_set)->size); \
-      } \
-    } \
-    return _def_ret; \
-  } while(0)
-
 /**
  * \brief   Replace the key into the dictionary
  * 
@@ -550,7 +550,7 @@ bool rhis_replace(struct rhis* set, void* key) {
         set->nodes[prob] = RHIS_NODE(hashval, key);
         return true;
       }
-      RHIS_REPLACE(set, hashval, key, true, false);
+      RHIS_INSERT(set, hashval, key, true, false);
     }
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
@@ -596,7 +596,7 @@ void* rhis_kreplace(struct rhis* set, void* key) {
         set->nodes[prob] = RHIS_NODE(hashval, key);
         return DEFVAL;
       }
-      RHIS_REPLACE(set, hashval, key, DEFVAL, DEFVAL);
+      RHIS_INSERT(set, hashval, key, DEFVAL, DEFVAL);
     }
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
