@@ -11,11 +11,11 @@
  \
     /* initial set */ \
     if( initial==INIT ) { \
-      /* using `rhi_init` */ \
+      /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
         funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
-      /* using `rhi_reserve` */ \
+      /* using rhi_reserve() */ \
       HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
@@ -46,7 +46,7 @@
     } \
     print(set); \
  \
-    /* kreplace `NULL` */ \
+    /* kreplace NULL */ \
     rhis_kreplace(set, NULL); \
     print(set); \
  \
@@ -63,11 +63,11 @@
  \
     /* initial set */ \
     if( initial==INIT ) { \
-      /* using `rhi_init` */ \
+      /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
         funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
-      /* using `rhi_reserve` */ \
+      /* using rhi_reserve() */ \
       HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
@@ -94,11 +94,11 @@
  \
     /* initial set */ \
     if( initial==INIT ) { \
-      /* using `rhi_init` */ \
+      /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
         funcs.keyfree, mode))==NULL, "Set init failed."); \
     } else if( initial==RESERVE ) { \
-      /* using `rhi_reserve` */ \
+      /* using rhi_reserve() */ \
       HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
