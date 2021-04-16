@@ -37,13 +37,16 @@
     } \
  \
     /* [1] search NULL */ \
-    r = rhis_insert(set, NULL); \
-    ASSERT(r, "[1] Insert %s success.", "NULL"); \
-    ASSERT(!r, "[1] Insert %s failed.", "NULL"); \
+    r = rhis_search(set, NULL); \
+    ASSERT(r, "[1] Search %s found.", "NULL"); \
+    ASSERT(!r, "[1] Search %s not found.", "NULL"); \
  \
     /* populates the dictionary */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) \
       rhis_insert(set, keys[0]->objs[i]); \
+ \
+    /* populate with NULL */ \
+    rhis_insert(set, NULL); \
  \
     /* [2] search with the dictionary is populated */ \
     print(set); \
@@ -52,6 +55,11 @@
       ASSERT(r, "[2] Search %s found.", (const char*)keys[1]->objs[i]); \
       ASSERT(!r, "[2] Search %s not found.", (const char*)keys[1]->objs[i]); \
     } \
+ \
+    /* [2] search NULL */ \
+    r = rhis_search(set, NULL); \
+    ASSERT(r, "[2] Search %s found.", "NULL"); \
+    ASSERT(!r, "[2] Search %s not found.", "NULL"); \
  \
     rhis_free(set); \
     objs_destroy(keys[0]); \
