@@ -3,6 +3,7 @@
 #define CONS_TESTS(funcs, mode, print) \
   do { \
     struct rhis* set; \
+    /* initialize the dictionary */ \
     HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
       funcs.keyfree, mode))==NULL, "Set init failed."); \
     print(set); \

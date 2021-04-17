@@ -9,7 +9,7 @@
     struct rhis* set; \
     struct objs* keys[2]; \
  \
-    /* initial set */ \
+    /* initialize the dictionary */ \
     if( initial==INIT ) { \
       /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
@@ -20,10 +20,11 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [1] initial list of keys */ \
+    /* [1] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
-    /* [2] initial list of keys */ \
+ \
+    /* [2] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
@@ -36,6 +37,7 @@
         (const char*)keys[0]->objs[i]); \
     } \
     print(set); \
+ \
     /* [2] kreplace keys */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_kreplace(set, keys[1]->objs[i]); \
@@ -61,7 +63,7 @@
     struct rhis* set; \
     struct objs* keys; \
  \
-    /* initial set */ \
+    /* initialize the dictionary */ \
     if( initial==INIT ) { \
       /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
@@ -72,7 +74,7 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initial list of keys */ \
+    /* initialize the object list */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
  \
@@ -92,7 +94,7 @@
     struct rhis* set; \
     struct objs* keys; \
  \
-    /* initial set */ \
+    /* initialize the dictionary */ \
     if( initial==INIT ) { \
       /* using rhi_init() */ \
       HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
@@ -103,7 +105,7 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initial list of keys */ \
+    /* initialize the dictionary */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
     printf("Keys usage... "); \
