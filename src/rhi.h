@@ -292,7 +292,7 @@ RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
  * \brief   Replace the key into the dictionary
  * 
  * If keyfree is not set as NULL, the old key is replaced by
- * the given key. The old key destroyed by keyfree.
+ * the given key. The old key was destroyed by keyfree.
  * 
  * Replacement failed due to:
  *  - Unique key insertion when the mode is not set with
@@ -327,10 +327,23 @@ RHI_API bool rhis_replace(struct rhis* set, void* key);
  */
 RHI_API void* rhis_kreplace(struct rhis* set, void* key);
 
-/**************************
- * Delete functions (set) *
- **************************/
+/**********************
+ * Deletion functions *
+ **********************/
 
+/**
+ * \brief   Delete the key from the dictionary
+ * 
+ * If keyfree is not set as NULL, the given key would be
+ * destroyed by keyfree. Deletion failed because the given key
+ * is not in the dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 RHI_API bool rhis_delete(struct rhis* set, void* key);
 
 /*********************************
