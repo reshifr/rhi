@@ -6,6 +6,7 @@
 #define CONS_TESTS(initial, funcs, mode, print) \
   do { \
     void* r; \
+    bool rbool; \
     struct rhis* set; \
     struct objs* keys[2]; \
  \
@@ -20,38 +21,47 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [1] initialize the object list */ \
+    /* [0] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [2] initialize the object list */ \
+    /* [1] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [1] kreplace keys */ \
+    /* [0] kreplace keys */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_kreplace(set, keys[0]->objs[i]); \
-      ASSERT(r==NULL, "[1] Kreplace %s inserted.", \
-        (const char*)keys[0]->objs[i]); \
-      ASSERT(r!=NULL, "[1] Kreplace %s replaced.", \
+      ASSERT(r==NULL, "[0] Kreplace %s %s returned.", \
+        (const char*)keys[0]->objs[i], "NULL"); \
+      ASSERT(r!=NULL, "[0] Kreplace %s replaced.", \
         (const char*)keys[0]->objs[i]); \
     } \
     print(set); \
  \
-    /* [2] kreplace keys */ \
+    /* [1] kreplace keys */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_kreplace(set, keys[1]->objs[i]); \
-      ASSERT(r==NULL, "[2] Kreplace %s inserted.", \
-        (const char*)keys[1]->objs[i]); \
-      ASSERT(r!=NULL, "[2] Kreplace %s replaced.", \
+      ASSERT(r==NULL, "[1] Kreplace %s %s returned.", \
+        (const char*)keys[1]->objs[i], "NULL"); \
+      ASSERT(r!=NULL, "[1] Kreplace %s replaced.", \
         (const char*)keys[1]->objs[i]); \
     } \
     print(set); \
  \
-    /* kreplace NULL */ \
-    rhis_kreplace(set, NULL); \
-    print(set); \
+    /* [0] kreplace NULL */ \
+    rbool = rhis_search(set, NULL); \
+    r = rhis_kreplace(set, NULL); \
+    ASSERT(!rbool, "[0] Kreplace %s inserted.", "NULL"); \
+    ASSERT(rbool && r==NULL, "[0] Kreplace %s replaced.", "NULL"); \
  \
+    /* [1] kreplace NULL */ \
+    rbool = rhis_search(set, NULL); \
+    r = rhis_kreplace(set, NULL); \
+    ASSERT(!rbool, "[1] Kreplace %s inserted.", "NULL"); \
+    ASSERT(rbool && r==NULL, "[1] Kreplace %s replaced.", "NULL"); \
+ \
+    print(set); \
     rhis_free(set); \
     objs_destroy(keys[0]); \
     objs_destroy(keys[1]); \
@@ -89,49 +99,10 @@
     objs_destroy(keys); \
   } while(0)
 
-#define MEMORY_TESTS(initial, funcs, mode, print) \
-  do { \
-    struct rhis* set; \
-    struct objs* keys; \
- \
-    /* initialize the dictionary */ \
-    if( initial==INIT ) { \
-      /* using rhi_init() */ \
-      HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
-        funcs.keyfree, mode))==NULL, "Set init failed."); \
-    } else if( initial==RESERVE ) { \
-      /* using rhi_reserve() */ \
-      HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, funcs.keyfree, \
-        PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
-    } \
- \
-    /* initialize the dictionary */ \
-    keys = objs_init(PERF_MIN_OBJLEN, \
-      PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
-    printf("Keys usage... "); \
-    getchar(); \
- \
-    /* [1] kreplace keys */ \
-    for(rhiuint i=0; i<keys->count; ++i) \
-      rhis_kreplace(set, keys->objs[i]); \
-    print(set); \
-    printf("Keys and set usage... "); \
-    getchar(); \
- \
-    /* [2] kreplace keys */ \
-    for(rhiuint i=0; i<keys->count; ++i) \
-      rhis_kreplace(set, keys->objs[i]); \
-    print(set); \
-    objs_free(keys); \
-    printf("Set usage... "); \
-    getchar(); \
-  } while(0)
-
 extern struct funcs funcs;
-extern struct funcs kfuncs;
 
 void set_kreplace(void) {
-  TEST(CONS_TESTS(INIT, funcs, RHI_FIXED, set_print), 1);
+  TEST(CONS_TESTS(INIT, funcs, RHI_FIXED, set_print), 0);
   TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK, set_print), 0);
   TEST(CONS_TESTS(INIT, funcs, RHI_EXTEND, set_print), 0);
   TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
@@ -150,7 +121,4 @@ void set_kreplace(void) {
   TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
   TEST(PERF_TESTS(RESERVE, funcs, RHI_EXTEND, set_mprint), 0);
   TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
-
-  TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
-  TEST(MEMORY_TESTS(RESERVE, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 }
