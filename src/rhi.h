@@ -281,7 +281,32 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  * Search functions *
  ********************/
 
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
+
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the searched key is returned. On
+ *          failure, NULL is returned.
+ */
 RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
 
 /*************************

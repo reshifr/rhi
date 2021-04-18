@@ -505,10 +505,34 @@ bool rhis_insert(struct rhis* set, void* key) {
     return _def_ret; \
   } while(0)
 
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 bool rhis_search(const struct rhis* set, const void* key) {
   RHIS_SEARCH(set, key, set->is_def_key, false, true, false);
 }
 
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the searched key is returned. On
+ *          failure, NULL is returned.
+ */
 const void* rhis_ksearch(const struct rhis* set, const void* key) {
   RHIS_SEARCH(set, key, DEFVAL, DEFVAL, set->nodes[_prob].key, DEFVAL);
 }
