@@ -600,9 +600,9 @@ void* rhis_kreplace(struct rhis* set, void* key) {
     }
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
-      void* obtained_key = set->nodes[prob].key;
+      void* old_key = set->nodes[prob].key;
       set->nodes[prob] = RHIS_NODE(hashval, key);
-      return obtained_key;
+      return old_key;
     }
     prob = HASHVAL_PROB(prob, set->size);
   }
@@ -834,9 +834,9 @@ bool rhim_replace(struct rhim* map, void* key, void* val) {
 void* rhim_vreplace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
     if( map->is_def_key ) {
-      void* obtained_val = map->def_val;
+      void* old_val = map->def_val;
       map->def_val = val;
-      return obtained_val;
+      return old_val;
     }
     map->is_def_key = true;
     map->def_val = val;
@@ -857,9 +857,9 @@ void* rhim_vreplace(struct rhim* map, void* key, void* val) {
         map->equal(key, map->nodes[prob].key) ) {
       if( map->keyfree!=NULL )
         map->keyfree(map->nodes[prob].key);
-      void* obtained_val = map->nodes[prob].val;
+      void* old_val = map->nodes[prob].val;
       map->nodes[prob] = RHIM_NODE(hashval, key, val);
-      return obtained_val;
+      return old_val;
     }
     prob = HASHVAL_PROB(prob, map->size);
   }
