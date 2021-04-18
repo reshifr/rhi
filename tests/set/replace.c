@@ -20,39 +20,39 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [1] initialize the object list */ \
+    /* [0] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [2] initialize the object list */ \
+    /* [1] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [1] replace keys */ \
+    /* [0] replace keys */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_replace(set, keys[0]->objs[i]); \
-      ASSERT(r, "[1] Replace %s success.", (const char*)keys[0]->objs[i]); \
-      ASSERT(!r, "[1] Replace %s failed.", (const char*)keys[0]->objs[i]); \
+      ASSERT(r, "[0] Replace %s success.", (const char*)keys[0]->objs[i]); \
+      ASSERT(!r, "[0] Replace %s failed.", (const char*)keys[0]->objs[i]); \
     } \
     print(set); \
  \
-    /* [2] replace keys */ \
+    /* [1] replace keys */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_replace(set, keys[1]->objs[i]); \
-      ASSERT(r, "[2] Replace %s success.", (const char*)keys[1]->objs[i]); \
-      ASSERT(!r, "[2] Replace %s failed.", (const char*)keys[1]->objs[i]); \
+      ASSERT(r, "[1] Replace %s success.", (const char*)keys[1]->objs[i]); \
+      ASSERT(!r, "[1] Replace %s failed.", (const char*)keys[1]->objs[i]); \
     } \
     print(set); \
+ \
+    /* [0] replace NULL */ \
+    r = rhis_replace(set, NULL); \
+    ASSERT(r, "[0] Replace %s success.", "NULL"); \
+    ASSERT(!r, "[0] Replace %s failed.", "NULL"); \
  \
     /* [1] replace NULL */ \
     r = rhis_replace(set, NULL); \
     ASSERT(r, "[1] Replace %s success.", "NULL"); \
     ASSERT(!r, "[1] Replace %s failed.", "NULL"); \
- \
-    /* [2] replace NULL */ \
-    r = rhis_replace(set, NULL); \
-    ASSERT(r, "[2] Replace %s success.", "NULL"); \
-    ASSERT(!r, "[2] Replace %s failed.", "NULL"); \
  \
     print(set); \
     rhis_free(set); \
@@ -114,14 +114,14 @@
     printf("Keys usage... "); \
     getchar(); \
  \
-    /* [1] replace keys */ \
+    /* [0] replace keys */ \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_replace(set, keys->objs[i]); \
     print(set); \
     printf("Keys and set usage... "); \
     getchar(); \
  \
-    /* [2] replace keys */ \
+    /* [1] replace keys */ \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_replace(set, keys->objs[i]); \
     print(set); \
