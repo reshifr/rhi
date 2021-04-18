@@ -34,7 +34,7 @@ extern "C" {
  * Performance tests macros
  */
 #define PERF_MIN_OBJLEN 16
-#define PERF_MAX_OBJLEN 32
+#define PERF_MAX_OBJLEN 16
 #define PERF_OBJCASE (LOWER|UPPER)
 #define PERF_RESERVE_SIZE 3000000
 #define PERF_NUM_KEYS 10000000
