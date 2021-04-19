@@ -163,87 +163,88 @@ struct rhim {
 #define MAX_LOAD 0.72
 #define BEGIN_EXPONENT 3
 #define IS_EMPTY(_node) ((_node).key==DEFVAL)
-#define SET_EMPTY(_node) ((_node).key=DEFVAL)
+#define SET_EMPTY(node) (node.key=DEFVAL)
 #define HASHVAL_PROB(_prob, _size) HASHVAL_INDEX((_prob)+1, _size)
 #define MIN_OCCUPIED(_index, _begin_index) ((_index)==(_begin_index) ? \
   RHIUINT_C(0) : ((rhiuint)((double)GET_SIZE(_index)*MIN_LOAD)))
 #define MAX_OCCUPIED(_index) ((rhiuint)((double)GET_SIZE(_index)*MAX_LOAD))
-#define COUNT(_obj) ((obj)->is_def_key ? (obj)->occupied+1 : (obj)->occupied)
+#define COUNT(_obj) ((_obj)->is_def_key ? (_obj)->occupied+1 : (_obj)->occupied)
 
 /**
  * Set index, min, max, and size fields.
  */
-#define SET_BOUND(_obj, _index, _size) \
+#define SET_BOUND(obj, _index, _size) \
   do { \
-    (_obj)->index = (uint8_t)(_index); \
-    (_obj)->min = MIN_OCCUPIED(_index, (_obj)->begin_index); \
-    (_obj)->max = MAX_OCCUPIED(_index); \
-    (_obj)->size = _size; \
+    obj->index = (uint8_t)(_index); \
+    obj->min = MIN_OCCUPIED(_index, obj->begin_index); \
+    obj->max = MAX_OCCUPIED(_index); \
+    obj->size = _size; \
   } while(0)
 
 /**
- * Get the value of floor(log2(n)).
+ * Get the value of floor(log2(size)).
  */
-static inline int msb_index(rhiuint n) {
-  int i = 0;
-  if( n>=RHIUINT_C(0x00010000) )
-    i += 16, n >>= 16;
-  if( n>=RHIUINT_C(0x00000100) )
-    i += 8, n >>= 8;
-  if( n>=RHIUINT_C(0x00000010) )
-    i += 4, n >>= 4;
-  if( n>=RHIUINT_C(0x00000004) )
-    i += 2, n >>= 2;
-  if( n>=RHIUINT_C(0x00000002) )
-    i += 1, n >>= 1;
-  return i;
-}
+#define MSB_INDEX(index, size) \
+  do { \
+    index = 0; \
+    if( size>=RHIUINT_C(0x00010000) ) \
+      index += 16, size >>= 16; \
+    if( size>=RHIUINT_C(0x00000100) ) \
+      index += 8, size >>= 8; \
+    if( size>=RHIUINT_C(0x00000010) ) \
+      index += 4, size >>= 4; \
+    if( size>=RHIUINT_C(0x00000004) ) \
+      index += 2, size >>= 2; \
+    if( size>=RHIUINT_C(0x00000002) ) \
+      index += 1, size >>= 1; \
+  } while(0)
 
 /**
  * Get the appropriate index from the given size.
  */
-static inline int get_index(rhiuint size) {
-  int index = msb_index((rhiuint)((double)size/MAX_LOAD))-
-    (BEGIN_EXPONENT-BEGIN_INDEX);
-  if( index<BEGIN_INDEX )
-    index = BEGIN_INDEX;
-  while( index<END_INDEX && size>MAX_OCCUPIED(index) )
-    ++index;
-  return index;
-}
+#define GET_INDEX(index, _size) \
+  do { \
+    rhiuint _reqsize = (rhiuint)((double)(_size)/MAX_LOAD); \
+    MSB_INDEX(index, _reqsize); \
+    index -= (BEGIN_EXPONENT-BEGIN_INDEX); \
+    if( index<BEGIN_INDEX ) \
+      index = BEGIN_INDEX; \
+    while( index<END_INDEX && size>MAX_OCCUPIED(index) ) \
+      ++index; \
+  } while(0)
 
 /**
  * Move current elements to the new array of nodes.
  */
-#define MOVE_NODES(_obj, _newsize, _newnodes) \
+#define MOVE_NODES(obj, _newsize, newnodes) \
   do { \
-    for(rhiuint _i=0, _prob; _i<(_obj)->size; ++_i) { \
-      if( IS_EMPTY((_obj)->nodes[_i]) ) \
+    for(rhiuint _i=0, _prob; _i<obj->size; ++_i) { \
+      if( IS_EMPTY(obj->nodes[_i]) ) \
         continue; \
-      _prob = HASHVAL_INDEX((_obj)->nodes[_i].hashval, _newsize); \
+      _prob = HASHVAL_INDEX(obj->nodes[_i].hashval, _newsize); \
       for(rhiuint _inew=0; _inew<(_newsize); ++_inew) { \
-        if( IS_EMPTY((_newnodes)[_prob]) ) { \
-          (_newnodes)[_prob] = (_obj)->nodes[_i]; \
+        if( IS_EMPTY(newnodes[_prob]) ) { \
+          newnodes[_prob] = obj->nodes[_i]; \
           break; \
         } \
         _prob = HASHVAL_PROB(_prob, _newsize); \
       } \
     } \
-    free((_obj)->nodes); \
-    (_obj)->nodes = _newnodes; \
+    free(obj->nodes); \
+    obj->nodes = newnodes; \
   } while(0)
 
 /**
  * Extend current array of nodes when size > max.
  */
-#define DECL_EXTEND_NODES(_func_name, _obj_type, _node_type) \
-  static bool _func_name(_obj_type* obj) { \
+#define DECL_EXTEND_NODES(__func, __obj, __node) \
+  static bool __func(__obj* obj) { \
     if( obj->index==END_INDEX ) \
       return false; \
-    _node_type* newnodes; \
+    __node* newnodes; \
     int newindex = obj->index+1; \
     rhiuint newsize = GET_SIZE(newindex); \
-    if( (newnodes=(_node_type*)calloc(newsize, sizeof(_node_type)))==NULL ) \
+    if( (newnodes=(__node*)calloc(newsize, sizeof(__node)))==NULL ) \
       return false; \
     MOVE_NODES(obj, newsize, newnodes); \
     SET_BOUND(obj, newindex, newsize); \
@@ -253,17 +254,17 @@ static inline int get_index(rhiuint size) {
 /**
  * Shrink current array of nodes when size < min.
  */
-#define SHRINK_NODES(_obj, _node_type) \
+#define SHRINK_NODES(obj, __node) \
   do { \
-    if( (_obj)->index==(_obj)->begin_index ) \
+    if( obj->index==obj->begin_index ) \
       break; \
-    _node_type* _newnodes; \
-    int _newindex = (_obj)->index-1; \
+    __node* _newnodes; \
+    int _newindex = obj->index-1; \
     rhiuint _newsize = GET_SIZE(_newindex); \
-    if( (_newnodes=(_node_type*)calloc(_newsize, sizeof(_node_type)))==NULL ) \
+    if( (_newnodes=(__node*)calloc(_newsize, sizeof(__node)))==NULL ) \
       break; \
-    MOVE_NODES(_obj, _newsize, _newnodes); \
-    SET_BOUND(_obj, _newindex, _newsize); \
+    MOVE_NODES(obj, _newsize, _newnodes); \
+    SET_BOUND(obj, _newindex, _newsize); \
   } while(0)
 
 /**
@@ -271,33 +272,32 @@ static inline int get_index(rhiuint size) {
  * element to an empty node, do until finding an empty node
  * when continuing the step for the next subsequent element.
  */
-#define BACKWARD_SHIFT(_obj, _equal_prob) \
+#define BACKWARD_SHIFT(obj, _equal_prob) \
   do { \
     rhiuint _empty = _equal_prob; \
-    for(rhiuint _i=0, _prob=_equal_prob; _i<(_obj)->size; ++_i) { \
-      _prob = HASHVAL_PROB(_prob, (_obj)->size); \
-      if( IS_EMPTY((_obj)->nodes[_prob]) ) { \
-        SET_EMPTY((_obj)->nodes[_empty]); \
+    for(rhiuint _i=0, _prob=_equal_prob; _i<obj->size; ++_i) { \
+      _prob = HASHVAL_PROB(_prob, obj->size); \
+      if( IS_EMPTY(obj->nodes[_prob]) ) { \
+        SET_EMPTY(obj->nodes[_empty]); \
         break; \
       } \
-      rhiuint _origin \
-        = HASHVAL_INDEX((_obj)->nodes[_prob].hashval, (_obj)->size); \
+      rhiuint _origin = HASHVAL_INDEX(obj->nodes[_prob].hashval, obj->size); \
       if( _empty<=_prob ? \
           _empty<_origin && _origin<=_prob : \
           _empty<_origin || _origin<=_prob ) \
         continue; \
-      (_obj)->nodes[_empty] = (_obj)->nodes[_prob]; \
+      obj->nodes[_empty] = obj->nodes[_prob]; \
       _empty = _prob; \
     } \
   } while(0)
 
-#define DECL_COUNT(_func_name, _obj_type) \
-  rhiuint _func_name(const _obj_type* obj) { \
+#define DECL_COUNT(__func, __obj) \
+  rhiuint __func(const __obj* obj) { \
     return COUNT(obj); \
   }
 
-#define DECL_BEGIN(_func_name, _obj_type) \
-  void _func_name(_obj_type* obj) { \
+#define DECL_BEGIN(__func, __obj) \
+  void __func(__obj* obj) { \
     if( obj->is_def_key ) { \
       obj->is_end = false; \
       obj->iter = DEFITER; \
@@ -312,8 +312,8 @@ static inline int get_index(rhiuint size) {
     } \
   }
 
-#define DECL_NEXT(_func_name, _obj_type) \
-  void _func_name(_obj_type* obj) { \
+#define DECL_NEXT(__func, __obj) \
+  void __func(__obj* obj) { \
     rhiuint i = obj->iter==DEFITER ? 0 : obj->iter+1; \
     for(; i<obj->size; ++i) { \
       if( IS_EMPTY(obj->nodes[i]) ) \
@@ -324,13 +324,13 @@ static inline int get_index(rhiuint size) {
     obj->is_end = true; \
   }
 
-#define DECL_END(_func_name, _obj_type) \
-  bool _func_name(_obj_type* obj) { \
+#define DECL_END(__func, __obj) \
+  bool __func(__obj* obj) { \
     return obj->is_end; \
   }
 
-#define DECL_ITERS(_func_name, _obj_type) \
-  rhiuint* _func_name(const _obj_type* obj) { \
+#define DECL_ITERS(__func, __obj) \
+  rhiuint* __func(const __obj* obj) { \
     rhiuint count; \
     if( (count=COUNT(obj))==0 ) \
       return NULL; \
@@ -413,7 +413,8 @@ RHI_API struct rhis* rhis_init(rhihash hash,
  */
 struct rhis* rhis_reserve(rhihash hash,
   rhiequal equal, rhikeyfree keyfree, rhiuint size, int mode) {
-  int index = get_index(size);
+  int index;
+  GET_INDEX(index, size);
   RHIS_INIT(hash, equal, keyfree, mode, index);
 }
 
@@ -423,17 +424,17 @@ struct rhis* rhis_reserve(rhihash hash,
 
 DECL_EXTEND_NODES(set_extend_nodes, struct rhis, struct rhisnode)
 
-#define RHIS_INSERT(_set, _hashval, _key, _ret, _def_ret) \
+#define RHIS_INSERT(set, _hashval, _key, _ret, _def_ret) \
   do { \
-    if( ((_set)->mode&RHI_EXTEND) && set_extend_nodes(_set) ) { \
-      rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
-      for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-        if( IS_EMPTY((_set)->nodes[_prob]) ) { \
-          ++(_set)->occupied; \
-          (_set)->nodes[_prob] = RHIS_NODE(_hashval, _key); \
+    if( (set->mode&RHI_EXTEND) && set_extend_nodes(set) ) { \
+      rhiuint _prob = HASHVAL_INDEX(_hashval, set->size); \
+      for(rhiuint _i=0; _i<set->size; ++_i) { \
+        if( IS_EMPTY(set->nodes[_prob]) ) { \
+          ++set->occupied; \
+          set->nodes[_prob] = RHIS_NODE(_hashval, _key); \
           return _ret; \
         } \
-        _prob = HASHVAL_PROB(_prob, (_set)->size); \
+        _prob = HASHVAL_PROB(_prob, set->size); \
       } \
     } \
     return _def_ret; \
@@ -759,7 +760,8 @@ struct rhim* rhim_init(rhihash hash,
 
 struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode) {
-  int index = get_index(size);
+  int index;
+  GET_INDEX(index, size);
   RHIM_INIT(hash, equal, keyfree, valfree, mode, index);
 }
 
@@ -802,17 +804,17 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
  * Replace functions *
  *********************/
 
-#define RHIM_REPLACE(_map, _hashval, _key, _val, _ret, _def_ret) \
+#define RHIM_REPLACE(map, _hashval, _key, _val, _ret, _def_ret) \
   do { \
-    if( ((_map)->mode&RHI_EXTEND) && map_extend_nodes(_map) ) { \
-      rhiuint _prob = HASHVAL_INDEX(_hashval, (_map)->size); \
-      for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
-        if( IS_EMPTY((_map)->nodes[_prob]) ) { \
-          ++(_map)->occupied; \
-          (_map)->nodes[_prob] = RHIM_NODE(_hashval, _key, _val); \
+    if( (map->mode&RHI_EXTEND) && map_extend_nodes(map) ) { \
+      rhiuint _prob = HASHVAL_INDEX(_hashval, map->size); \
+      for(rhiuint _i=0; _i<map->size; ++_i) { \
+        if( IS_EMPTY(map->nodes[_prob]) ) { \
+          ++map->occupied; \
+          map->nodes[_prob] = RHIM_NODE(_hashval, _key, _val); \
           return _ret; \
         } \
-        _prob = HASHVAL_PROB(_prob, (_map)->size); \
+        _prob = HASHVAL_PROB(_prob, map->size); \
       } \
     } \
     return _def_ret; \
@@ -951,8 +953,8 @@ bool rhim_search(const struct rhim* map, const void* key) {
 }
 
 void* rhim_vsearch(const struct rhim* map, const void* key) {
-  RHIM_SEARCH(map, key, map->is_def_key ? map->def_val : DEFVAL, DEFVAL,
-    map->nodes[_prob].val, DEFVAL);
+  RHIM_SEARCH(map, key, map->is_def_key ?
+    map->def_val : DEFVAL, DEFVAL, map->nodes[_prob].val, DEFVAL);
 }
 
 struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
