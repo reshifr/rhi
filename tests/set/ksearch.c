@@ -55,8 +55,9 @@
     print(set); \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_ksearch(set, keys[1]->objs[i]); \
-      ASSERT(r, "[1] Ksearch %s found.", (const char*)keys[1]->objs[i]); \
-      ASSERT(!r, "[1] Ksearch %s not found.", (const char*)keys[1]->objs[i]); \
+      ASSERT(r==NULL, "[1] Ksearch %s not found.", \
+        (const char*)keys[1]->objs[i]); \
+      ASSERT(r!=NULL, "[1] Ksearch %s found.", (const char*)keys[1]->objs[i]); \
     } \
  \
     /* [1] ksearch NULL */ \
