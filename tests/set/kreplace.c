@@ -21,15 +21,13 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [0] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [1] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [0] kreplace keys */ \
+    /* [0] kreplace keys[0] */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_kreplace(set, keys[0]->objs[i]); \
       ASSERT(r==NULL, "[0] Kreplace %s %s returned.", \
@@ -39,7 +37,7 @@
     } \
     print(set); \
  \
-    /* [1] kreplace keys */ \
+    /* [1] kreplace keys[1] */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_kreplace(set, keys[1]->objs[i]); \
       ASSERT(r==NULL, "[1] Kreplace %s %s returned.", \
@@ -84,17 +82,15 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initialize the object list */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
  \
-    /* kreplace keys */ \
     start = get_clock(); \
     for(rhiuint i=0; i<keys->count; ++i) \
       rhis_kreplace(set, keys->objs[i]); \
- \
     printf("Kreplace time: %ld ms\n", get_clock()-start); \
     print(set); \
+ \
     rhis_free(set); \
     objs_destroy(keys); \
   } while(0)

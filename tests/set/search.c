@@ -20,15 +20,13 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [0] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [1] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [0] search with the dictionary is not populated */ \
+    /* [0] search by keys[0] */ \
     print(set); \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_search(set, keys[0]->objs[i]); \
@@ -41,14 +39,12 @@
     ASSERT(r, "[0] Search %s found.", "NULL"); \
     ASSERT(!r, "[0] Search %s not found.", "NULL"); \
  \
-    /* populates the dictionary */ \
+    /* populates the dictionary by keys[0] and NULL */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) \
       rhis_insert(set, keys[0]->objs[i]); \
- \
-    /* populate with NULL */ \
     rhis_insert(set, NULL); \
  \
-    /* [1] search with the dictionary is populated */ \
+    /* [1] search by keys[1] */ \
     print(set); \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_search(set, keys[1]->objs[i]); \
@@ -83,7 +79,6 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initialize the object list */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
  \

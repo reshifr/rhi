@@ -20,15 +20,13 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* [0] initialize the object list */ \
     keys[0] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [1] initialize the object list */ \
     keys[1] = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    /* [0] replace keys */ \
+    /* [0] replace keys[0] */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_replace(set, keys[0]->objs[i]); \
       ASSERT(r, "[0] Replace %s success.", (const char*)keys[0]->objs[i]); \
@@ -36,7 +34,7 @@
     } \
     print(set); \
  \
-    /* [1] replace keys */ \
+    /* [1] replace keys[1] */ \
     for(rhiuint i=0; i<keys[1]->count; ++i) { \
       r = rhis_replace(set, keys[1]->objs[i]); \
       ASSERT(r, "[1] Replace %s success.", (const char*)keys[1]->objs[i]); \
@@ -77,7 +75,6 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initialize the object list */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
  \
@@ -108,7 +105,7 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initialize the object list */ \
+    /* initialize the keys */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
     printf("Keys usage... "); \

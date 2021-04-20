@@ -3,7 +3,6 @@
 #define CONS_TESTS(funcs, size, mode, print) \
   do { \
     struct rhis* set; \
-    /* initialize the dictionary */ \
     HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, \
       funcs.keyfree, size, mode))==NULL, "Set reserve failed."); \
     print(set); \
