@@ -370,6 +370,19 @@ RHI_API void* rhis_kreplace(struct rhis* set, void* key);
  *          returned.
  */
 RHI_API bool rhis_delete(struct rhis* set, void* key);
+
+/**
+ * \brief   Delete the key from the dictionary
+ * 
+ * Delete failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
 RHI_API void* rhis_kdelete(struct rhis* set, void* key);
 
 /*********************************

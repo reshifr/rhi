@@ -679,6 +679,18 @@ bool rhis_delete(struct rhis* set, void* key) {
   return false;
 }
 
+/**
+ * \brief   Delete the key from the dictionary
+ * 
+ * Delete failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   set  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
 void* rhis_kdelete(struct rhis* set, void* key) {
   /* handling of NULL keys */
   if( key==DEFVAL ) {
@@ -825,7 +837,6 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
   }
   return false;
 }
-
 
 /*********************
  * Replace functions *
