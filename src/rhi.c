@@ -679,6 +679,33 @@ bool rhis_delete(struct rhis* set, void* key) {
   return false;
 }
 
+void* rhis_kdelete(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==DEFVAL ) {
+    if( set->is_def_key ) {
+      set->is_def_key = false;
+      return DEFVAL;
+    }
+    return DEFVAL;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) )
+      return DEFVAL;
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) ) {
+      void* old_key = set->nodes[prob].key;
+      BACKWARD_SHIFT(set, prob);
+      if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
+        SHRINK_NODES(set, struct rhisnode);
+      return old_key;
+    }
+    prob = HASHVAL_PROB(prob, set->size);
+  }
+  return DEFVAL;
+}
+
 
 /*********************************
  * Miscellaneous functions (set) *

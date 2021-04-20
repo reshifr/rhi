@@ -370,6 +370,7 @@ RHI_API void* rhis_kreplace(struct rhis* set, void* key);
  *          returned.
  */
 RHI_API bool rhis_delete(struct rhis* set, void* key);
+RHI_API void* rhis_kdelete(struct rhis* set, void* key);
 
 /*********************************
  * Miscellaneous functions (set) *
