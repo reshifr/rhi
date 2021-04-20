@@ -168,6 +168,7 @@ void set_search(void);
 void set_ksearch(void);
 void set_replace(void);
 void set_kreplace(void);
+void set_delete(void);
 
 #ifdef __cplusplus
 }
