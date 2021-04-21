@@ -56,12 +56,12 @@ else
 	rm -f $(OBJS) $(TARGET)
 endif
 
-# Compile the source on the src directory
+# Compile the source on src
 #
 $(BUILD_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
 
-# Compile the source on the tests directory
+# Compile the source on tests
 #
 $(BUILD_DIR)/tests.o: $(TEST_DIR)/tests.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
@@ -69,7 +69,7 @@ $(BUILD_DIR)/tests.o: $(TEST_DIR)/tests.c $(HEADERS)
 $(BUILD_DIR)/utils.o: $(TEST_DIR)/utils.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-# Compile the source on the tests/set directory
+# Compile the source on tests/set
 #
 $(BUILD_DIR)/set_init.o: $(TEST_DIR)/set/init.c $(HEADERS)
 	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
