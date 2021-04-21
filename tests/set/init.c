@@ -6,7 +6,6 @@
     HANDLE((set=rhis_init(funcs.hash, funcs.equal, \
       funcs.keyfree, mode))==NULL, "Set init failed."); \
     print(set); \
-    rhis_free(set); \
   } while(0)
 
 extern struct funcs funcs;

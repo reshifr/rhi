@@ -62,9 +62,8 @@
     ASSERT(rbool && r==NULL, "[1] Ksearch %s found.", "NULL"); \
     ASSERT(!rbool && r==NULL, "[1] Ksearch %s not found.", "NULL"); \
  \
-    rhis_free(set); \
-    objs_destroy(keys[0]); \
-    objs_destroy(keys[1]); \
+    objs_free(keys[0]); \
+    objs_free(keys[1]); \
   } while(0)
 
 #define PERF_TESTS(initial, funcs, mode, print) \
@@ -104,9 +103,7 @@
       rhis_ksearch(set, keys->objs[i]); \
     printf("[1] Ksearch time: %ld ms\n", get_clock()-start); \
     print(set); \
- \
-    rhis_free(set); \
-    objs_destroy(keys); \
+    objs_free(keys); \
   } while(0)
 
 extern struct funcs funcs;

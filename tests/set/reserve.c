@@ -6,7 +6,6 @@
     HANDLE((set=rhis_reserve(funcs.hash, funcs.equal, \
       funcs.keyfree, size, mode))==NULL, "Set reserve failed."); \
     print(set); \
-    rhis_free(set); \
   } while(0)
 
 extern struct funcs funcs;

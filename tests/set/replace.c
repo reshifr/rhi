@@ -53,9 +53,8 @@
     ASSERT(!r, "[1] Replace %s failed.", "NULL"); \
  \
     print(set); \
-    rhis_free(set); \
-    objs_destroy(keys[0]); \
-    objs_destroy(keys[1]); \
+    objs_free(keys[0]); \
+    objs_free(keys[1]); \
   } while(0)
 
 #define PERF_TESTS(initial, funcs, mode, print) \
@@ -84,9 +83,7 @@
       rhis_replace(set, keys->objs[i]); \
     printf("Replace time: %ld ms\n", get_clock()-start); \
     print(set); \
- \
-    rhis_free(set); \
-    objs_destroy(keys); \
+    objs_free(keys); \
   } while(0)
 
 #define MEMORY_TESTS(initial, funcs, mode, print) \
@@ -143,7 +140,7 @@ void set_replace(void) {
   TEST(PERF_TESTS(INIT, funcs, RHI_FIXED, set_mprint), 0);
   TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK, set_mprint), 0);
   TEST(PERF_TESTS(INIT, funcs, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  TEST(PERF_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 1);
 
   TEST(PERF_TESTS(RESERVE, funcs, RHI_FIXED, set_mprint), 0);
   TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
