@@ -140,7 +140,7 @@ void set_replace(void) {
   TEST(PERF_TESTS(INIT, funcs, RHI_FIXED, set_mprint), 0);
   TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK, set_mprint), 0);
   TEST(PERF_TESTS(INIT, funcs, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 1);
+  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
   TEST(PERF_TESTS(RESERVE, funcs, RHI_FIXED, set_mprint), 0);
   TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
