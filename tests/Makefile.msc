@@ -42,12 +42,12 @@ all: $(OBJS) $(TARGET)
 clean:
 	del $(OBJS) $(TARGET)
 
-# Compile the source on the src directory
+# Compile the source on src
 #
 $(BUILD_DIR)\rhi.obj: $(RHI_DIR)\rhi.c $(RHI_HEADERS)
 	$(CL) /c $(RHI_DIR)\rhi.c /Fo:$@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
 
-# Compile the source on the tests directory
+# Compile the source on tests
 #
 $(BUILD_DIR)\tests.obj: $(TEST_DIR)\tests.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\tests.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
@@ -55,7 +55,7 @@ $(BUILD_DIR)\tests.obj: $(TEST_DIR)\tests.c $(HEADERS)
 $(BUILD_DIR)\utils.obj: $(TEST_DIR)\utils.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\utils.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-# Compile the source on the tests\set directory
+# Compile the source on tests\set
 #
 $(BUILD_DIR)\set_init.obj: $(TEST_DIR)\set\init.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\init.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
