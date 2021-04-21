@@ -105,7 +105,6 @@
         PERF_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    /* initialize the keys */ \
     keys = objs_init(PERF_MIN_OBJLEN, \
       PERF_MAX_OBJLEN, PERF_NUM_KEYS, PERF_OBJCASE); \
     printf("Keys usage... "); \
