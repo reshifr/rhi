@@ -718,10 +718,9 @@ void* rhis_kdelete(struct rhis* set, void* key) {
   return DEFVAL;
 }
 
-
-/*********************************
- * Miscellaneous functions (set) *
- *********************************/
+/***************************
+ * Miscellaneous functions *
+ ***************************/
 
 DECL_COUNT(rhis_count, struct rhis)
 
@@ -736,10 +735,9 @@ void rhis_free(struct rhis *set) {
   free(set);
 }
 
-
-/************************************
- * Forward traverse functions (set) *
- ************************************/
+/******************************
+ * Forward traverse functions *
+ ******************************/
 
 #define RHIS_GET(_set, _iter) \
   ((_iter)==DEFITER ? DEFVAL : (_set)->nodes[_iter].key)
@@ -752,10 +750,9 @@ const void* rhis_current(const struct rhis* set) {
   return RHIS_GET(set, set->iter);
 }
 
-
-/***********************************
- * Random traverse functions (set) *
- ***********************************/
+/*****************************
+ * Random traverse functions *
+ *****************************/
 
 DECL_ITERS(rhis_iters, struct rhis)
 
@@ -763,9 +760,7 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
   return RHIS_GET(set, iter);
 }
 
-
-/* ===================================Map=================================== */
-
+/* ===== Map ===== */
 
 /***************************
  * Initial functions (map) *

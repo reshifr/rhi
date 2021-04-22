@@ -385,25 +385,25 @@ RHI_API bool rhis_delete(struct rhis* set, void* key);
  */
 RHI_API void* rhis_kdelete(struct rhis* set, void* key);
 
-/*********************************
- * Miscellaneous functions (set) *
- *********************************/
+/***************************
+ * Miscellaneous functions *
+ ***************************/
 
 RHI_API rhiuint rhis_count(const struct rhis* set);
 RHI_API void rhis_free(struct rhis* set);
 
-/************************************
- * Forward traverse functions (set) *
- ************************************/
+/******************************
+ * Forward traverse functions *
+ ******************************/
 
 RHI_API void rhis_begin(struct rhis* set);
 RHI_API void rhis_next(struct rhis* set);
 RHI_API bool rhis_end(struct rhis* set);
 RHI_API const void* rhis_current(const struct rhis* set);
 
-/***********************************
- * Random traverse functions (set) *
- ***********************************/
+/*****************************
+ * Random traverse functions *
+ *****************************/
 
 RHI_API rhiuint* rhis_iters(const struct rhis* set);
 RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
