@@ -35,7 +35,8 @@ OBJS = \
 	$(BUILD_DIR)\set_ksearch.obj \
 	$(BUILD_DIR)\set_replace.obj \
 	$(BUILD_DIR)\set_kreplace.obj \
-	$(BUILD_DIR)\set_delete.obj
+	$(BUILD_DIR)\set_delete.obj \
+	$(BUILD_DIR)\set_kdelete.obj
 
 all: $(OBJS) $(TARGET)
 
@@ -80,6 +81,9 @@ $(BUILD_DIR)\set_kreplace.obj: $(TEST_DIR)\set\kreplace.c $(HEADERS)
 
 $(BUILD_DIR)\set_delete.obj: $(TEST_DIR)\set\delete.c $(HEADERS)
 	$(CL) /c $(TEST_DIR)\set\delete.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+
+$(BUILD_DIR)\set_kdelete.obj: $(TEST_DIR)\set\kdelete.c $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\kdelete.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
 #
