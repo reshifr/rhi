@@ -325,7 +325,7 @@ struct rhim {
   }
 
 #define DECL_END(__func, __obj) \
-  bool __func(__obj* obj) { \
+  bool __func(const __obj* obj) { \
     return obj->is_end; \
   }
 

@@ -398,7 +398,7 @@ RHI_API void rhis_free(struct rhis* set);
 
 RHI_API void rhis_begin(struct rhis* set);
 RHI_API void rhis_next(struct rhis* set);
-RHI_API bool rhis_end(struct rhis* set);
+RHI_API bool rhis_end(const struct rhis* set);
 RHI_API const void* rhis_current(const struct rhis* set);
 
 /*****************************
