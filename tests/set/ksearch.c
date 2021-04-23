@@ -6,7 +6,7 @@
 #define CONS_TESTS(initial, funcs, mode, print) \
   do { \
     const void* r; \
-    bool rbool; \
+    bool exist; \
     struct rhis* set; \
     struct objs* keys[2]; \
  \
@@ -37,10 +37,10 @@
     } \
  \
     /* [0] ksearch NULL */ \
-    rbool = rhis_search(set, NULL); \
+    exist = rhis_search(set, NULL); \
     r = rhis_ksearch(set, NULL); \
-    ASSERT(rbool && r==NULL, "[0] Ksearch %s found.", "NULL"); \
-    ASSERT(!rbool && r==NULL, "[0] Ksearch %s not found.", "NULL"); \
+    ASSERT(exist && r==NULL, "[0] Ksearch %s found.", "NULL"); \
+    ASSERT(!exist && r==NULL, "[0] Ksearch %s not found.", "NULL"); \
  \
     /* populates the dictionary by keys[0] and NULL */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) \
@@ -57,10 +57,10 @@
     } \
  \
     /* [1] ksearch NULL */ \
-    rbool = rhis_search(set, NULL); \
+    exist = rhis_search(set, NULL); \
     r = rhis_ksearch(set, NULL); \
-    ASSERT(rbool && r==NULL, "[1] Ksearch %s found.", "NULL"); \
-    ASSERT(!rbool && r==NULL, "[1] Ksearch %s not found.", "NULL"); \
+    ASSERT(exist && r==NULL, "[1] Ksearch %s found.", "NULL"); \
+    ASSERT(!exist && r==NULL, "[1] Ksearch %s not found.", "NULL"); \
  \
     objs_free(keys[0]); \
     objs_free(keys[1]); \

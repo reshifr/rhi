@@ -6,7 +6,7 @@
 #define CONS_TESTS(initial, funcs, mode, print) \
   do { \
     void* r; \
-    bool rbool; \
+    bool exist; \
     struct rhis* set; \
     struct objs* keys[2]; \
  \
@@ -48,16 +48,16 @@
     print(set); \
  \
     /* [0] kreplace NULL */ \
-    rbool = rhis_search(set, NULL); \
+    exist = rhis_search(set, NULL); \
     r = rhis_kreplace(set, NULL); \
-    ASSERT(!rbool, "[0] Kreplace %s inserted.", "NULL"); \
-    ASSERT(rbool && r==NULL, "[0] Kreplace %s replaced.", "NULL"); \
+    ASSERT(!exist, "[0] Kreplace %s inserted.", "NULL"); \
+    ASSERT(exist && r==NULL, "[0] Kreplace %s replaced.", "NULL"); \
  \
     /* [1] kreplace NULL */ \
-    rbool = rhis_search(set, NULL); \
+    exist = rhis_search(set, NULL); \
     r = rhis_kreplace(set, NULL); \
-    ASSERT(!rbool, "[1] Kreplace %s inserted.", "NULL"); \
-    ASSERT(rbool && r==NULL, "[1] Kreplace %s replaced.", "NULL"); \
+    ASSERT(!exist, "[1] Kreplace %s inserted.", "NULL"); \
+    ASSERT(exist && r==NULL, "[1] Kreplace %s replaced.", "NULL"); \
  \
     print(set); \
     objs_free(keys[0]); \
