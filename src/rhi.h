@@ -470,7 +470,7 @@ RHI_API void rhim_free(struct rhim* map);
 
 RHI_API void rhim_begin(struct rhim* map);
 RHI_API void rhim_next(struct rhim* map);
-RHI_API bool rhim_end(struct rhim* map);
+RHI_API bool rhim_end(const struct rhim* map);
 RHI_API struct rhiconstpair rhim_current(const struct rhim* map);
 RHI_API const void* rhim_kcurrent(const struct rhim* map);
 RHI_API void* rhim_vcurrent(const struct rhim* map);
