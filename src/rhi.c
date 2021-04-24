@@ -800,44 +800,13 @@ struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
 }
 
 
-/**************************
- * Insert functions (map) *
- **************************/
+/********************
+ * Insert functions *
+ ********************/
 
 DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
 
-bool rhim_insert(struct rhim* map, void* key, void* val) {
-  if( key==DEFVAL ) {
-    if( map->is_def_key )
-      return false;
-    map->is_def_key = true;
-    map->def_val = val;
-    return true;
-  }
-  if( map->occupied<map->max ||
-      ((map->mode&RHI_EXTEND) && map_extend_nodes(map)) ) {
-    size_t hashval = map->hash(key);
-    rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-    for(rhiuint i=0; i<map->size; ++i) {
-      if( IS_EMPTY(map->nodes[prob]) ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return true;
-      }
-      if( hashval==map->nodes[prob].hashval &&
-          map->equal(key, map->nodes[prob].key) )
-        return false;
-      prob = HASHVAL_PROB(prob, map->size);
-    }
-  }
-  return false;
-}
-
-/*********************
- * Replace functions *
- *********************/
-
-#define RHIM_REPLACE(map, _hashval, _key, _val, _ret, _def_ret) \
+#define RHIM_INSERT(map, _hashval, _key, _val, _ret, _def_ret) \
   do { \
     if( (map->mode&RHI_EXTEND) && map_extend_nodes(map) ) { \
       rhiuint _prob = HASHVAL_INDEX(_hashval, map->size); \
@@ -852,6 +821,37 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
     } \
     return _def_ret; \
   } while(0)
+
+bool rhim_insert(struct rhim* map, void* key, void* val) {
+  if( key==DEFVAL ) {
+    if( map->is_def_key )
+      return false;
+    map->is_def_key = true;
+    map->def_val = val;
+    return true;
+  }
+  size_t hashval = map->hash(key);
+  rhiuint prob = HASHVAL_INDEX(hashval, map->size);
+  for(rhiuint i=0; i<map->size; ++i) {
+    if( IS_EMPTY(map->nodes[prob]) ) {
+      if( map->occupied<map->max ) {
+        ++map->occupied;
+        map->nodes[prob] = RHIM_NODE(hashval, key, val);
+        return true;
+      }
+      RHIM_REPLACE(map, hashval, key, val, true, false);
+    }
+    if( hashval==map->nodes[prob].hashval &&
+        map->equal(key, map->nodes[prob].key) )
+      return false;
+    prob = HASHVAL_PROB(prob, map->size);
+  }
+  return false;
+}
+
+/*********************
+ * Replace functions *
+ *********************/
 
 bool rhim_replace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
