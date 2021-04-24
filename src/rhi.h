@@ -410,17 +410,51 @@ RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
 
 /* ===== Map ===== */
 
-/***************************
- * Initial functions (map) *
- ***************************/
+/*********************
+ * Initial functions *
+ *********************/
 
+/**
+ * \brief   Create dictionary
+ * 
+ * Dictionary is initialized to the default size.
+ * 
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   valfree  Value destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   mode     Mode
+ * 
+ * \return  On success, pointer of dictionary is returned. On
+ *          failure, NULL is returned.
+ */
 RHI_API struct rhim* rhim_init(rhihash hash,
   rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode);
-  
+
+/**
+ * \brief   Reserve dictionary according to size
+ * 
+ * Dictionary is initialized to the specified size, the size
+ * of which is set >= specified size. The maximum dictionary
+ * size (RHI_PRIME_METHOD enabled) is 1546188225, and the
+ * default is 1546188226.
+ * 
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   valfree  Value destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   size     Reserved size
+ * \param   mode     Mode
+ * 
+ * \return  On success, pointer of dictionary is returned. On
+ *          failure, NULL is returned.
+ */
 RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode);
-
-
 
 /**************************
  * Insert functions (map) *

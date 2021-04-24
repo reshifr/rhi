@@ -762,9 +762,9 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
 
 /* ===== Map ===== */
 
-/***************************
- * Initial functions (map) *
- ***************************/
+/*********************
+ * Initial functions *
+ *********************/
 
 #define RHIM_INIT(_hash, _equal, _keyfree, _valfree, _mode, _index) \
   do { \
@@ -787,18 +787,53 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
     return _map; \
   } while(0)
 
+/**
+ * \brief   Create dictionary
+ * 
+ * Dictionary is initialized to the default size.
+ * 
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   valfree  Value destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   mode     Mode
+ * 
+ * \return  On success, pointer of dictionary is returned. On
+ *          failure, NULL is returned.
+ */
 struct rhim* rhim_init(rhihash hash,
   rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode) {
   RHIM_INIT(hash, equal, keyfree, valfree, mode, BEGIN_INDEX);
 }
 
+/**
+ * \brief   Reserve dictionary according to size
+ * 
+ * Dictionary is initialized to the specified size, the size
+ * of which is set >= specified size. The maximum dictionary
+ * size (RHI_PRIME_METHOD enabled) is 1546188225, and the
+ * default is 1546188226.
+ * 
+ * \param   hash     Hash function
+ * \param   equal    Equal function
+ * \param   keyfree  Key destroyer function. If not needed,
+ *                   set the argument as NULL
+ * \param   valfree  Value destroyer function. If not needed,
+ *                   set the argument as NULL.
+ * \param   size     Reserved size
+ * \param   mode     Mode
+ * 
+ * \return  On success, pointer of dictionary is returned. On
+ *          failure, NULL is returned.
+ */
 struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode) {
   int index;
   GET_INDEX(index, size);
   RHIM_INIT(hash, equal, keyfree, valfree, mode, index);
 }
-
 
 /********************
  * Insert functions *
