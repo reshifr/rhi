@@ -496,6 +496,19 @@ RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
  *          returned.
  */
 RHI_API bool rhim_search(const struct rhim* map, const void* key);
+
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   map  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, the value is returned. On failure,
+ *          NULL is returned.
+ */
 RHI_API void* rhim_vsearch(const struct rhim* map, const void* key);
 RHI_API struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key);
 
