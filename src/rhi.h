@@ -410,9 +410,9 @@ RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
 
 /* ===== Map ===== */
 
-/*********************
- * Initial functions *
- *********************/
+/************************
+ * Initialize functions *
+ ************************/
 
 /**
  * \brief   Create dictionary
@@ -456,10 +456,27 @@ RHI_API struct rhim* rhim_init(rhihash hash,
 RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode);
 
-/**************************
- * Insert functions (map) *
- **************************/
+/********************
+ * Insert functions *
+ ********************/
 
+/**
+ * \brief   Insert the key and value into the dictionary
+ * 
+ * Insertion failed due to:
+ *  - The key has been inserted.
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   map  Dictionary
+ * \param   key  Key
+ * \param   val  Value
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 
 

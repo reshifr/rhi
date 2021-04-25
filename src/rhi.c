@@ -762,9 +762,9 @@ const void* rhis_get(const struct rhis* set, rhiuint iter) {
 
 /* ===== Map ===== */
 
-/*********************
- * Initial functions *
- *********************/
+/************************
+ * Initialize functions *
+ ************************/
 
 #define RHIM_INIT(_hash, _equal, _keyfree, _valfree, _mode, _index) \
   do { \
@@ -857,6 +857,23 @@ DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
     return _def_ret; \
   } while(0)
 
+/**
+ * \brief   Insert the key and value into the dictionary
+ * 
+ * Insertion failed due to:
+ *  - The key has been inserted.
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    limit of elements is reached.
+ *  - On rare condition, memory allocation may fail when the
+ *    dictionary is extended.
+ * 
+ * \param   map  Dictionary
+ * \param   key  Key
+ * \param   val  Value
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
 bool rhim_insert(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
     if( map->is_def_key )
