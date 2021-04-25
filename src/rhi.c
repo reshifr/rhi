@@ -901,6 +901,54 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
   return false;
 }
 
+/********************
+ * Search functions *
+ ********************/
+
+#define RHIM_SEARCH(_map, _key, \
+  _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
+  do { \
+    if( (_key)==DEFVAL ) \
+      return _def_key_ret; \
+    size_t _hashval = (_map)->hash(_key); \
+    rhiuint _prob = HASHVAL_INDEX(_hashval, (_map)->size); \
+    for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
+      if( IS_EMPTY((_map)->nodes[_prob]) ) \
+        return _empty_ret; \
+      if( _hashval==(_map)->nodes[_prob].hashval && \
+          (_map)->equal(_key, (_map)->nodes[_prob].key) ) \
+        return _equal_ret; \
+      _prob = HASHVAL_PROB(_prob, (_map)->size); \
+    } \
+    return _def_ret; \
+  } while(0)
+
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   map  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhim_search(const struct rhim* map, const void* key) {
+  RHIM_SEARCH(map, key, map->is_def_key, false, true, false);
+}
+
+void* rhim_vsearch(const struct rhim* map, const void* key) {
+  RHIM_SEARCH(map, key, map->is_def_key ?
+    map->def_val : DEFVAL, DEFVAL, map->nodes[_prob].val, DEFVAL);
+}
+
+struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
+  RHIM_SEARCH(map, key, map->is_def_key ?
+    CONSTPAIR(DEFVAL, map->def_val): DEFCONSTPAIR, DEFCONSTPAIR,
+    CONSTPAIR(map->nodes[_prob].key, map->nodes[_prob].val), DEFCONSTPAIR);
+}
 /*********************
  * Replace functions *
  *********************/
@@ -1009,45 +1057,6 @@ struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val) {
   }
   return DEFPAIR;
 }
-
-
-/**************************
- * Search functions (map) *
- **************************/
-
-#define RHIM_SEARCH(_map, _key, \
-  _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
-  do { \
-    if( (_key)==DEFVAL ) \
-      return _def_key_ret; \
-    size_t _hashval = (_map)->hash(_key); \
-    rhiuint _prob = HASHVAL_INDEX(_hashval, (_map)->size); \
-    for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
-      if( IS_EMPTY((_map)->nodes[_prob]) ) \
-        return _empty_ret; \
-      if( _hashval==(_map)->nodes[_prob].hashval && \
-          (_map)->equal(_key, (_map)->nodes[_prob].key) ) \
-        return _equal_ret; \
-      _prob = HASHVAL_PROB(_prob, (_map)->size); \
-    } \
-    return _def_ret; \
-  } while(0)
-
-bool rhim_search(const struct rhim* map, const void* key) {
-  RHIM_SEARCH(map, key, map->is_def_key, false, true, false);
-}
-
-void* rhim_vsearch(const struct rhim* map, const void* key) {
-  RHIM_SEARCH(map, key, map->is_def_key ?
-    map->def_val : DEFVAL, DEFVAL, map->nodes[_prob].val, DEFVAL);
-}
-
-struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
-  RHIM_SEARCH(map, key, map->is_def_key ?
-    CONSTPAIR(DEFVAL, map->def_val): DEFCONSTPAIR, DEFCONSTPAIR,
-    CONSTPAIR(map->nodes[_prob].key, map->nodes[_prob].val), DEFCONSTPAIR);
-}
-
 
 /**************************
  * Delete functions (map) *

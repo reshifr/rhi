@@ -479,6 +479,26 @@ RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
  */
 RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 
+/********************
+ * Search functions *
+ ********************/
+
+/**
+ * \brief   Search the key in the dictionary
+ * 
+ * Search failed because the given key is not in the
+ * dictionary.
+ * 
+ * \param   map  Dictionary
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhim_search(const struct rhim* map, const void* key);
+RHI_API void* rhim_vsearch(const struct rhim* map, const void* key);
+RHI_API struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key);
+
 
 /*********************
  * Replace functions *
@@ -487,15 +507,6 @@ RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
 RHI_API void* rhim_vreplace(struct rhim* map, void* key, void* val);
 RHI_API struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val);
-
-
-/**************************
- * Search functions (map) *
- **************************/
-
-RHI_API bool rhim_search(const struct rhim* map, const void* key);
-RHI_API void* rhim_vsearch(const struct rhim* map, const void* key);
-RHI_API struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key);
 
 
 /**************************
