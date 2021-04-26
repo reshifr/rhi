@@ -835,9 +835,9 @@ struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   RHIM_INIT(hash, equal, keyfree, valfree, mode, index);
 }
 
-/********************
- * Insert functions *
- ********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
 DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
 
@@ -961,9 +961,10 @@ struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
     CONSTPAIR(DEFVAL, map->def_val): DEFCONSTPAIR, DEFCONSTPAIR,
     CONSTPAIR(map->nodes[_prob].key, map->nodes[_prob].val), DEFCONSTPAIR);
 }
-/*********************
- * Replace functions *
- *********************/
+
+/*************************
+ * Replacement functions *
+ *************************/
 
 bool rhim_replace(struct rhim* map, void* key, void* val) {
   if( key==DEFVAL ) {
