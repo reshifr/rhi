@@ -456,9 +456,9 @@ RHI_API struct rhim* rhim_init(rhihash hash,
 RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode);
 
-/********************
- * Insert functions *
- ********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
 /**
  * \brief   Insert the key and value into the dictionary
@@ -512,10 +512,9 @@ RHI_API bool rhim_search(const struct rhim* map, const void* key);
 RHI_API void* rhim_vsearch(const struct rhim* map, const void* key);
 RHI_API struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key);
 
-
-/*********************
- * Replace functions *
- *********************/
+/*************************
+ * Replacement functions *
+ *************************/
 
 RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
 RHI_API void* rhim_vreplace(struct rhim* map, void* key, void* val);
