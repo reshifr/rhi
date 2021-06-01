@@ -1,0 +1,25 @@
+language: c
+
+arch:
+  - amd64
+  - arm64
+  - ppc64le
+  - s390x
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+install: skip
+
+script:
+  - cd tests
+  - mkdir build
+  - make
+  - make clean
+  - make "RHI_FLAGS += -DRHI_PRIME_METHOD"
+  - make clean
