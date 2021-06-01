@@ -20,6 +20,3 @@ script:
   - cd tests
   - mkdir build
   - make
-  - make clean
-  - make "RHI_FLAGS += -DRHI_PRIME_METHOD"
-  - make clean
