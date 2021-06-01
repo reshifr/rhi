@@ -5,9 +5,10 @@
 
 #define CONS_TESTS(initial, funcs, mode, print) \
   do { \
-    bool r; \
+    void* r; \
+    bool exist; \
     struct rhis* set; \
-    struct objs* keys[2]; \
+    struct objs* keys; \
  \
     /* initialize the dictionary */ \
     if( initial==INIT ) { \
@@ -20,26 +21,19 @@
         CONS_RESERVE_SIZE, mode))==NULL, "Set reserve failed."); \
     } \
  \
-    keys[0] = objs_init(CONS_MIN_OBJLEN, \
+    keys = objs_init(CONS_MIN_OBJLEN, \
       CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
  \
-    keys[1] = objs_init(CONS_MIN_OBJLEN, \
-      CONS_MAX_OBJLEN, CONS_NUM_KEYS, CONS_OBJCASE); \
- \
-    /* [0] populates the dictionary by key[0] and NULL */ \
-    for(rhiuint i=0; i<keys[0]->count; ++i) \
-      rhis_insert(set, keys[0]->objs[i]); \
-    rhis_insert(set, NULL); \
-    print(set); \
- \
-    /* [0] delete by keys[0] */ \
+    /* [0] kdelete by keys */ \
     for(rhiuint i=0; i<keys[0]->count; ++i) { \
       r = rhis_delete(set, keys[0]->objs[i]); \
-      ASSERT(r, "[0] Delete %s success.", (const char*)keys[0]->objs[i]); \
-      ASSERT(!r, "[0] Delete %s failed.", (const char*)keys[0]->objs[i]); \
+      ASSERT(r==NULL, "[0] Kdelete %s %s returned.", \
+        (const char*)keys[0]->objs[i], "NULL"); \
+      ASSERT(r!=NULL, "[0] Kdelete %s deleted.", \
+        (const char*)keys[0]->objs[i]); \
     } \
  \
-    /* [0] delete NULL */ \
+    /* [0] kdelete NULL */ \
     r = rhis_delete(set, NULL); \
     ASSERT(r, "[0] Delete %s success.", "NULL"); \
     ASSERT(!r, "[0] Delete %s failed.", "NULL"); \
@@ -148,26 +142,26 @@ extern struct funcs funcs;
 extern struct funcs kfuncs;
 
 void set_kdelete(void) {
-  TEST(CONS_TESTS(INIT, funcs, RHI_FIXED, set_print), 0);
-  TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK, set_print), 0);
-  TEST(CONS_TESTS(INIT, funcs, RHI_EXTEND, set_print), 0);
-  TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
+  // TEST(CONS_TESTS(INIT, funcs, RHI_FIXED, set_print), 0);
+  // TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK, set_print), 0);
+  // TEST(CONS_TESTS(INIT, funcs, RHI_EXTEND, set_print), 0);
+  // TEST(CONS_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
-  TEST(CONS_TESTS(RESERVE, funcs, RHI_FIXED, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, funcs, RHI_EXTEND, set_print), 0);
-  TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
+  // TEST(CONS_TESTS(RESERVE, funcs, RHI_FIXED, set_print), 0);
+  // TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK, set_print), 0);
+  // TEST(CONS_TESTS(RESERVE, funcs, RHI_EXTEND, set_print), 0);
+  // TEST(CONS_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_print), 0);
 
-  TEST(PERF_TESTS(INIT, funcs, RHI_FIXED, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, funcs, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  // TEST(PERF_TESTS(INIT, funcs, RHI_FIXED, set_mprint), 0);
+  // TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK, set_mprint), 0);
+  // TEST(PERF_TESTS(INIT, funcs, RHI_EXTEND, set_mprint), 0);
+  // TEST(PERF_TESTS(INIT, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(PERF_TESTS(RESERVE, funcs, RHI_FIXED, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, funcs, RHI_EXTEND, set_mprint), 0);
-  TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  // TEST(PERF_TESTS(RESERVE, funcs, RHI_FIXED, set_mprint), 0);
+  // TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK, set_mprint), 0);
+  // TEST(PERF_TESTS(RESERVE, funcs, RHI_EXTEND, set_mprint), 0);
+  // TEST(PERF_TESTS(RESERVE, funcs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 
-  TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
-  TEST(MEMORY_TESTS(RESERVE, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  // TEST(MEMORY_TESTS(INIT, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
+  // TEST(MEMORY_TESTS(RESERVE, kfuncs, RHI_SHRINK|RHI_EXTEND, set_mprint), 0);
 }

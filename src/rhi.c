@@ -839,7 +839,7 @@ struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
  * Insertion functions *
  ***********************/
 
-DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
+// DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
 
 #define RHIM_INSERT(map, _hashval, _key, _val, _ret, _def_ret) \
   do { \
@@ -874,32 +874,32 @@ DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
-bool rhim_insert(struct rhim* map, void* key, void* val) {
-  if( key==DEFVAL ) {
-    if( map->is_def_key )
-      return false;
-    map->is_def_key = true;
-    map->def_val = val;
-    return true;
-  }
-  size_t hashval = map->hash(key);
-  rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-  for(rhiuint i=0; i<map->size; ++i) {
-    if( IS_EMPTY(map->nodes[prob]) ) {
-      if( map->occupied<map->max ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return true;
-      }
-      RHIM_REPLACE(map, hashval, key, val, true, false);
-    }
-    if( hashval==map->nodes[prob].hashval &&
-        map->equal(key, map->nodes[prob].key) )
-      return false;
-    prob = HASHVAL_PROB(prob, map->size);
-  }
-  return false;
-}
+// bool rhim_insert(struct rhim* map, void* key, void* val) {
+//   if( key==DEFVAL ) {
+//     if( map->is_def_key )
+//       return false;
+//     map->is_def_key = true;
+//     map->def_val = val;
+//     return true;
+//   }
+//   size_t hashval = map->hash(key);
+//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
+//   for(rhiuint i=0; i<map->size; ++i) {
+//     if( IS_EMPTY(map->nodes[prob]) ) {
+//       if( map->occupied<map->max ) {
+//         ++map->occupied;
+//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//         return true;
+//       }
+//       RHIM_REPLACE(map, hashval, key, val, true, false);
+//     }
+//     if( hashval==map->nodes[prob].hashval &&
+//         map->equal(key, map->nodes[prob].key) )
+//       return false;
+//     prob = HASHVAL_PROB(prob, map->size);
+//   }
+//   return false;
+// }
 
 /********************
  * Search functions *
@@ -966,110 +966,110 @@ struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
  * Replacement functions *
  *************************/
 
-bool rhim_replace(struct rhim* map, void* key, void* val) {
-  if( key==DEFVAL ) {
-    if( map->is_def_key ) {
-      if( map->valfree!=NULL )
-        map->valfree(map->def_val);
-      map->def_val = val;
-      return true;
-    }
-    map->is_def_key = true;
-    map->def_val = val;
-    return true;
-  }
-  size_t hashval = map->hash(key);
-  rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-  for(rhiuint i=0; i<map->size; ++i) {
-    if( IS_EMPTY(map->nodes[prob]) ) {
-      if( map->occupied<map->max ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return true;
-      }
-      RHIM_REPLACE(map, hashval, key, val, true, false);
-    }
-    if( hashval==map->nodes[prob].hashval &&
-        map->equal(key, map->nodes[prob].key) ) {
-      if( map->keyfree!=NULL )
-        map->keyfree(map->nodes[prob].key);
-      if( map->valfree!=NULL )
-        map->valfree(map->nodes[prob].val);
-      map->nodes[prob] = RHIM_NODE(hashval, key, val);
-      return true;
-    }
-    prob = HASHVAL_PROB(prob, map->size);
-  }
-  return false;
-}
+// bool rhim_replace(struct rhim* map, void* key, void* val) {
+//   if( key==DEFVAL ) {
+//     if( map->is_def_key ) {
+//       if( map->valfree!=NULL )
+//         map->valfree(map->def_val);
+//       map->def_val = val;
+//       return true;
+//     }
+//     map->is_def_key = true;
+//     map->def_val = val;
+//     return true;
+//   }
+//   size_t hashval = map->hash(key);
+//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
+//   for(rhiuint i=0; i<map->size; ++i) {
+//     if( IS_EMPTY(map->nodes[prob]) ) {
+//       if( map->occupied<map->max ) {
+//         ++map->occupied;
+//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//         return true;
+//       }
+//       RHIM_REPLACE(map, hashval, key, val, true, false);
+//     }
+//     if( hashval==map->nodes[prob].hashval &&
+//         map->equal(key, map->nodes[prob].key) ) {
+//       if( map->keyfree!=NULL )
+//         map->keyfree(map->nodes[prob].key);
+//       if( map->valfree!=NULL )
+//         map->valfree(map->nodes[prob].val);
+//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//       return true;
+//     }
+//     prob = HASHVAL_PROB(prob, map->size);
+//   }
+//   return false;
+// }
 
-void* rhim_vreplace(struct rhim* map, void* key, void* val) {
-  if( key==DEFVAL ) {
-    if( map->is_def_key ) {
-      void* old_val = map->def_val;
-      map->def_val = val;
-      return old_val;
-    }
-    map->is_def_key = true;
-    map->def_val = val;
-    return DEFVAL;
-  }
-  size_t hashval = map->hash(key);
-  rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-  for(rhiuint i=0; i<map->size; ++i) {
-    if( IS_EMPTY(map->nodes[prob]) ) {
-      if( map->occupied<map->max ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return DEFVAL;
-      }
-      RHIM_REPLACE(map, hashval, key, val, DEFVAL, DEFVAL);
-    }
-    if( hashval==map->nodes[prob].hashval &&
-        map->equal(key, map->nodes[prob].key) ) {
-      if( map->keyfree!=NULL )
-        map->keyfree(map->nodes[prob].key);
-      void* old_val = map->nodes[prob].val;
-      map->nodes[prob] = RHIM_NODE(hashval, key, val);
-      return old_val;
-    }
-    prob = HASHVAL_PROB(prob, map->size);
-  }
-  return DEFVAL;
-}
+// void* rhim_vreplace(struct rhim* map, void* key, void* val) {
+//   if( key==DEFVAL ) {
+//     if( map->is_def_key ) {
+//       void* old_val = map->def_val;
+//       map->def_val = val;
+//       return old_val;
+//     }
+//     map->is_def_key = true;
+//     map->def_val = val;
+//     return DEFVAL;
+//   }
+//   size_t hashval = map->hash(key);
+//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
+//   for(rhiuint i=0; i<map->size; ++i) {
+//     if( IS_EMPTY(map->nodes[prob]) ) {
+//       if( map->occupied<map->max ) {
+//         ++map->occupied;
+//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//         return DEFVAL;
+//       }
+//       RHIM_REPLACE(map, hashval, key, val, DEFVAL, DEFVAL);
+//     }
+//     if( hashval==map->nodes[prob].hashval &&
+//         map->equal(key, map->nodes[prob].key) ) {
+//       if( map->keyfree!=NULL )
+//         map->keyfree(map->nodes[prob].key);
+//       void* old_val = map->nodes[prob].val;
+//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//       return old_val;
+//     }
+//     prob = HASHVAL_PROB(prob, map->size);
+//   }
+//   return DEFVAL;
+// }
 
-struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val) {
-  if( key==DEFVAL ) {
-    if( map->is_def_key ) {
-      struct rhipair pair = PAIR(DEFVAL, map->def_val);
-      map->def_val = val;
-      return pair;
-    }
-    map->is_def_key = true;
-    map->def_val = val;
-    return DEFPAIR;
-  }
-  size_t hashval = map->hash(key);
-  rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-  for(rhiuint i=0; i<map->size; ++i) {
-    if( IS_EMPTY(map->nodes[prob]) ) {
-      if( map->occupied<map->max ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return DEFPAIR;
-      }
-      RHIM_REPLACE(map, hashval, key, val, DEFPAIR, DEFPAIR);
-    }
-    if( hashval==map->nodes[prob].hashval &&
-        map->equal(key, map->nodes[prob].key) ) {
-      struct rhipair pair = PAIR(map->nodes[prob].key, map->nodes[prob].val);
-      map->nodes[prob] = RHIM_NODE(hashval, key, val);
-      return pair;
-    }
-    prob = HASHVAL_PROB(prob, map->size);
-  }
-  return DEFPAIR;
-}
+// struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val) {
+//   if( key==DEFVAL ) {
+//     if( map->is_def_key ) {
+//       struct rhipair pair = PAIR(DEFVAL, map->def_val);
+//       map->def_val = val;
+//       return pair;
+//     }
+//     map->is_def_key = true;
+//     map->def_val = val;
+//     return DEFPAIR;
+//   }
+//   size_t hashval = map->hash(key);
+//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
+//   for(rhiuint i=0; i<map->size; ++i) {
+//     if( IS_EMPTY(map->nodes[prob]) ) {
+//       if( map->occupied<map->max ) {
+//         ++map->occupied;
+//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//         return DEFPAIR;
+//       }
+//       RHIM_REPLACE(map, hashval, key, val, DEFPAIR, DEFPAIR);
+//     }
+//     if( hashval==map->nodes[prob].hashval &&
+//         map->equal(key, map->nodes[prob].key) ) {
+//       struct rhipair pair = PAIR(map->nodes[prob].key, map->nodes[prob].val);
+//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
+//       return pair;
+//     }
+//     prob = HASHVAL_PROB(prob, map->size);
+//   }
+//   return DEFPAIR;
+// }
 
 /**************************
  * Delete functions (map) *
