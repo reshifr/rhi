@@ -2,4 +2,4 @@
 
 ## Implementation of linear probing hashing with backward shift deletion
 
-Hello World
+The librhi is a C implementation of set and map data structure with raw pointer-type key and value.
