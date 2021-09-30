@@ -404,8 +404,8 @@ RHI_API struct rhis* rhis_init(
  * 
  * The table will be initialized to the specified size, the
  * size of which is set >= specified size. The maximum table
- * size (RHI_PRIME enabled) is 1546188225, and the default is
- * 1546188226.
+ * size (RHI_PRIME enabled) is 1,546,188,225, and the default
+ * is 1,546,188,226.
  * 
  * \param   hash     Hash function
  * \param   equal    Equal function
