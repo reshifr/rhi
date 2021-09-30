@@ -81,8 +81,7 @@
 
 #define NULL_ITER RHIUINT_MAX
 
-#define OOM_ERROR_MESSAGE \
-  "Error: Used system memory has run out."
+#define OOM_ERROR_MESSAGE "Error: Used system memory has run out."
 #define RANGE_ERROR_MESSAGE \
   "Error: The number of elements exceeded the range possible."
 #define ERROR(_message) \
@@ -378,7 +377,7 @@ struct rhim {
   } while(0)
 
 /**
- * \brief   Create a table
+ * \brief   Create a table.
  * 
  * The table will be initialized at default size.
  * 
@@ -401,7 +400,7 @@ RHI_API struct rhis* rhis_init(
 }
 
 /**
- * \brief   Reserve a table
+ * \brief   Reserve a table.
  * 
  * The table will be initialized to the specified size, the
  * size of which is set >= specified size. The maximum table
@@ -430,123 +429,119 @@ struct rhis* rhis_reserve(
   RHIS_INIT(hash, equal, free, mode, curr_range);
 }
 
-// /***********************
-//  * Insertion functions *
-//  ***********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
-// #define RHIS_INSERT(set, _hashval, _key, _ret, _def_ret) \
-//   do { \
-//     if( (set->mode&RHI_EXTEND) && set_extend_nodes(set) ) { \
-//       rhiuint _prob = HASHVAL_INDEX(_hashval, set->size); \
-//       for(rhiuint _i=0; _i<set->size; ++_i) { \
-//         if( IS_EMPTY(set->nodes[_prob]) ) { \
-//           ++set->occupied; \
-//           set->nodes[_prob] = RHIS_NODE(_hashval, _key); \
-//           return _ret; \
-//         } \
-//         _prob = HASHVAL_PROB(_prob, set->size); \
-//       } \
-//     } \
-//     return _def_ret; \
-//   } while(0)
+#define RHIS_INSERT(_set, _hashval, _key, _ret, _besides_ret) \
+  do { \
+    if( (_set)->mode&RHI_EXTEND ) { \
+      EXTEND_NODES(_set, struct rhisnode); \
+      rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_set)->size); \
+      for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
+        if( IS_EMPTY((_set)->nodes[_prob]) ) { \
+          ++(_set)->occupied; \
+          (_set)->nodes[_prob] = RHIS_NODE(_hashval, _key); \
+          return _ret; \
+        } \
+        _prob = HASHVAL_TO_PROB(_prob, (_set)->size); \
+      } \
+    } \
+    return _besides_ret; \
+  } while(0)
 
-// /**
-//  * \brief   Insert the key into the dictionary
-//  * 
-//  * Insertion failed due to:
-//  *  - The key has been inserted.
-//  *  - When the mode is not set with RHI_EXTEND and the maximum
-//  *    limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhis_insert(struct rhis* set, void* key) {
-//   /* handling of NULL keys */
-//   if( key==DEFVAL ) {
-//     if( set->is_def_key )
-//       return false;
-//     set->is_def_key = true;
-//     return true;
-//   }
-//   size_t hashval = set->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[prob]) ) {
-//       if( set->occupied<set->max ) {
-//         ++set->occupied;
-//         set->nodes[prob] = RHIS_NODE(hashval, key);
-//         return true;
-//       }
-//       RHIS_INSERT(set, hashval, key, true, false);
-//     }
-//     if( hashval==set->nodes[prob].hashval &&
-//         set->equal(key, set->nodes[prob].key) )
-//       return false;
-//     prob = HASHVAL_PROB(prob, set->size);
-//   }
-//   return false;
-// }
+/**
+ * \brief   Insert the key in the table.
+ * 
+ * Insertion failed due to:
+ *  - The key has been inserted
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    limit of elements is reached.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhis_insert(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==NULL ) {
+    if( set->has_null_inserted )
+      return false;
+    set->has_null_inserted = true;
+    return true;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) ) {
+      if( set->occupied<set->max ) {
+        ++set->occupied;
+        set->nodes[prob] = RHIS_NODE(hashval, key);
+        return true;
+      }
+      RHIS_INSERT(set, hashval, key, true, false);
+    }
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) )
+      return false;
+    prob = HASHVAL_TO_PROB(prob, set->size);
+  }
+  return false;
+}
 
-// /********************
-//  * Search functions *
-//  ********************/
+/********************
+ * Search functions *
+ ********************/
 
-// #define RHIS_SEARCH(_set, _key, \
-//   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
-//   do { \
-//     /* handling of NULL keys */ \
-//     if( (_key)==DEFVAL ) \
-//       return _def_key_ret; \
-//     size_t _hashval = (_set)->hash(_key); \
-//     rhiuint _prob = HASHVAL_INDEX(_hashval, (_set)->size); \
-//     for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-//       if( IS_EMPTY((_set)->nodes[_prob]) ) \
-//         return _empty_ret; \
-//       if( _hashval==(_set)->nodes[_prob].hashval && \
-//           (_set)->equal(_key, (_set)->nodes[_prob].key) ) \
-//         return _equal_ret; \
-//       _prob = HASHVAL_PROB(_prob, (_set)->size); \
-//     } \
-//     return _def_ret; \
-//   } while(0)
+#define RHIS_SEARCH(_set, _key, _null_ret, _empty_ret, _equal_ret, _besides_ret) \
+  do { \
+    /* handling of NULL keys */ \
+    if( (_key)==NULL ) \
+      return _null_ret; \
+    size_t _hashval = (_set)->hash(_key); \
+    rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_set)->size); \
+    for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
+      if( IS_EMPTY((_set)->nodes[_prob]) ) \
+        return _empty_ret; \
+      if( _hashval==(_set)->nodes[_prob].hashval && \
+          (_set)->equal(_key, (_set)->nodes[_prob].key) ) \
+        return _equal_ret; \
+      _prob = HASHVAL_TO_PROB(_prob, (_set)->size); \
+    } \
+    return _besides_ret; \
+  } while(0)
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhis_search(const struct rhis* set, const void* key) {
-//   RHIS_SEARCH(set, key, set->is_def_key, false, true, false);
-// }
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhis_search(const struct rhis* set, const void* key) {
+  RHIS_SEARCH(set, key, set->has_null_inserted, false, true, false);
+}
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the searched key is returned. On
-//  *          failure, NULL is returned.
-//  */
-// const void* rhis_ksearch(const struct rhis* set, const void* key) {
-//   RHIS_SEARCH(set, key, DEFVAL, DEFVAL, set->nodes[_prob].key, DEFVAL);
-// }
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, the searched key is returned. On
+ *          failure, NULL is returned.
+ */
+const void* rhis_ksearch(const struct rhis* set, const void* key) {
+  RHIS_SEARCH(set, key, NULL, NULL, set->nodes[_prob].key, NULL);
+}
 
 // /*************************
 //  * Replacement functions *
