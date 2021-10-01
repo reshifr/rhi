@@ -127,8 +127,8 @@ typedef uint32_t rhiuint;  /* Unsigned integer data type. */
 /**
  * \brief  Extend mode.
  * 
- * The table will be extended when the number of elements
- * reaches the maximum limit.
+ * The table will extend when the number of elements reaches
+ * the maximum limit.
  */
 #define RHI_EXTEND 0x02
 
