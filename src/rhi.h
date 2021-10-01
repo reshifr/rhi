@@ -141,7 +141,7 @@ typedef uint32_t rhiuint;  /* Unsigned integer data type. */
 /**
  * \brief   Hash function.
  * 
- * Generate the hash value of the key. If the key is NULL,
+ * Generate the hash value of the key. If the key is 'NULL',
  * then this function is not called.
  * 
  * \param   key  Key
@@ -240,7 +240,7 @@ RHI_API struct rhis* rhis_init(
  * 
  * The table will be initialized to the specified size, the
  * size of which is set >= specified size. The maximum table
- * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (null key),
+ * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
  * and the default is 1,546,188,226 + 1.
  * 
  * \param   hash     Hash function
@@ -266,12 +266,12 @@ RHI_API struct rhis* rhis_reserve(
  ***********************/
 
 /**
- * \brief   Insert the key in the table.
+ * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
  *  - The key has been inserted
  *  - When the mode is not set with RHI_EXTEND and the maximum
- *    limit of elements is reached.
+ *    number of elements is reached.
  * 
  * \param   set  Table
  * \param   key  Key
@@ -309,106 +309,91 @@ RHI_API bool rhis_search(const struct rhis* set, const void* key);
  * \return  On success, the searched key is returned. On
  *          failure, NULL is returned.
  */
-RHI_API const void* rhis_ksearch(const struct rhis* set, const void* key);
+RHI_API const void* rhis_key_search(const struct rhis* set, const void* key);
 
-// /*************************
-//  * Replacement functions *
-//  *************************/
+/*************************
+ * Replacement functions *
+ *************************/
 
-// /**
-//  * \brief   Replace the key into the dictionary
-//  * 
-//  * If keyfree is not set as NULL, the old key is replaced by
-//  * the given key. The old key was destroyed by keyfree.
-//  * 
-//  * Replacement failed due to:
-//  *  - Unique key insertion when the mode is not set with
-//  *    RHI_EXTEND and the maximum limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// RHI_API bool rhis_replace(struct rhis* set, void* key);
+/**
+ * \brief   Replace the key into the table.
+ * 
+ * If free() is not set as NULL, the old key is replaced by
+ * the given key. The old key was destroyed by free().
+ * Replacement fails if the unique key is inserted when the
+ * mode is not set with RHI_EXTEND and the maximum number of
+ * elements is reached.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhis_replace(struct rhis* set, void* key);
 
-// /**
-//  * \brief   Replace the key into the dictionary
-//  * 
-//  * The old key is replaced by the given key.
-//  * 
-//  * Replacement failed due to:
-//  *  - Unique key insertion when the mode is not set with
-//  *    RHI_EXTEND and the maximum limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the old key is returned. On failure,
-//  *          NULL is returned.
-//  */
-// RHI_API void* rhis_kreplace(struct rhis* set, void* key);
+/**
+ * \brief   Replace the key into the table.
+ * 
+ * The old key is replaced by the given key. Replacement fails
+ * if the unique key is inserted when the mode is not set with
+ * RHI_EXTEND and the maximum number of elements is reached.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
+RHI_API void* rhis_key_replace(struct rhis* set, void* key);
 
-// /**********************
-//  * Deletion functions *
-//  **********************/
+/**********************
+ * Deletion functions *
+ **********************/
 
-// /**
-//  * \brief   Delete the key from the dictionary
-//  * 
-//  * If keyfree is not set as NULL, the given key would be
-//  * destroyed by keyfree. Deletion failed because the given key
-//  * is not in the dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// RHI_API bool rhis_delete(struct rhis* set, void* key);
+/**
+ * \brief   Delete the key from the table.
+ * 
+ * If free() is not set as NULL, the given key will be
+ * destroyed by free(). Deletion failed because the given key
+ * is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhis_delete(struct rhis* set, void* key);
 
-// /**
-//  * \brief   Delete the key from the dictionary
-//  * 
-//  * Delete failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the old key is returned. On failure,
-//  *          NULL is returned.
-//  */
-// RHI_API void* rhis_kdelete(struct rhis* set, void* key);
+/**
+ * \brief   Delete the key from the table.
+ * 
+ * Delete failed because the given key is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
+RHI_API void* rhis_key_delete(struct rhis* set, void* key);
 
-// /***************************
-//  * Miscellaneous functions *
-//  ***************************/
+/***********************
+ * Traversal functions *
+ ***********************/
 
-// RHI_API rhiuint rhis_count(const struct rhis* set);
-// RHI_API void rhis_free(struct rhis* set);
+RHI_API void rhis_begin(struct rhis* set);
+RHI_API void rhis_next(struct rhis* set);
+RHI_API bool rhis_has_ended(const struct rhis* set);
+RHI_API const void* rhis_current(const struct rhis* set);
 
-// /******************************
-//  * Forward traverse functions *
-//  ******************************/
+/***************************
+ * Miscellaneous functions *
+ ***************************/
 
-// RHI_API void rhis_begin(struct rhis* set);
-// RHI_API void rhis_next(struct rhis* set);
-// RHI_API bool rhis_end(const struct rhis* set);
-// RHI_API const void* rhis_current(const struct rhis* set);
-
-// /*****************************
-//  * Random traverse functions *
-//  *****************************/
-
-// RHI_API rhiuint* rhis_iters(const struct rhis* set);
-// RHI_API const void* rhis_get(const struct rhis* set, rhiuint iter);
+RHI_API rhiuint rhis_count(const struct rhis* set);
+RHI_API void rhis_free(struct rhis* set);
 
 // /* ===== Map ===== */
 
