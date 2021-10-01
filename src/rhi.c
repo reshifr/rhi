@@ -184,7 +184,7 @@ struct rhim {
    RHIUINT_C(0) : ((rhiuint)((double)GET_SIZE(_curr_range)*MIN_LOAD)))
 #define MAX_OCCUPIED(_curr_range) \
   ((rhiuint)((double)GET_SIZE(_curr_range)*MAX_LOAD))
-#define COUNT(_table) ((_table)->has_defkey_inserted ? \
+#define COUNT(_table) ((_table)->has_null_inserted ? \
   (_table)->occupied+1 : (_table)->occupied)
 
 /**
@@ -335,7 +335,7 @@ struct rhim {
 
 #define __NEXT(__func, __table) \
   void __func(__table* table) { \
-    rhiuint i = table->iter==NULL_ITER ? 0 : table->iter_index+1; \
+    rhiuint i = table->iter_index==NULL_ITER ? 0 : table->iter_index+1; \
     for(; i<table->size; ++i) { \
       if( IS_EMPTY(table->nodes[i]) ) \
         continue; \
@@ -390,7 +390,7 @@ struct rhim {
  * \return  On success, pointer of dictionary is returned. On
  *          failure, NULL is returned.
  */
-RHI_API struct rhis* rhis_init(
+struct rhis* rhis_init(
   rhihash hash,
   rhiequal equal,
   rhikeyfree free,
@@ -404,7 +404,7 @@ RHI_API struct rhis* rhis_init(
  * 
  * The table will be initialized to the specified size, the
  * size of which is set >= specified size. The maximum table
- * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (null key),
+ * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
  * and the default is 1,546,188,226 + 1.
  * 
  * \param   hash     Hash function
@@ -451,12 +451,12 @@ struct rhis* rhis_reserve(
   } while(0)
 
 /**
- * \brief   Insert the key in the table.
+ * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
  *  - The key has been inserted
  *  - When the mode is not set with RHI_EXTEND and the maximum
- *    limit of elements is reached.
+ *    number of elements is reached.
  * 
  * \param   set  Table
  * \param   key  Key
@@ -539,231 +539,210 @@ bool rhis_search(const struct rhis* set, const void* key) {
  * \return  On success, the searched key is returned. On
  *          failure, NULL is returned.
  */
-const void* rhis_ksearch(const struct rhis* set, const void* key) {
+const void* rhis_key_search(const struct rhis* set, const void* key) {
   RHIS_SEARCH(set, key, NULL, NULL, set->nodes[_prob].key, NULL);
 }
 
-// /*************************
-//  * Replacement functions *
-//  *************************/
+/*************************
+ * Replacement functions *
+ *************************/
 
-// /**
-//  * \brief   Replace the key into the dictionary
-//  * 
-//  * If keyfree is not set as NULL, the old key is replaced by
-//  * the given key. The old key was destroyed by keyfree.
-//  * 
-//  * Replacement failed due to:
-//  *  - Unique key insertion when the mode is not set with
-//  *    RHI_EXTEND and the maximum limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhis_replace(struct rhis* set, void* key) {
-//   /* handling of NULL keys */
-//   if( key==DEFVAL ) {
-//     set->is_def_key = true;
-//     return true;
-//   }
-//   size_t hashval = set->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[prob]) ) {
-//       if( set->occupied<set->max ) {
-//         ++set->occupied;
-//         set->nodes[prob] = RHIS_NODE(hashval, key);
-//         return true;
-//       }
-//       RHIS_INSERT(set, hashval, key, true, false);
-//     }
-//     if( hashval==set->nodes[prob].hashval &&
-//         set->equal(key, set->nodes[prob].key) ) {
-//       if( set->keyfree!=NULL )
-//         set->keyfree(set->nodes[prob].key);
-//       set->nodes[prob] = RHIS_NODE(hashval, key);
-//       return true;
-//     }
-//     prob = HASHVAL_PROB(prob, set->size);
-//   }
-//   return false;
-// }
+/**
+ * \brief   Replace the key into the table.
+ * 
+ * If free() is not set as NULL, the old key is replaced by
+ * the given key. The old key was destroyed by free().
+ * Replacement fails if the unique key is inserted when the
+ * mode is not set with RHI_EXTEND and the maximum number of
+ * elements is reached.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhis_replace(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==NULL ) {
+    set->has_null_inserted = true;
+    return true;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) ) {
+      if( set->occupied<set->max ) {
+        ++set->occupied;
+        set->nodes[prob] = RHIS_NODE(hashval, key);
+        return true;
+      }
+      RHIS_INSERT(set, hashval, key, true, false);
+    }
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) ) {
+      if( set->free!=NULL )
+        set->free(set->nodes[prob].key);
+      set->nodes[prob] = RHIS_NODE(hashval, key);
+      return true;
+    }
+    prob = HASHVAL_TO_PROB(prob, set->size);
+  }
+  return false;
+}
 
-// /**
-//  * \brief   Replace the key into the dictionary
-//  * 
-//  * The old key is replaced by the given key.
-//  * 
-//  * Replacement failed due to:
-//  *  - Unique key insertion when the mode is not set with
-//  *    RHI_EXTEND and the maximum limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the old key is returned. On failure,
-//  *          NULL is returned.
-//  */
-// void* rhis_kreplace(struct rhis* set, void* key) {
-//   /* handling of NULL keys */
-//   if( key==DEFVAL ) {
-//     set->is_def_key = true;
-//     return DEFVAL;
-//   }
-//   size_t hashval = set->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[prob]) ) {
-//       if( set->occupied<set->max ) {
-//         ++set->occupied;
-//         set->nodes[prob] = RHIS_NODE(hashval, key);
-//         return DEFVAL;
-//       }
-//       RHIS_INSERT(set, hashval, key, DEFVAL, DEFVAL);
-//     }
-//     if( hashval==set->nodes[prob].hashval &&
-//         set->equal(key, set->nodes[prob].key) ) {
-//       void* old_key = set->nodes[prob].key;
-//       set->nodes[prob] = RHIS_NODE(hashval, key);
-//       return old_key;
-//     }
-//     prob = HASHVAL_PROB(prob, set->size);
-//   }
-//   return DEFVAL;
-// }
+/**
+ * \brief   Replace the key into the table.
+ * 
+ * The old key is replaced by the given key. Replacement fails
+ * if the unique key is inserted when the mode is not set with
+ * RHI_EXTEND and the maximum number of elements is reached.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
+void* rhis_key_replace(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==NULL ) {
+    set->has_null_inserted = true;
+    return NULL;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) ) {
+      if( set->occupied<set->max ) {
+        ++set->occupied;
+        set->nodes[prob] = RHIS_NODE(hashval, key);
+        return NULL;
+      }
+      RHIS_INSERT(set, hashval, key, NULL, NULL);
+    }
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) ) {
+      void* old_key = set->nodes[prob].key;
+      set->nodes[prob] = RHIS_NODE(hashval, key);
+      return old_key;
+    }
+    prob = HASHVAL_TO_PROB(prob, set->size);
+  }
+  return NULL;
+}
 
-// /**********************
-//  * Deletion functions *
-//  **********************/
+/**********************
+ * Deletion functions *
+ **********************/
 
-// /**
-//  * \brief   Delete the key from the dictionary
-//  * 
-//  * If keyfree is not set as NULL, the given key would be
-//  * destroyed by keyfree. Deletion failed because the given key
-//  * is not in the dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhis_delete(struct rhis* set, void* key) {
-//   /* handling of NULL keys */
-//   if( key==DEFVAL ) {
-//     if( set->is_def_key ) {
-//       set->is_def_key = false;
-//       return true;
-//     }
-//     return false;
-//   }
-//   size_t hashval = set->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[prob]) )
-//       return false;
-//     if( hashval==set->nodes[prob].hashval &&
-//         set->equal(key, set->nodes[prob].key) ) {
-//       if( set->keyfree!=NULL )
-//         set->keyfree(set->nodes[prob].key);
-//       BACKWARD_SHIFT(set, prob);
-//       if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
-//         SHRINK_NODES(set, struct rhisnode);
-//       return true;
-//     }
-//     prob = HASHVAL_PROB(prob, set->size);
-//   }
-//   return false;
-// }
+/**
+ * \brief   Delete the key from the table.
+ * 
+ * If free() is not set as NULL, the given key will be
+ * destroyed by free(). Deletion failed because the given key
+ * is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhis_delete(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==NULL ) {
+    if( set->has_null_inserted ) {
+      set->has_null_inserted = false;
+      return true;
+    }
+    return false;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) )
+      return false;
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) ) {
+      if( set->free!=NULL )
+        set->free(set->nodes[prob].key);
+      BACKWARD_SHIFT(set, prob);
+      if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
+        SHRINK_NODES(set, struct rhisnode);
+      return true;
+    }
+    prob = HASHVAL_TO_PROB(prob, set->size);
+  }
+  return false;
+}
 
-// /**
-//  * \brief   Delete the key from the dictionary
-//  * 
-//  * Delete failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   set  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the old key is returned. On failure,
-//  *          NULL is returned.
-//  */
-// void* rhis_kdelete(struct rhis* set, void* key) {
-//   /* handling of NULL keys */
-//   if( key==DEFVAL ) {
-//     if( set->is_def_key ) {
-//       set->is_def_key = false;
-//       return DEFVAL;
-//     }
-//     return DEFVAL;
-//   }
-//   size_t hashval = set->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, set->size);
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[prob]) )
-//       return DEFVAL;
-//     if( hashval==set->nodes[prob].hashval &&
-//         set->equal(key, set->nodes[prob].key) ) {
-//       void* old_key = set->nodes[prob].key;
-//       BACKWARD_SHIFT(set, prob);
-//       if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
-//         SHRINK_NODES(set, struct rhisnode);
-//       return old_key;
-//     }
-//     prob = HASHVAL_PROB(prob, set->size);
-//   }
-//   return DEFVAL;
-// }
+/**
+ * \brief   Delete the key from the table.
+ * 
+ * Delete failed because the given key is not in the table.
+ * 
+ * \param   set  Table
+ * \param   key  Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
+void* rhis_key_delete(struct rhis* set, void* key) {
+  /* handling of NULL keys */
+  if( key==NULL ) {
+    if( set->has_null_inserted ) {
+      set->has_null_inserted = false;
+      return NULL;
+    }
+    return NULL;
+  }
+  size_t hashval = set->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[prob]) )
+      return NULL;
+    if( hashval==set->nodes[prob].hashval &&
+        set->equal(key, set->nodes[prob].key) ) {
+      void* old_key = set->nodes[prob].key;
+      BACKWARD_SHIFT(set, prob);
+      if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
+        SHRINK_NODES(set, struct rhisnode);
+      return old_key;
+    }
+    prob = HASHVAL_TO_PROB(prob, set->size);
+  }
+  return NULL;
+}
 
-// /***************************
-//  * Miscellaneous functions *
-//  ***************************/
+/***********************
+ * Traversal functions *
+ ***********************/
 
-// DECL_COUNT(rhis_count, struct rhis)
+__BEGIN(rhis_begin, struct rhis)
+__NEXT(rhis_next, struct rhis)
+__HAS_ENDED(rhis_has_ended, struct rhis)
 
-// void rhis_free(struct rhis *set) {
-//   for(rhiuint i=0; i<set->size; ++i) {
-//     if( IS_EMPTY(set->nodes[i]) )
-//       continue;
-//     if( set->keyfree!=NULL )
-//       set->keyfree(set->nodes[i].key);
-//   }
-//   free(set->nodes);
-//   free(set);
-// }
+const void* rhis_current(const struct rhis* set) {
+  return set->iter_index==NULL_ITER ? NULL : set->nodes[set->iter_index].key;
+}
 
-// /******************************
-//  * Forward traverse functions *
-//  ******************************/
+/***************************
+ * Miscellaneous functions *
+ ***************************/
 
-// #define RHIS_GET(_set, _iter) \
-//   ((_iter)==DEFITER ? DEFVAL : (_set)->nodes[_iter].key)
+__COUNT(rhis_count, struct rhis)
 
-// DECL_BEGIN(rhis_begin, struct rhis)
-// DECL_NEXT(rhis_next, struct rhis)
-// DECL_END(rhis_end, struct rhis)
-
-// const void* rhis_current(const struct rhis* set) {
-//   return RHIS_GET(set, set->iter);
-// }
-
-// /*****************************
-//  * Random traverse functions *
-//  *****************************/
-
-// DECL_ITERS(rhis_iters, struct rhis)
-
-// const void* rhis_get(const struct rhis* set, rhiuint iter) {
-//   return RHIS_GET(set, iter);
-// }
+void rhis_free(struct rhis *set) {
+  for(rhiuint i=0; i<set->size; ++i) {
+    if( IS_EMPTY(set->nodes[i]) )
+      continue;
+    if( set->free!=NULL )
+      set->free(set->nodes[i].key);
+  }
+  free(set->nodes);
+  free(set);
+}
 
 // /* ===== Map ===== */
 
