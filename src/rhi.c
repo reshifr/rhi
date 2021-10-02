@@ -387,7 +387,7 @@ struct rhim {
  *                   set the argument as NULL.
  * \param   mode     Mode
  * 
- * \return  On success, pointer of dictionary is returned. On
+ * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
  */
 struct rhis* rhis_init(
@@ -414,7 +414,7 @@ struct rhis* rhis_init(
  * \param   size     Reserved size
  * \param   mode     Mode
  * 
- * \return  On success, pointer of dictionary is returned. On
+ * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
  */
 struct rhis* rhis_reserve(
@@ -719,10 +719,49 @@ void* rhis_key_delete(struct rhis* set, void* key) {
  * Traversal functions *
  ***********************/
 
+/**
+ * \brief  Initialize the iterator.
+ * 
+ * Iterator initialization on the first element, the first
+ * element at the beginning is NULL key.
+ * 
+ * \param  set  Table
+ */
 __BEGIN(rhis_begin, struct rhis)
+
+/**
+ * \brief  Shift the iterator.
+ * 
+ * The iterator will move towards the next element in the
+ * table.
+ * 
+ * \param  set  Table
+ */
 __NEXT(rhis_next, struct rhis)
+
+/**
+ * \brief   Check the iterator.
+ * 
+ * Check if the iterator has ended.
+ * 
+ * \param   set  Table
+ * 
+ * \return  If ended, true is returned. Else, false is
+ *          returned.
+ */
 __HAS_ENDED(rhis_has_ended, struct rhis)
 
+/**
+ * \brief   Get the current key.
+ * 
+ * Get the key by the current iterator position in the table.
+ * If the iterator is ended, NULL is returned.
+ * 
+ * \param   set  Table
+ * 
+ * \return  On success, the current key is returned. On
+ *          failure, NULL is returned.
+ */
 const void* rhis_current(const struct rhis* set) {
   return set->iter_index==NULL_ITER ? NULL : set->nodes[set->iter_index].key;
 }
@@ -731,8 +770,26 @@ const void* rhis_current(const struct rhis* set) {
  * Miscellaneous functions *
  ***************************/
 
+/**
+ * \brief   Get the number of elements in the table.
+ * 
+ * The number of elements acquired is the whole element,
+ * including NULL key.
+ * 
+ * \param   set  Table
+ * 
+ * \return  Number of elements in the table.
+ */
 __COUNT(rhis_count, struct rhis)
 
+/**
+ * \brief  Destroy the table.
+ * 
+ * Memory release used by the table. If free() is not set as
+ * NULL, the whole key will be destroyed by free().
+ * 
+ * \param  set  Table
+ */
 void rhis_free(struct rhis *set) {
   for(rhiuint i=0; i<set->size; ++i) {
     if( IS_EMPTY(set->nodes[i]) )
@@ -744,7 +801,7 @@ void rhis_free(struct rhis *set) {
   free(set);
 }
 
-// /* ===== Map ===== */
+/* ===== Map ===== */
 
 // /************************
 //  * Initialize functions *

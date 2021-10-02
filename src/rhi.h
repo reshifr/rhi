@@ -141,7 +141,7 @@ typedef uint32_t rhiuint;  /* Unsigned integer data type. */
 /**
  * \brief   Hash function.
  * 
- * Generate the hash value of the key. If the key is 'NULL',
+ * Generate the hash value of the key. If the key is NULL,
  * then this function is not called.
  * 
  * \param   key  Key
@@ -225,7 +225,7 @@ struct rhiconstpair {
  *                   set the argument as NULL.
  * \param   mode     Mode
  * 
- * \return  On success, pointer of dictionary is returned. On
+ * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_init(
@@ -250,7 +250,7 @@ RHI_API struct rhis* rhis_init(
  * \param   size     Reserved size
  * \param   mode     Mode
  * 
- * \return  On success, pointer of dictionary is returned. On
+ * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
  */
 RHI_API struct rhis* rhis_reserve(
@@ -383,19 +383,78 @@ RHI_API void* rhis_key_delete(struct rhis* set, void* key);
  * Traversal functions *
  ***********************/
 
+/**
+ * \brief  Initialize the iterator.
+ * 
+ * Iterator initialization on the first element, the first
+ * element at the beginning is NULL key.
+ * 
+ * \param  set  Table
+ */
 RHI_API void rhis_begin(struct rhis* set);
+
+/**
+ * \brief  Shift the iterator.
+ * 
+ * The iterator will move towards the next element in the
+ * table.
+ * 
+ * \param  set  Table
+ */
 RHI_API void rhis_next(struct rhis* set);
+
+/**
+ * \brief   Check the iterator.
+ * 
+ * Check if the iterator has ended.
+ * 
+ * \param   set  Table
+ * 
+ * \return  If ended, true is returned. Else, false is
+ *          returned.
+ */
 RHI_API bool rhis_has_ended(const struct rhis* set);
+
+/**
+ * \brief   Get the current key.
+ * 
+ * Get the key by the current iterator position in the table.
+ * If the iterator is ended, NULL is returned.
+ * 
+ * \param   set  Table
+ * 
+ * \return  On success, the current key is returned. On
+ *          failure, NULL is returned.
+ */
 RHI_API const void* rhis_current(const struct rhis* set);
 
 /***************************
  * Miscellaneous functions *
  ***************************/
 
+/**
+ * \brief   Get the number of elements in the table.
+ * 
+ * The number of elements acquired is the whole element,
+ * including NULL key.
+ * 
+ * \param   set  Table
+ * 
+ * \return  Number of elements in the table.
+ */
 RHI_API rhiuint rhis_count(const struct rhis* set);
+
+/**
+ * \brief  Destroy the table.
+ * 
+ * Memory release used by the table. If free() is not set as
+ * NULL, the whole key will be destroyed by free().
+ * 
+ * \param  set  Table
+ */
 RHI_API void rhis_free(struct rhis* set);
 
-// /* ===== Map ===== */
+/* ===== Map ===== */
 
 // /************************
 //  * Initialize functions *
