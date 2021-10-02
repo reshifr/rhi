@@ -8,10 +8,10 @@
  * obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the
  * Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to
- * do so, subject to the following conditions:
+ * the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  * 
  * The above copyright notice and this permission notice shall
  * be included in all copies or substantial portions of the
@@ -75,12 +75,6 @@
 # define HASHVAL_TO_INDEX(_hashval, _size) ((rhiuint)((_hashval)&((_size)-1)))
 #endif
 
-/******************
- * Generic macros *
- ******************/
-
-#define NULL_ITER RHIUINT_MAX
-
 #define OOM_ERROR_MESSAGE "Error: Used system memory has run out."
 #define RANGE_ERROR_MESSAGE \
   "Error: The number of elements exceeded the range possible."
@@ -95,7 +89,7 @@
  ***************/
 
 struct rhisnode {
-  size_t hashval;  /* The hash value of this key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
 };
 
@@ -107,17 +101,17 @@ struct rhis {
   uint8_t mode;  /* The shrink/extend method of the table. */
   uint8_t begin_range;  /* The begin range. */
   uint8_t curr_range;  /* The current range. */
-  uint8_t has_null_inserted: 4;  /* Has a null key been inserted? */
+  uint8_t has_null_inserted: 4;  /* Has NULL key been inserted? */
   uint8_t has_iter_ended: 4;  /* Has the iterator ended? */
   rhiuint iter_index;  /* The iterator index. */
-  rhiuint min;  /* The minimum size of the table. */
-  rhiuint max;  /* The maximum size of the table. */
-  rhiuint size;  /* The current size of the table. */
-  rhiuint occupied;  /* The number of keys occupied in the table. */
+  rhiuint min;  /* The minimum number of elements of the nodes. */
+  rhiuint max;  /* The maximum number of elements of the nodes. */
+  rhiuint size;  /* The current number of nodes in the table. */
+  rhiuint occupied;  /* The number of elements occupied in the nodes. */
   rhihash hash;  /* The key hash function applied to the table. */
   rhiequal equal;  /* The key equal function is applied to the table. */
   rhikeyfree free;  /* The key destroy function is applied to the table. */
-  struct rhisnode* nodes;  /* A list of stored nodes. */
+  struct rhisnode* nodes;  /* An array of nodes. */
 };
 
 /**************
@@ -132,7 +126,7 @@ struct rhis {
  ***************/
 
 struct rhimnode {
-  size_t hashval;  /* The hash value of this key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
   void* val;  /* The value that was stored. */
 };
@@ -142,22 +136,22 @@ struct rhimnode {
  *******/
 
 struct rhim {
-  uint8_t mode;  /* The shrink/extend policy of the table. */
+  uint8_t mode;  /* The shrink/extend method of the table. */
   uint8_t begin_range;  /* The begin range. */
   uint8_t curr_range;  /* The current range. */
-  uint8_t has_null_inserted: 4;  /* Has a null key been inserted? */
+  uint8_t has_null_inserted: 4;  /* Has NULL key been inserted? */
   uint8_t has_iter_ended: 4;  /* Has the iterator ended? */
   rhiuint iter_index;  /* The iterator index. */
-  rhiuint min;  /* The minimum size of the table. */
-  rhiuint max;  /* The maximum size of the table. */
-  rhiuint size;  /* The current size of the table. */
-  rhiuint occupied;  /* The number of keys occupied in the table. */
+  rhiuint min;  /* The minimum number of elements of the nodes. */
+  rhiuint max;  /* The maximum number of elements of the nodes. */
+  rhiuint size;  /* The current number of nodes in the table. */
+  rhiuint occupied;  /* The number of elements occupied in the nodes. */
   rhihash hash;  /* The key hash function applied to the table. */
   rhiequal equal;  /* The key equal function is applied to the table. */
   rhikeyfree free_key;  /* The key destroy function is applied to the table. */
   rhivalfree free_val;  /* The value destroy function is applied to the table. */
-  void* null_val;  /* The value of the null key. */
-  struct rhimnode* nodes;  /* A list of stored nodes. */
+  void* null_val;  /* The value pair of NULL key. */
+  struct rhimnode* nodes;  /* An array of nodes. */
 };
 
 /**************
@@ -166,6 +160,8 @@ struct rhim {
 
 #define PAIR(_key, _val) ((struct rhipair){ .key=_key, .val=_val })
 #define CONST_PAIR(_key, _val) ((struct rhiconstpair){ .key=_key, .val=_val })
+#define NULL_PAIR PAIR(NULL, NULL)
+#define NULL_CONST_PAIR CONST_PAIR(NULL, NULL)
 #define RHIM_NODE(_hashval, _key, _val) \
   ((struct rhimnode){ .hashval=_hashval, .key=_key, .val=_val })
 
@@ -176,6 +172,7 @@ struct rhim {
 #define MIN_LOAD 0.18
 #define MAX_LOAD 0.72
 #define BEGIN_EXPONENT 3
+#define NULL_ITER RHIUINT_MAX
 #define IS_EMPTY(_node) ((_node).key==NULL)
 #define SET_EMPTY(_node) ((_node).key=NULL)
 #define HASHVAL_TO_PROB(_prob, _size) HASHVAL_TO_INDEX((_prob)+1, _size)
@@ -252,25 +249,8 @@ struct rhim {
   } while(0)
 
 /**
- * Shrink the current array of nodes when it reaches its size
- * < its minimum size.
- */
-#define SHRINK_NODES(_table, __node) \
-  do { \
-    if( (_table)->curr_range==(_table)->begin_range ) \
-      break; \
-    __node* _new_nodes; \
-    int _new_range = (_table)->curr_range-1; \
-    rhiuint _new_size = GET_SIZE(_new_range); \
-    if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
-      break; \
-    MOVE_NODES(_table, _new_size, _new_nodes); \
-    SET_BOUNDARY(_table, _new_range, _new_size); \
-  } while(0)
-
-/**
- * Extend the current array of nodes when it reaches its size
- * > its maximum size.
+ * Extend the current array of nodes when it reaches its size >
+ * its maximum size.
  */
 #define EXTEND_NODES(_table, __node) \
   do { \
@@ -281,6 +261,41 @@ struct rhim {
     rhiuint _new_size = GET_SIZE(_new_range); \
     if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
       ERROR(OOM_ERROR_MESSAGE); \
+    MOVE_NODES(_table, _new_size, _new_nodes); \
+    SET_BOUNDARY(_table, _new_range, _new_size); \
+  } while(0)
+
+#define SEARCH(_table, _key, _null_ret, _empty_ret, _equal_ret, _besides_ret) \
+  do { \
+    /* Handling NULL key. */ \
+    if( (_key)==NULL ) \
+      return _null_ret; \
+    size_t _hashval = (_table)->hash(_key); \
+    rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_table)->size); \
+    for(rhiuint _i=0; _i<(_table)->size; ++_i) { \
+      if( IS_EMPTY((_table)->nodes[_prob]) ) \
+        return _empty_ret; \
+      if( _hashval==(_table)->nodes[_prob].hashval && \
+          (_table)->equal(_key, (_table)->nodes[_prob].key) ) \
+        return _equal_ret; \
+      _prob = HASHVAL_TO_PROB(_prob, (_table)->size); \
+    } \
+    return _besides_ret; \
+  } while(0)
+
+/**
+ * Shrink the current array of nodes when it reaches its size <
+ * its minimum size.
+ */
+#define SHRINK_NODES(_table, __node) \
+  do { \
+    if( (_table)->curr_range==(_table)->begin_range ) \
+      break; \
+    __node* _new_nodes; \
+    int _new_range = (_table)->curr_range-1; \
+    rhiuint _new_size = GET_SIZE(_new_range); \
+    if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
+      break; \
     MOVE_NODES(_table, _new_size, _new_nodes); \
     SET_BOUNDARY(_table, _new_range, _new_size); \
   } while(0)
@@ -381,11 +396,11 @@ struct rhim {
  * 
  * The table will be initialized at default size.
  * 
- * \param   hash     Hash function
- * \param   equal    Equal function
- * \param   free     Key destroyer function. If not needed,
- *                   set the argument as NULL.
- * \param   mode     Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   free    Key destroyer function. If not needed, set
+ *                  the argument as NULL.
+ * \param   mode    Mode
  * 
  * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
@@ -407,12 +422,12 @@ struct rhis* rhis_init(
  * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
  * and the default is 1,546,188,226 + 1.
  * 
- * \param   hash     Hash function
- * \param   equal    Equal function
- * \param   free     Key destroyer function. If not needed,
- *                   set the argument as NULL.
- * \param   size     Reserved size
- * \param   mode     Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   free    Key destroyer function. If not needed, set
+ *                  the argument as NULL.
+ * \param   size    Reserved size
+ * \param   mode    Mode
  * 
  * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
@@ -454,18 +469,18 @@ struct rhis* rhis_reserve(
  * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted
+ *  - The key has been inserted,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
-  /* handling of NULL keys */
+  /* Handling NULL key. */
   if( key==NULL ) {
     if( set->has_null_inserted )
       return false;
@@ -495,52 +510,19 @@ bool rhis_insert(struct rhis* set, void* key) {
  * Search functions *
  ********************/
 
-#define RHIS_SEARCH(_set, _key, _null_ret, _empty_ret, _equal_ret, _besides_ret) \
-  do { \
-    /* handling of NULL keys */ \
-    if( (_key)==NULL ) \
-      return _null_ret; \
-    size_t _hashval = (_set)->hash(_key); \
-    rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_set)->size); \
-    for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-      if( IS_EMPTY((_set)->nodes[_prob]) ) \
-        return _empty_ret; \
-      if( _hashval==(_set)->nodes[_prob].hashval && \
-          (_set)->equal(_key, (_set)->nodes[_prob].key) ) \
-        return _equal_ret; \
-      _prob = HASHVAL_TO_PROB(_prob, (_set)->size); \
-    } \
-    return _besides_ret; \
-  } while(0)
-
 /**
  * \brief   Search the key in the table.
  * 
  * Search failed because the given key is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 bool rhis_search(const struct rhis* set, const void* key) {
-  RHIS_SEARCH(set, key, set->has_null_inserted, false, true, false);
-}
-
-/**
- * \brief   Search the key in the table.
- * 
- * Search failed because the given key is not in the table.
- * 
- * \param   set  Table
- * \param   key  Key
- * 
- * \return  On success, the searched key is returned. On
- *          failure, NULL is returned.
- */
-const void* rhis_key_search(const struct rhis* set, const void* key) {
-  RHIS_SEARCH(set, key, NULL, NULL, set->nodes[_prob].key, NULL);
+  SEARCH(set, key, set->has_null_inserted, false, true, false);
 }
 
 /*************************
@@ -550,20 +532,20 @@ const void* rhis_key_search(const struct rhis* set, const void* key) {
 /**
  * \brief   Replace the key into the table.
  * 
- * If free() is not set as NULL, the old key is replaced by
- * the given key. The old key was destroyed by free().
- * Replacement fails if the unique key is inserted when the
- * mode is not set with RHI_EXTEND and the maximum number of
- * elements is reached.
+ * If free() is not set as NULL, the old key is replaced by the
+ * given key. The old key was destroyed by free(). Replacement
+ * fails if the unique key is inserted when the mode is not set
+ * with RHI_EXTEND and the maximum number of elements is
+ * reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 bool rhis_replace(struct rhis* set, void* key) {
-  /* handling of NULL keys */
+  /* Handling NULL key. */
   if( key==NULL ) {
     set->has_null_inserted = true;
     return true;
@@ -598,8 +580,8 @@ bool rhis_replace(struct rhis* set, void* key) {
  * if the unique key is inserted when the mode is not set with
  * RHI_EXTEND and the maximum number of elements is reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, the old key is returned. On failure,
  *          NULL is returned.
@@ -643,14 +625,14 @@ void* rhis_key_replace(struct rhis* set, void* key) {
  * destroyed by free(). Deletion failed because the given key
  * is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 bool rhis_delete(struct rhis* set, void* key) {
-  /* handling of NULL keys */
+  /* Handling NULL key. */
   if( key==NULL ) {
     if( set->has_null_inserted ) {
       set->has_null_inserted = false;
@@ -682,8 +664,8 @@ bool rhis_delete(struct rhis* set, void* key) {
  * 
  * Delete failed because the given key is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, the old key is returned. On failure,
  *          NULL is returned.
@@ -725,7 +707,7 @@ void* rhis_key_delete(struct rhis* set, void* key) {
  * Iterator initialization on the first element, the first
  * element at the beginning is NULL key.
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 __BEGIN(rhis_begin, struct rhis)
 
@@ -735,7 +717,7 @@ __BEGIN(rhis_begin, struct rhis)
  * The iterator will move towards the next element in the
  * table.
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 __NEXT(rhis_next, struct rhis)
 
@@ -744,7 +726,7 @@ __NEXT(rhis_next, struct rhis)
  * 
  * Check if the iterator has ended.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  If ended, true is returned. Else, false is
  *          returned.
@@ -757,7 +739,7 @@ __HAS_ENDED(rhis_has_ended, struct rhis)
  * Get the key by the current iterator position in the table.
  * If the iterator is ended, NULL is returned.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  On success, the current key is returned. On
  *          failure, NULL is returned.
@@ -776,7 +758,7 @@ const void* rhis_current(const struct rhis* set) {
  * The number of elements acquired is the whole element,
  * including NULL key.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  Number of elements in the table.
  */
@@ -788,7 +770,7 @@ __COUNT(rhis_count, struct rhis)
  * Memory release used by the table. If free() is not set as
  * NULL, the whole key will be destroyed by free().
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 void rhis_free(struct rhis *set) {
   for(rhiuint i=0; i<set->size; ++i) {
@@ -803,209 +785,219 @@ void rhis_free(struct rhis *set) {
 
 /* ===== Map ===== */
 
-// /************************
-//  * Initialize functions *
-//  ************************/
+/****************************
+ * Initialization functions *
+ ****************************/
 
-// #define RHIM_INIT(_hash, _equal, _keyfree, _valfree, _mode, _index) \
-//   do { \
-//     struct rhim* _map; \
-//     if( (_map=(struct rhim*)calloc(1, sizeof(struct rhim)))==NULL ) \
-//       return NULL; \
-//     rhiuint _initsize = GET_SIZE(_index); \
-//     if( (_map->nodes=(struct rhimnode*)calloc( \
-//         _initsize, sizeof(struct rhimnode)))==NULL ) { \
-//       free(_map); \
-//       return NULL; \
-//     } \
-//     _map->mode = (uint8_t)(_mode); \
-//     _map->begin_index = (uint8_t)(_index); \
-//     SET_BOUND(_map, _index, _initsize); \
-//     _map->hash = _hash; \
-//     _map->equal = _equal; \
-//     _map->keyfree = _keyfree; \
-//     _map->valfree = _valfree; \
-//     return _map; \
-//   } while(0)
+#define RHIM_INIT(_hash, _equal, _free_key, _free_val, _mode, _curr_range) \
+  do { \
+    struct rhim* _map; \
+    if( (_map=(struct rhim*)calloc(1, sizeof(struct rhim)))==NULL ) \
+      return NULL; \
+    rhiuint _init_size = GET_SIZE(_curr_range); \
+    if( (_map->nodes=(struct rhimnode*)calloc( \
+         _init_size, sizeof(struct rhimnode)))==NULL ) { \
+      free(_map); \
+      return NULL; \
+    } \
+    _map->mode = (uint8_t)(_mode); \
+    _map->begin_range = (uint8_t)(_curr_range); \
+    SET_BOUNDARY(_map, _curr_range, _init_size); \
+    _map->hash = _hash; \
+    _map->equal = _equal; \
+    _map->free_key = _free_key; \
+    _map->free_val = _free_val; \
+    return _map; \
+  } while(0)
 
-// /**
-//  * \brief   Create dictionary
-//  * 
-//  * Dictionary is initialized to the default size.
-//  * 
-//  * \param   hash     Hash function
-//  * \param   equal    Equal function
-//  * \param   keyfree  Key destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   valfree  Value destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   mode     Mode
-//  * 
-//  * \return  On success, pointer of dictionary is returned. On
-//  *          failure, NULL is returned.
-//  */
-// struct rhim* rhim_init(rhihash hash,
-//   rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode) {
-//   RHIM_INIT(hash, equal, keyfree, valfree, mode, BEGIN_INDEX);
-// }
+/**
+ * \brief   Create a table.
+ * 
+ * The table will be initialized at default size.
+ * 
+ * \param   hash       Hash function
+ * \param   equal      Equal function
+ * \param   free_key   Key destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   free_val   Value destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   mode       Mode
+ * 
+ * \return  On success, pointer of table is returned. On
+ *          failure, NULL is returned.
+ */
+struct rhim* rhim_init(
+  rhihash hash,
+  rhiequal equal,
+  rhikeyfree free_key,
+  rhivalfree free_val,
+  int mode
+) {
+  RHIM_INIT(hash, equal, free_key, free_val, mode, BEGIN_RANGE);
+}
 
-// /**
-//  * \brief   Reserve dictionary according to size
-//  * 
-//  * Dictionary is initialized to the specified size, the size
-//  * of which is set >= specified size. The maximum dictionary
-//  * size (RHI_PRIME_METHOD enabled) is 1546188225, and the
-//  * default is 1546188226.
-//  * 
-//  * \param   hash     Hash function
-//  * \param   equal    Equal function
-//  * \param   keyfree  Key destroyer function. If not needed,
-//  *                   set the argument as NULL
-//  * \param   valfree  Value destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   size     Reserved size
-//  * \param   mode     Mode
-//  * 
-//  * \return  On success, pointer of dictionary is returned. On
-//  *          failure, NULL is returned.
-//  */
-// struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
-//   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode) {
-//   int index;
-//   GET_INDEX(index, size);
-//   RHIM_INIT(hash, equal, keyfree, valfree, mode, index);
-// }
+/**
+ * \brief   Reserve a table.
+ * 
+ * The table will be initialized to the specified size, the
+ * size of which is set >= specified size. The maximum table
+ * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
+ * and the default is 1,546,188,226 + 1.
+ * 
+ * \param   hash       Hash function
+ * \param   equal      Equal function
+ * \param   free_key   Key destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   free_val   Value destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   size       Reserved size
+ * \param   mode       Mode
+ * 
+ * \return  On success, pointer of table is returned. On
+ *          failure, NULL is returned.
+ */
+struct rhim* rhim_reserve(
+  rhihash hash,
+  rhiequal equal,
+  rhikeyfree free_key,
+  rhivalfree free_val,
+  rhiuint size,
+  int mode
+) {
+  int curr_range;
+  GET_INDEX(curr_range, size);
+  RHIM_INIT(hash, equal, free_key, free_val, mode, curr_range);
+}
 
-// /***********************
-//  * Insertion functions *
-//  ***********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
-// // DECL_EXTEND_NODES(map_extend_nodes, struct rhim, struct rhimnode)
+#define RHIM_INSERT(_map, _hashval, _key, _val, _ret, _besides_ret) \
+  do { \
+    if( (_map)->mode&RHI_EXTEND ) { \
+      EXTEND_NODES(_map, struct rhimnode); \
+      rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_map)->size); \
+      for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
+        if( IS_EMPTY((_map)->nodes[_prob]) ) { \
+          ++(_map)->occupied; \
+          (_map)->nodes[_prob] = RHIM_NODE(_hashval, _key, _val); \
+          return _ret; \
+        } \
+        _prob = HASHVAL_TO_PROB(_prob, (_map)->size); \
+      } \
+    } \
+    return _besides_ret; \
+  } while(0)
 
-// #define RHIM_INSERT(map, _hashval, _key, _val, _ret, _def_ret) \
-//   do { \
-//     if( (map->mode&RHI_EXTEND) && map_extend_nodes(map) ) { \
-//       rhiuint _prob = HASHVAL_INDEX(_hashval, map->size); \
-//       for(rhiuint _i=0; _i<map->size; ++_i) { \
-//         if( IS_EMPTY(map->nodes[_prob]) ) { \
-//           ++map->occupied; \
-//           map->nodes[_prob] = RHIM_NODE(_hashval, _key, _val); \
-//           return _ret; \
-//         } \
-//         _prob = HASHVAL_PROB(_prob, map->size); \
-//       } \
-//     } \
-//     return _def_ret; \
-//   } while(0)
+/**
+ * \brief   Insert the key into the table.
+ * 
+ * Insertion failed due to:
+ *  - The key has been inserted,
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    number of elements is reached.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * \param   val   Value
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhim_insert(struct rhim* map, void* key, void* val) {
+  if( key==NULL ) {
+    if( map->has_null_inserted )
+      return false;
+    map->has_null_inserted = true;
+    map->null_val = val;
+    return true;
+  }
+  size_t hashval = map->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, map->size);
+  for(rhiuint i=0; i<map->size; ++i) {
+    if( IS_EMPTY(map->nodes[prob]) ) {
+      if( map->occupied<map->max ) {
+        ++map->occupied;
+        map->nodes[prob] = RHIM_NODE(hashval, key, val);
+        return true;
+      }
+      RHIM_INSERT(map, hashval, key, val, true, false);
+    }
+    if( hashval==map->nodes[prob].hashval &&
+        map->equal(key, map->nodes[prob].key) )
+      return false;
+    prob = HASHVAL_TO_PROB(prob, map->size);
+  }
+  return false;
+}
 
-// /**
-//  * \brief   Insert the key and value into the dictionary
-//  * 
-//  * Insertion failed due to:
-//  *  - The key has been inserted.
-//  *  - When the mode is not set with RHI_EXTEND and the maximum
-//  *    limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * \param   val  Value
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhim_insert(struct rhim* map, void* key, void* val) {
-//   if( key==DEFVAL ) {
-//     if( map->is_def_key )
-//       return false;
-//     map->is_def_key = true;
-//     map->def_val = val;
-//     return true;
-//   }
-//   size_t hashval = map->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-//   for(rhiuint i=0; i<map->size; ++i) {
-//     if( IS_EMPTY(map->nodes[prob]) ) {
-//       if( map->occupied<map->max ) {
-//         ++map->occupied;
-//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//         return true;
-//       }
-//       RHIM_REPLACE(map, hashval, key, val, true, false);
-//     }
-//     if( hashval==map->nodes[prob].hashval &&
-//         map->equal(key, map->nodes[prob].key) )
-//       return false;
-//     prob = HASHVAL_PROB(prob, map->size);
-//   }
-//   return false;
-// }
+/********************
+ * Search functions *
+ ********************/
 
-// /********************
-//  * Search functions *
-//  ********************/
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhim_search(const struct rhim* map, const void* key) {
+  SEARCH(map, key, map->has_null_inserted, false, true, false);
+}
 
-// #define RHIM_SEARCH(_map, _key, \
-//   _def_key_ret, _empty_ret, _equal_ret, _def_ret) \
-//   do { \
-//     if( (_key)==DEFVAL ) \
-//       return _def_key_ret; \
-//     size_t _hashval = (_map)->hash(_key); \
-//     rhiuint _prob = HASHVAL_INDEX(_hashval, (_map)->size); \
-//     for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
-//       if( IS_EMPTY((_map)->nodes[_prob]) ) \
-//         return _empty_ret; \
-//       if( _hashval==(_map)->nodes[_prob].hashval && \
-//           (_map)->equal(_key, (_map)->nodes[_prob].key) ) \
-//         return _equal_ret; \
-//       _prob = HASHVAL_PROB(_prob, (_map)->size); \
-//     } \
-//     return _def_ret; \
-//   } while(0)
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the searched value is returned. On
+ *          failure, NULL is returned.
+ */
+void* rhim_val_search(const struct rhim* map, const void* key) {
+  SEARCH(
+    map,
+    key,
+    map->has_null_inserted ? map->null_val : NULL,
+    NULL,
+    map->nodes[_prob].val,
+    NULL
+  );
+}
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// bool rhim_search(const struct rhim* map, const void* key) {
-//   RHIM_SEARCH(map, key, map->is_def_key, false, true, false);
-// }
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the searched pair is returned. On
+ *          failure, NULL is returned.
+ */
+struct rhiconstpair rhim_pair_search(const struct rhim* map, const void* key) {
+  SEARCH(
+    map,
+    key,
+    map->has_null_inserted ? CONST_PAIR(NULL, map->null_val) : NULL_CONST_PAIR,
+    NULL_CONST_PAIR,
+    CONST_PAIR(map->nodes[_prob].key, map->nodes[_prob].val),
+    NULL_CONST_PAIR
+  );
+}
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the value is returned. On failure,
-//  *          NULL is returned.
-//  */
-// void* rhim_vsearch(const struct rhim* map, const void* key) {
-//   RHIM_SEARCH(map, key, map->is_def_key ?
-//     map->def_val : DEFVAL, DEFVAL, map->nodes[_prob].val, DEFVAL);
-// }
-
-// struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key) {
-//   RHIM_SEARCH(map, key, map->is_def_key ?
-//     CONSTPAIR(DEFVAL, map->def_val): DEFCONSTPAIR, DEFCONSTPAIR,
-//     CONSTPAIR(map->nodes[_prob].key, map->nodes[_prob].val), DEFCONSTPAIR);
-// }
-
-// /*************************
-//  * Replacement functions *
-//  *************************/
+/*************************
+ * Replacement functions *
+ *************************/
 
 // bool rhim_replace(struct rhim* map, void* key, void* val) {
 //   if( key==DEFVAL ) {

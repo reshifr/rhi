@@ -8,10 +8,10 @@
  * obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the
  * Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to
- * do so, subject to the following conditions:
+ * the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
  * 
  * The above copyright notice and this permission notice shall
  * be included in all copies or substantial portions of the
@@ -141,10 +141,10 @@ typedef uint32_t rhiuint;  /* Unsigned integer data type. */
 /**
  * \brief   Hash function.
  * 
- * Generate the hash value of the key. If the key is NULL,
- * then this function is not called.
+ * Generate the hash value of the key. If the key is NULL, then
+ * this function is not called.
  * 
- * \param   key  Key
+ * \param   key   Key
  * 
  * \return  Hash value
  */
@@ -156,8 +156,8 @@ typedef size_t (*rhihash)(const void* key);
  * Compare two keys, equal or not. If the key is NULL, then
  * this function is not called.
  * 
- * \param   first_key   First key
- * \param   second_key  Second key
+ * \param   first_key    First key
+ * \param   second_key   Second key
  * 
  * \return  Equal, true is returned. Not equal, false is
  *          returned.
@@ -170,7 +170,7 @@ typedef bool (*rhiequal)(const void* first_key, const void* second_key);
  * Destroy keys when replacing, deleting, or destructing them.
  * If the key is NULL, then this function is not called.
  * 
- * \param  key  Key
+ * \param  key   Key
  */
 typedef void (*rhikeyfree)(void* key);
 
@@ -180,14 +180,13 @@ typedef void (*rhikeyfree)(void* key);
  * Destroy values when replacing, deleting, or destructing
  * them.
  * 
- * \param  val  Value
+ * \param  val   Value
  */
 typedef void (*rhivalfree)(void* val);
 
 /*******************
  * Data structures *
  *******************/
-
 
 struct rhis;  /* Set structure. */
 struct rhim;  /* Map structure. */
@@ -219,11 +218,11 @@ struct rhiconstpair {
  * 
  * The table will be initialized at default size.
  * 
- * \param   hash     Hash function
- * \param   equal    Equal function
- * \param   free     Key destroyer function. If not needed,
- *                   set the argument as NULL.
- * \param   mode     Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   free    Key destroyer function. If not needed, set
+ *                  the argument as NULL.
+ * \param   mode    Mode
  * 
  * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
@@ -243,12 +242,12 @@ RHI_API struct rhis* rhis_init(
  * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
  * and the default is 1,546,188,226 + 1.
  * 
- * \param   hash     Hash function
- * \param   equal    Equal function
- * \param   free     Key destroyer function. If not needed,
- *                   set the argument as NULL.
- * \param   size     Reserved size
- * \param   mode     Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   free    Key destroyer function. If not needed, set
+ *                  the argument as NULL.
+ * \param   size    Reserved size
+ * \param   mode    Mode
  * 
  * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
@@ -269,12 +268,12 @@ RHI_API struct rhis* rhis_reserve(
  * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted
+ *  - The key has been inserted,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
@@ -290,26 +289,13 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  * 
  * Search failed because the given key is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
-
-/**
- * \brief   Search the key in the table.
- * 
- * Search failed because the given key is not in the table.
- * 
- * \param   set  Table
- * \param   key  Key
- * 
- * \return  On success, the searched key is returned. On
- *          failure, NULL is returned.
- */
-RHI_API const void* rhis_key_search(const struct rhis* set, const void* key);
 
 /*************************
  * Replacement functions *
@@ -318,14 +304,14 @@ RHI_API const void* rhis_key_search(const struct rhis* set, const void* key);
 /**
  * \brief   Replace the key into the table.
  * 
- * If free() is not set as NULL, the old key is replaced by
- * the given key. The old key was destroyed by free().
- * Replacement fails if the unique key is inserted when the
- * mode is not set with RHI_EXTEND and the maximum number of
- * elements is reached.
+ * If free() is not set as NULL, the old key is replaced by the
+ * given key. The old key was destroyed by free(). Replacement
+ * fails if the unique key is inserted when the mode is not set
+ * with RHI_EXTEND and the maximum number of elements is
+ * reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
@@ -339,8 +325,8 @@ RHI_API bool rhis_replace(struct rhis* set, void* key);
  * if the unique key is inserted when the mode is not set with
  * RHI_EXTEND and the maximum number of elements is reached.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, the old key is returned. On failure,
  *          NULL is returned.
@@ -358,8 +344,8 @@ RHI_API void* rhis_key_replace(struct rhis* set, void* key);
  * destroyed by free(). Deletion failed because the given key
  * is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, true is returned. On failure, false is
  *          returned.
@@ -371,8 +357,8 @@ RHI_API bool rhis_delete(struct rhis* set, void* key);
  * 
  * Delete failed because the given key is not in the table.
  * 
- * \param   set  Table
- * \param   key  Key
+ * \param   set   Table
+ * \param   key   Key
  * 
  * \return  On success, the old key is returned. On failure,
  *          NULL is returned.
@@ -389,7 +375,7 @@ RHI_API void* rhis_key_delete(struct rhis* set, void* key);
  * Iterator initialization on the first element, the first
  * element at the beginning is NULL key.
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 RHI_API void rhis_begin(struct rhis* set);
 
@@ -399,7 +385,7 @@ RHI_API void rhis_begin(struct rhis* set);
  * The iterator will move towards the next element in the
  * table.
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 RHI_API void rhis_next(struct rhis* set);
 
@@ -408,7 +394,7 @@ RHI_API void rhis_next(struct rhis* set);
  * 
  * Check if the iterator has ended.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  If ended, true is returned. Else, false is
  *          returned.
@@ -421,7 +407,7 @@ RHI_API bool rhis_has_ended(const struct rhis* set);
  * Get the key by the current iterator position in the table.
  * If the iterator is ended, NULL is returned.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  On success, the current key is returned. On
  *          failure, NULL is returned.
@@ -438,7 +424,7 @@ RHI_API const void* rhis_current(const struct rhis* set);
  * The number of elements acquired is the whole element,
  * including NULL key.
  * 
- * \param   set  Table
+ * \param   set   Table
  * 
  * \return  Number of elements in the table.
  */
@@ -450,98 +436,135 @@ RHI_API rhiuint rhis_count(const struct rhis* set);
  * Memory release used by the table. If free() is not set as
  * NULL, the whole key will be destroyed by free().
  * 
- * \param  set  Table
+ * \param  set   Table
  */
 RHI_API void rhis_free(struct rhis* set);
 
 /* ===== Map ===== */
 
-// /************************
-//  * Initialize functions *
-//  ************************/
+/****************************
+ * Initialization functions *
+ ****************************/
 
-// /**
-//  * \brief   Create dictionary
-//  * 
-//  * Dictionary is initialized to the default size.
-//  * 
-//  * \param   hash     Hash function
-//  * \param   equal    Equal function
-//  * \param   keyfree  Key destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   valfree  Value destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   mode     Mode
-//  * 
-//  * \return  On success, pointer of dictionary is returned. On
-//  *          failure, NULL is returned.
-//  */
-// RHI_API struct rhim* rhim_init(rhihash hash,
-//   rhiequal equal, rhikeyfree keyfree, rhivalfree valfree, int mode);
+/**
+ * \brief   Create a table.
+ * 
+ * The table will be initialized at default size.
+ * 
+ * \param   hash       Hash function
+ * \param   equal      Equal function
+ * \param   free_key   Key destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   free_val   Value destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   mode       Mode
+ * 
+ * \return  On success, pointer of table is returned. On
+ *          failure, NULL is returned.
+ */
+RHI_API struct rhim* rhim_init(
+  rhihash hash,
+  rhiequal equal,
+  rhikeyfree free_key,
+  rhivalfree free_val,
+  int mode
+);
 
-// /**
-//  * \brief   Reserve dictionary according to size
-//  * 
-//  * Dictionary is initialized to the specified size, the size
-//  * of which is set >= specified size. The maximum dictionary
-//  * size (RHI_PRIME_METHOD enabled) is 1546188225, and the
-//  * default is 1546188226.
-//  * 
-//  * \param   hash     Hash function
-//  * \param   equal    Equal function
-//  * \param   keyfree  Key destroyer function. If not needed,
-//  *                   set the argument as NULL
-//  * \param   valfree  Value destroyer function. If not needed,
-//  *                   set the argument as NULL.
-//  * \param   size     Reserved size
-//  * \param   mode     Mode
-//  * 
-//  * \return  On success, pointer of dictionary is returned. On
-//  *          failure, NULL is returned.
-//  */
-// RHI_API struct rhim* rhim_reserve(rhihash hash, rhiequal equal,
-//   rhikeyfree keyfree, rhivalfree valfree, rhiuint size, int mode);
+/**
+ * \brief   Reserve a table.
+ * 
+ * The table will be initialized to the specified size, the
+ * size of which is set >= specified size. The maximum table
+ * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
+ * and the default is 1,546,188,226 + 1.
+ * 
+ * \param   hash       Hash function
+ * \param   equal      Equal function
+ * \param   free_key   Key destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   free_val   Value destroyer function. If not needed,
+ *                     set the argument as NULL.
+ * \param   size       Reserved size
+ * \param   mode       Mode
+ * 
+ * \return  On success, pointer of table is returned. On
+ *          failure, NULL is returned.
+ */
+RHI_API struct rhim* rhim_reserve(
+  rhihash hash,
+  rhiequal equal,
+  rhikeyfree free_key,
+  rhivalfree free_val,
+  rhiuint size,
+  int mode
+);
 
-// /***********************
-//  * Insertion functions *
-//  ***********************/
+/***********************
+ * Insertion functions *
+ ***********************/
 
-// /**
-//  * \brief   Insert the key and value into the dictionary
-//  * 
-//  * Insertion failed due to:
-//  *  - The key has been inserted.
-//  *  - When the mode is not set with RHI_EXTEND and the maximum
-//  *    limit of elements is reached.
-//  *  - On rare condition, memory allocation may fail when the
-//  *    dictionary is extended.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * \param   val  Value
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
+/**
+ * \brief   Insert the key into the table.
+ * 
+ * Insertion failed due to:
+ *  - The key has been inserted,
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    number of elements is reached.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * \param   val   Value
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 
-// /********************
-//  * Search functions *
-//  ********************/
+/********************
+ * Search functions *
+ ********************/
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, true is returned. On failure, false is
-//  *          returned.
-//  */
-// RHI_API bool rhim_search(const struct rhim* map, const void* key);
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhim_search(const struct rhim* map, const void* key);
+
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the searched value is returned. On
+ *          failure, NULL is returned.
+ */
+RHI_API void* rhim_val_search(const struct rhim* map, const void* key);
+
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key is not in the table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the searched pair is returned. On
+ *          failure, NULL is returned.
+ */
+RHI_API struct rhiconstpair rhim_pair_search(
+  const struct rhim* map,
+  const void* key
+);
 
 // /**
 //  * \brief   Search the key in the dictionary
