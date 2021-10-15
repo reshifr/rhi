@@ -190,22 +190,10 @@ typedef void (*rhivalfree)(void* val);
 
 struct rhis;  /* Set structure. */
 struct rhim;  /* Map structure. */
-
-/**
- * Mutable pair.
- */
 struct rhipair {
-  void* key;
-  void* val;
-};
-
-/**
- * Immutable pair.
- */
-struct rhiconstpair {
   const void* key;
   void* val;
-};
+};  /* Iterator pair. */
 
 /* ===== Set ===== */
 
@@ -268,7 +256,7 @@ RHI_API struct rhis* rhis_reserve(
  * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted,
+ *  - The key is already in the table,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
@@ -297,42 +285,6 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
  */
 RHI_API bool rhis_search(const struct rhis* set, const void* key);
 
-/*************************
- * Replacement functions *
- *************************/
-
-/**
- * \brief   Replace the key into the table.
- * 
- * If free() is not set as NULL, the old key is replaced by the
- * given key. The old key was destroyed by free(). Replacement
- * fails if the unique key is inserted when the mode is not set
- * with RHI_EXTEND and the maximum number of elements is
- * reached.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
- */
-RHI_API bool rhis_replace(struct rhis* set, void* key);
-
-/**
- * \brief   Replace the key into the table.
- * 
- * The old key is replaced by the given key. Replacement fails
- * if the unique key is inserted when the mode is not set with
- * RHI_EXTEND and the maximum number of elements is reached.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, the old key is returned. On failure,
- *          NULL is returned.
- */
-RHI_API void* rhis_key_replace(struct rhis* set, void* key);
-
 /**********************
  * Deletion functions *
  **********************/
@@ -351,19 +303,6 @@ RHI_API void* rhis_key_replace(struct rhis* set, void* key);
  *          returned.
  */
 RHI_API bool rhis_delete(struct rhis* set, void* key);
-
-/**
- * \brief   Delete the key from the table.
- * 
- * Delete failed because the given key is not in the table.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, the old key is returned. On failure,
- *          NULL is returned.
- */
-RHI_API void* rhis_key_delete(struct rhis* set, void* key);
 
 /***********************
  * Traversal functions *
@@ -504,10 +443,10 @@ RHI_API struct rhim* rhim_reserve(
  ***********************/
 
 /**
- * \brief   Insert the key into the table.
+ * \brief   Insert the key and value into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted,
+ *  - The key is already in the table,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
@@ -538,7 +477,7 @@ RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
 RHI_API bool rhim_search(const struct rhim* map, const void* key);
 
 /**
- * \brief   Search the key in the table.
+ * \brief   Search the value in the table.
  * 
  * Search failed because the given key is not in the table.
  * 
@@ -548,44 +487,33 @@ RHI_API bool rhim_search(const struct rhim* map, const void* key);
  * \return  On success, the searched value is returned. On
  *          failure, NULL is returned.
  */
-RHI_API void* rhim_val_search(const struct rhim* map, const void* key);
+RHI_API void* rhim_search_val(const struct rhim* map, const void* key);
+
+/*************************
+ * Replacement functions *
+ *************************/
 
 /**
- * \brief   Search the key in the table.
+ * \brief   Replace the key and value in the table.
  * 
- * Search failed because the given key is not in the table.
+ * If free_key() is not set as NULL, the old key is replaced by
+ * the given key. The old key was destroyed by free_key(). If
+ * free_val() is not set as NULL, the old value is replaced by
+ * the given value. The old value was destroyed by free_val().
  * 
- * \param   map   Table
+ * Replacement fails if the unique key is inserted when the
+ * mode is not set with RHI_EXTEND and the maximum number of
+ * elements is reached.
+ * 
+ * \param   set   Table
  * \param   key   Key
+ * \param   val   Value
  * 
- * \return  On success, the searched pair is returned. On
- *          failure, NULL is returned.
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
  */
-RHI_API struct rhiconstpair rhim_pair_search(
-  const struct rhim* map,
-  const void* key
-);
+RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
 
-// /**
-//  * \brief   Search the key in the dictionary
-//  * 
-//  * Search failed because the given key is not in the
-//  * dictionary.
-//  * 
-//  * \param   map  Dictionary
-//  * \param   key  Key
-//  * 
-//  * \return  On success, the value is returned. On failure,
-//  *          NULL is returned.
-//  */
-// RHI_API void* rhim_vsearch(const struct rhim* map, const void* key);
-// RHI_API struct rhiconstpair rhim_kvsearch(const struct rhim* map, const void* key);
-
-// /*************************
-//  * Replacement functions *
-//  *************************/
-
-// RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
 // RHI_API void* rhim_vreplace(struct rhim* map, void* key, void* val);
 // RHI_API struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val);
 

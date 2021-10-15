@@ -75,7 +75,8 @@
 # define HASHVAL_TO_INDEX(_hashval, _size) ((rhiuint)((_hashval)&((_size)-1)))
 #endif
 
-#define OOM_ERROR_MESSAGE "Error: Used system memory has run out."
+#define OOM_ERROR_MESSAGE \
+  "Error: Used system memory has run out."
 #define RANGE_ERROR_MESSAGE \
   "Error: The number of elements exceeded the range possible."
 #define ERROR(_message) \
@@ -159,9 +160,6 @@ struct rhim {
  **************/
 
 #define PAIR(_key, _val) ((struct rhipair){ .key=_key, .val=_val })
-#define CONST_PAIR(_key, _val) ((struct rhiconstpair){ .key=_key, .val=_val })
-#define NULL_PAIR PAIR(NULL, NULL)
-#define NULL_CONST_PAIR CONST_PAIR(NULL, NULL)
 #define RHIM_NODE(_hashval, _key, _val) \
   ((struct rhimnode){ .hashval=_hashval, .key=_key, .val=_val })
 
@@ -175,6 +173,7 @@ struct rhim {
 #define NULL_ITER RHIUINT_MAX
 #define IS_EMPTY(_node) ((_node).key==NULL)
 #define SET_EMPTY(_node) ((_node).key=NULL)
+#define NOT_EMPTY(_node) ((_node).key!=NULL)
 #define HASHVAL_TO_PROB(_prob, _size) HASHVAL_TO_INDEX((_prob)+1, _size)
 #define MIN_OCCUPIED(_curr_range, _begin_range) \
   ((_curr_range)==(_begin_range) ? \
@@ -190,7 +189,7 @@ struct rhim {
 #define SET_BOUNDARY(_table, _curr_range, _size) \
   do { \
     (_table)->curr_range = (uint8_t)(_curr_range); \
-    (_table)->min = MIN_OCCUPIED((_table)->begin_range, _curr_range); \
+    (_table)->min = MIN_OCCUPIED(_curr_range, (_table)->begin_range); \
     (_table)->max = MAX_OCCUPIED(_curr_range); \
     (_table)->size = _size; \
   } while(0)
@@ -230,16 +229,27 @@ struct rhim {
 /**
  * Move current elements to the new array of nodes.
  */
-#define MOVE_NODES(_table, _new_size, _new_nodes) \
+#define MOVE_NODES(_table, _new_size, _new_nodes, __node) \
   do { \
-    for(rhiuint _i=0, _prob; _i<(_table)->size; ++_i) { \
+    for(rhiuint _i=0; _i<(_table)->size; ++_i) { \
       if( IS_EMPTY((_table)->nodes[_i]) ) \
         continue; \
-      _prob = HASHVAL_TO_INDEX((_table)->nodes[_i].hashval, _new_size); \
-      for(rhiuint _i_new=0; _i_new<(_new_size); ++_i_new) { \
+      __node _elm = (_table)->nodes[_i]; \
+      rhiuint _curr_origin = HASHVAL_TO_INDEX(_elm.hashval, _new_size); \
+      rhiuint _prob = _curr_origin; \
+      /* Insertion of elements from the nodes to the new nodes. */ \
+      for(;;) { \
         if( IS_EMPTY((_new_nodes)[_prob]) ) { \
-          (_new_nodes)[_prob] = (_table)->nodes[_i]; \
+          (_new_nodes)[_prob] = _elm; \
           break; \
+        } \
+        rhiuint _cmp_origin = \
+          HASHVAL_TO_INDEX((_new_nodes)[_prob].hashval, _new_size); \
+        if( _curr_origin<_cmp_origin ) { \
+          __node _tmp_elm = _elm; \
+          _elm = (_new_nodes)[_prob]; \
+          (_new_nodes)[_prob] = _tmp_elm; \
+          _curr_origin = _cmp_origin; \
         } \
         _prob = HASHVAL_TO_PROB(_prob, _new_size); \
       } \
@@ -261,26 +271,29 @@ struct rhim {
     rhiuint _new_size = GET_SIZE(_new_range); \
     if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
       ERROR(OOM_ERROR_MESSAGE); \
-    MOVE_NODES(_table, _new_size, _new_nodes); \
+    MOVE_NODES(_table, _new_size, _new_nodes, __node); \
     SET_BOUNDARY(_table, _new_range, _new_size); \
   } while(0)
 
-#define SEARCH(_table, _key, _null_ret, _empty_ret, _equal_ret, _besides_ret) \
+#define SEARCH(_table, _key, _null_ret, _equal_ret, _fail_ret) \
   do { \
     /* Handling NULL key. */ \
     if( (_key)==NULL ) \
       return _null_ret; \
     size_t _hashval = (_table)->hash(_key); \
-    rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_table)->size); \
-    for(rhiuint _i=0; _i<(_table)->size; ++_i) { \
-      if( IS_EMPTY((_table)->nodes[_prob]) ) \
-        return _empty_ret; \
+    rhiuint _curr_origin = HASHVAL_TO_INDEX(_hashval, (_table)->size); \
+    rhiuint _prob = _curr_origin; \
+    while( NOT_EMPTY((_table)->nodes[_prob]) && \
+           _curr_origin>=HASHVAL_TO_INDEX( \
+             (_table)->nodes[_prob].hashval, \
+             (_table)->size \
+           ) ) { \
       if( _hashval==(_table)->nodes[_prob].hashval && \
           (_table)->equal(_key, (_table)->nodes[_prob].key) ) \
         return _equal_ret; \
       _prob = HASHVAL_TO_PROB(_prob, (_table)->size); \
     } \
-    return _besides_ret; \
+    return _fail_ret; \
   } while(0)
 
 /**
@@ -296,7 +309,7 @@ struct rhim {
     rhiuint _new_size = GET_SIZE(_new_range); \
     if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
       break; \
-    MOVE_NODES(_table, _new_size, _new_nodes); \
+    MOVE_NODES(_table, _new_size, _new_nodes, __node); \
     SET_BOUNDARY(_table, _new_range, _new_size); \
   } while(0)
 
@@ -309,8 +322,8 @@ struct rhim {
 #define BACKWARD_SHIFT(_table, _equal_prob) \
   do { \
     rhiuint _empty = _equal_prob; \
-    for(rhiuint _i=0, _prob=_equal_prob; _i<(_table)->size; ++_i) { \
-      _prob = HASHVAL_TO_PROB(_prob, (_table)->size); \
+    for(;;) { \
+      rhiuint _prob = HASHVAL_TO_PROB(_prob, (_table)->size); \
       if( IS_EMPTY((_table)->nodes[_prob]) ) { \
         SET_EMPTY((_table)->nodes[_empty]); \
         break; \
@@ -448,28 +461,11 @@ struct rhis* rhis_reserve(
  * Insertion functions *
  ***********************/
 
-#define RHIS_INSERT(_set, _hashval, _key, _ret, _besides_ret) \
-  do { \
-    if( (_set)->mode&RHI_EXTEND ) { \
-      EXTEND_NODES(_set, struct rhisnode); \
-      rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_set)->size); \
-      for(rhiuint _i=0; _i<(_set)->size; ++_i) { \
-        if( IS_EMPTY((_set)->nodes[_prob]) ) { \
-          ++(_set)->occupied; \
-          (_set)->nodes[_prob] = RHIS_NODE(_hashval, _key); \
-          return _ret; \
-        } \
-        _prob = HASHVAL_TO_PROB(_prob, (_set)->size); \
-      } \
-    } \
-    return _besides_ret; \
-  } while(0)
-
 /**
  * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted,
+ *  - The key is already in the table,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
@@ -487,20 +483,67 @@ bool rhis_insert(struct rhis* set, void* key) {
     set->has_null_inserted = true;
     return true;
   }
-  size_t hashval = set->hash(key);
-  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
-  for(rhiuint i=0; i<set->size; ++i) {
-    if( IS_EMPTY(set->nodes[prob]) ) {
-      if( set->occupied<set->max ) {
-        ++set->occupied;
-        set->nodes[prob] = RHIS_NODE(hashval, key);
-        return true;
+  /* Insertion when the nodes are full. */
+  if( set->occupied==set->max ) {
+    if( set->mode&RHI_EXTEND ) {
+      size_t hashval = set->hash(key);
+      rhiuint curr_origin = HASHVAL_TO_INDEX(hashval, set->size);
+      rhiuint prob = curr_origin;
+      /* In the nodes, search for the equal key. */
+      while( NOT_EMPTY(set->nodes[prob]) &&
+             curr_origin>=HASHVAL_TO_INDEX(
+               set->nodes[prob].hashval,
+               set->size
+             ) ) {
+        if( hashval==set->nodes[prob].hashval &&
+            set->equal(key, set->nodes[prob].key) )
+          return false;
+        prob = HASHVAL_TO_PROB(prob, set->size);
       }
-      RHIS_INSERT(set, hashval, key, true, false);
+      EXTEND_NODES(set, struct rhisnode);
+      struct rhisnode elm = RHIS_NODE(hashval, key);
+      curr_origin = HASHVAL_TO_INDEX(hashval, set->size);
+      prob = curr_origin;
+      /* Insertion when the nodes have been extended. */
+      for(;;) {
+        if( IS_EMPTY(set->nodes[prob]) ) {
+          ++set->occupied;
+          set->nodes[prob] = elm;
+          return true;
+        }
+        rhiuint cmp_origin =
+          HASHVAL_TO_INDEX(set->nodes[prob].hashval, set->size);
+        if( curr_origin<cmp_origin ) {
+          struct rhisnode tmp_elm = elm;
+          elm = set->nodes[prob];
+          set->nodes[prob] = tmp_elm;
+          curr_origin = cmp_origin;
+        }
+        prob = HASHVAL_TO_PROB(prob, set->size);
+      }
     }
-    if( hashval==set->nodes[prob].hashval &&
-        set->equal(key, set->nodes[prob].key) )
+    return false;
+  }
+  struct rhisnode elm = RHIS_NODE(set->hash(key), key);
+  rhiuint curr_origin = HASHVAL_TO_INDEX(elm.hashval, set->size);
+  rhiuint prob = curr_origin;
+  /* Insertion when the nodes are not full. */
+  for(;;) {
+    if( IS_EMPTY(set->nodes[prob]) ) {
+      ++set->occupied;
+      set->nodes[prob] = elm;
+      return true;
+    }
+    if( elm.hashval==set->nodes[prob].hashval &&
+        set->equal(elm.key, set->nodes[prob].key) )
       return false;
+    rhiuint cmp_origin = HASHVAL_TO_INDEX(set->nodes[prob].hashval, set->size);
+    if( curr_origin<cmp_origin ) {
+      struct rhisnode tmp_elm = elm;
+      elm = set->nodes[prob];
+      set->nodes[prob] = tmp_elm;
+      curr_origin = cmp_origin;
+    }
     prob = HASHVAL_TO_PROB(prob, set->size);
   }
   return false;
@@ -522,96 +565,7 @@ bool rhis_insert(struct rhis* set, void* key) {
  *          returned.
  */
 bool rhis_search(const struct rhis* set, const void* key) {
-  SEARCH(set, key, set->has_null_inserted, false, true, false);
-}
-
-/*************************
- * Replacement functions *
- *************************/
-
-/**
- * \brief   Replace the key into the table.
- * 
- * If free() is not set as NULL, the old key is replaced by the
- * given key. The old key was destroyed by free(). Replacement
- * fails if the unique key is inserted when the mode is not set
- * with RHI_EXTEND and the maximum number of elements is
- * reached.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
- */
-bool rhis_replace(struct rhis* set, void* key) {
-  /* Handling NULL key. */
-  if( key==NULL ) {
-    set->has_null_inserted = true;
-    return true;
-  }
-  size_t hashval = set->hash(key);
-  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
-  for(rhiuint i=0; i<set->size; ++i) {
-    if( IS_EMPTY(set->nodes[prob]) ) {
-      if( set->occupied<set->max ) {
-        ++set->occupied;
-        set->nodes[prob] = RHIS_NODE(hashval, key);
-        return true;
-      }
-      RHIS_INSERT(set, hashval, key, true, false);
-    }
-    if( hashval==set->nodes[prob].hashval &&
-        set->equal(key, set->nodes[prob].key) ) {
-      if( set->free!=NULL )
-        set->free(set->nodes[prob].key);
-      set->nodes[prob] = RHIS_NODE(hashval, key);
-      return true;
-    }
-    prob = HASHVAL_TO_PROB(prob, set->size);
-  }
-  return false;
-}
-
-/**
- * \brief   Replace the key into the table.
- * 
- * The old key is replaced by the given key. Replacement fails
- * if the unique key is inserted when the mode is not set with
- * RHI_EXTEND and the maximum number of elements is reached.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, the old key is returned. On failure,
- *          NULL is returned.
- */
-void* rhis_key_replace(struct rhis* set, void* key) {
-  /* handling of NULL keys */
-  if( key==NULL ) {
-    set->has_null_inserted = true;
-    return NULL;
-  }
-  size_t hashval = set->hash(key);
-  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
-  for(rhiuint i=0; i<set->size; ++i) {
-    if( IS_EMPTY(set->nodes[prob]) ) {
-      if( set->occupied<set->max ) {
-        ++set->occupied;
-        set->nodes[prob] = RHIS_NODE(hashval, key);
-        return NULL;
-      }
-      RHIS_INSERT(set, hashval, key, NULL, NULL);
-    }
-    if( hashval==set->nodes[prob].hashval &&
-        set->equal(key, set->nodes[prob].key) ) {
-      void* old_key = set->nodes[prob].key;
-      set->nodes[prob] = RHIS_NODE(hashval, key);
-      return old_key;
-    }
-    prob = HASHVAL_TO_PROB(prob, set->size);
-  }
-  return NULL;
+  SEARCH(set, key, set->has_null_inserted, true, false);
 }
 
 /**********************
@@ -641,10 +595,10 @@ bool rhis_delete(struct rhis* set, void* key) {
     return false;
   }
   size_t hashval = set->hash(key);
-  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
-  for(rhiuint i=0; i<set->size; ++i) {
-    if( IS_EMPTY(set->nodes[prob]) )
-      return false;
+  rhiuint curr_origin = HASHVAL_TO_INDEX(hashval, set->size);
+  rhiuint prob = curr_origin;
+  while( NOT_EMPTY(set->nodes[prob]) &&
+         curr_origin>=HASHVAL_TO_INDEX(set->nodes[prob].hashval, set->size) ) {
     if( hashval==set->nodes[prob].hashval &&
         set->equal(key, set->nodes[prob].key) ) {
       if( set->free!=NULL )
@@ -657,44 +611,6 @@ bool rhis_delete(struct rhis* set, void* key) {
     prob = HASHVAL_TO_PROB(prob, set->size);
   }
   return false;
-}
-
-/**
- * \brief   Delete the key from the table.
- * 
- * Delete failed because the given key is not in the table.
- * 
- * \param   set   Table
- * \param   key   Key
- * 
- * \return  On success, the old key is returned. On failure,
- *          NULL is returned.
- */
-void* rhis_key_delete(struct rhis* set, void* key) {
-  /* handling of NULL keys */
-  if( key==NULL ) {
-    if( set->has_null_inserted ) {
-      set->has_null_inserted = false;
-      return NULL;
-    }
-    return NULL;
-  }
-  size_t hashval = set->hash(key);
-  rhiuint prob = HASHVAL_TO_INDEX(hashval, set->size);
-  for(rhiuint i=0; i<set->size; ++i) {
-    if( IS_EMPTY(set->nodes[prob]) )
-      return NULL;
-    if( hashval==set->nodes[prob].hashval &&
-        set->equal(key, set->nodes[prob].key) ) {
-      void* old_key = set->nodes[prob].key;
-      BACKWARD_SHIFT(set, prob);
-      if( --set->occupied<set->min && (set->mode&RHI_SHRINK) )
-        SHRINK_NODES(set, struct rhisnode);
-      return old_key;
-    }
-    prob = HASHVAL_TO_PROB(prob, set->size);
-  }
-  return NULL;
 }
 
 /***********************
@@ -873,28 +789,11 @@ struct rhim* rhim_reserve(
  * Insertion functions *
  ***********************/
 
-#define RHIM_INSERT(_map, _hashval, _key, _val, _ret, _besides_ret) \
-  do { \
-    if( (_map)->mode&RHI_EXTEND ) { \
-      EXTEND_NODES(_map, struct rhimnode); \
-      rhiuint _prob = HASHVAL_TO_INDEX(_hashval, (_map)->size); \
-      for(rhiuint _i=0; _i<(_map)->size; ++_i) { \
-        if( IS_EMPTY((_map)->nodes[_prob]) ) { \
-          ++(_map)->occupied; \
-          (_map)->nodes[_prob] = RHIM_NODE(_hashval, _key, _val); \
-          return _ret; \
-        } \
-        _prob = HASHVAL_TO_PROB(_prob, (_map)->size); \
-      } \
-    } \
-    return _besides_ret; \
-  } while(0)
-
 /**
- * \brief   Insert the key into the table.
+ * \brief   Insert the key and value into the table.
  * 
  * Insertion failed due to:
- *  - The key has been inserted,
+ *  - The key is already in the table,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
@@ -906,6 +805,7 @@ struct rhim* rhim_reserve(
  *          returned.
  */
 bool rhim_insert(struct rhim* map, void* key, void* val) {
+  /* Handling NULL key. */
   if( key==NULL ) {
     if( map->has_null_inserted )
       return false;
@@ -913,16 +813,44 @@ bool rhim_insert(struct rhim* map, void* key, void* val) {
     map->null_val = val;
     return true;
   }
+  /* Insertion when the nodes are full. */
+  if( map->occupied==map->max ) {
+    if( map->mode&RHI_EXTEND ) {
+      size_t hashval = map->hash(key);
+      rhiuint prob = HASHVAL_TO_INDEX(hashval, map->size);
+      /* In the nodes, search for the equal key. */
+      for(rhiuint i=0; i<map->size; ++i) {
+        if( IS_EMPTY(map->nodes[prob]) ) {
+          EXTEND_NODES(map, struct rhimnode);
+          prob = HASHVAL_TO_INDEX(hashval, map->size);
+          /* Insertion when the nodes have been extended. */
+          for(i=0; i<map->size; ++i) {
+            if( IS_EMPTY(map->nodes[prob]) ) {
+              ++map->occupied;
+              map->nodes[prob] = RHIM_NODE(hashval, key, val);
+              return true;
+            }
+            prob = HASHVAL_TO_PROB(prob, map->size);
+          }
+          return false;
+        }
+        if( hashval==map->nodes[prob].hashval &&
+            map->equal(key, map->nodes[prob].key) )
+          return false;
+        prob = HASHVAL_TO_PROB(prob, map->size);
+      }
+      return false;
+    }
+    return false;
+  }
   size_t hashval = map->hash(key);
   rhiuint prob = HASHVAL_TO_INDEX(hashval, map->size);
+  /* Insertion when the nodes are not full. */
   for(rhiuint i=0; i<map->size; ++i) {
     if( IS_EMPTY(map->nodes[prob]) ) {
-      if( map->occupied<map->max ) {
-        ++map->occupied;
-        map->nodes[prob] = RHIM_NODE(hashval, key, val);
-        return true;
-      }
-      RHIM_INSERT(map, hashval, key, val, true, false);
+      ++map->occupied;
+      map->nodes[prob] = RHIM_NODE(hashval, key, val);
+      return true;
     }
     if( hashval==map->nodes[prob].hashval &&
         map->equal(key, map->nodes[prob].key) )
@@ -952,7 +880,7 @@ bool rhim_search(const struct rhim* map, const void* key) {
 }
 
 /**
- * \brief   Search the key in the table.
+ * \brief   Search the value in the table.
  * 
  * Search failed because the given key is not in the table.
  * 
@@ -962,7 +890,7 @@ bool rhim_search(const struct rhim* map, const void* key) {
  * \return  On success, the searched value is returned. On
  *          failure, NULL is returned.
  */
-void* rhim_val_search(const struct rhim* map, const void* key) {
+void* rhim_search_val(const struct rhim* map, const void* key) {
   SEARCH(
     map,
     key,
@@ -973,136 +901,83 @@ void* rhim_val_search(const struct rhim* map, const void* key) {
   );
 }
 
-/**
- * \brief   Search the key in the table.
- * 
- * Search failed because the given key is not in the table.
- * 
- * \param   map   Table
- * \param   key   Key
- * 
- * \return  On success, the searched pair is returned. On
- *          failure, NULL is returned.
- */
-struct rhiconstpair rhim_pair_search(const struct rhim* map, const void* key) {
-  SEARCH(
-    map,
-    key,
-    map->has_null_inserted ? CONST_PAIR(NULL, map->null_val) : NULL_CONST_PAIR,
-    NULL_CONST_PAIR,
-    CONST_PAIR(map->nodes[_prob].key, map->nodes[_prob].val),
-    NULL_CONST_PAIR
-  );
-}
-
 /*************************
  * Replacement functions *
  *************************/
 
-// bool rhim_replace(struct rhim* map, void* key, void* val) {
-//   if( key==DEFVAL ) {
-//     if( map->is_def_key ) {
-//       if( map->valfree!=NULL )
-//         map->valfree(map->def_val);
-//       map->def_val = val;
-//       return true;
-//     }
-//     map->is_def_key = true;
-//     map->def_val = val;
-//     return true;
-//   }
-//   size_t hashval = map->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-//   for(rhiuint i=0; i<map->size; ++i) {
-//     if( IS_EMPTY(map->nodes[prob]) ) {
-//       if( map->occupied<map->max ) {
-//         ++map->occupied;
-//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//         return true;
-//       }
-//       RHIM_REPLACE(map, hashval, key, val, true, false);
-//     }
-//     if( hashval==map->nodes[prob].hashval &&
-//         map->equal(key, map->nodes[prob].key) ) {
-//       if( map->keyfree!=NULL )
-//         map->keyfree(map->nodes[prob].key);
-//       if( map->valfree!=NULL )
-//         map->valfree(map->nodes[prob].val);
-//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//       return true;
-//     }
-//     prob = HASHVAL_PROB(prob, map->size);
-//   }
-//   return false;
-// }
+/**
+ * \brief   Replace the key and value in the table.
+ * 
+ * If free_key() is not set as NULL, the old key is replaced by
+ * the given key. The old key was destroyed by free_key(). If
+ * free_val() is not set as NULL, the old value is replaced by
+ * the given value. The old value was destroyed by free_val().
+ * 
+ * Replacement fails if the unique key is inserted when the
+ * mode is not set with RHI_EXTEND and the maximum number of
+ * elements is reached.
+ * 
+ * \param   set   Table
+ * \param   key   Key
+ * \param   val   Value
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+bool rhim_replace(struct rhim* map, void* key, void* val) {
+  /* Handling NULL key. */
+  if( key==NULL ) {
+    if( map->has_null_inserted ) {
+      if( map->free_val!=NULL )
+        map->free_val(map->null_val);
+      map->null_val = val;
+      return true;
+    }
+    map->has_null_inserted = true;
+    map->null_val = val;
+    return true;
+  }
+  size_t hashval = map->hash(key);
+  rhiuint prob = HASHVAL_TO_INDEX(hashval, map->size);
+  for(rhiuint i=0; i<map->size; ++i) {
+    if( IS_EMPTY(map->nodes[prob]) ) {
+      if( map->occupied<map->max ) {
+        ++map->occupied;
+        map->nodes[prob] = RHIM_NODE(hashval, key, val);
+        return true;
+      }
+      RHIM_INSERT(map, hashval, key, val, true, false);
+    }
+    if( hashval==map->nodes[prob].hashval &&
+        map->equal(key, map->nodes[prob].key) ) {
+      if( map->free_key!=NULL )
+        map->free_key(map->nodes[prob].key);
+      if( map->free_val!=NULL )
+        map->free_val(map->nodes[prob].val);
+      map->nodes[prob] = RHIM_NODE(hashval, key, val);
+      return true;
+    }
+    prob = HASHVAL_TO_PROB(prob, map->size);
+  }
+  return false;
+}
 
-// void* rhim_vreplace(struct rhim* map, void* key, void* val) {
-//   if( key==DEFVAL ) {
-//     if( map->is_def_key ) {
-//       void* old_val = map->def_val;
-//       map->def_val = val;
-//       return old_val;
-//     }
-//     map->is_def_key = true;
-//     map->def_val = val;
-//     return DEFVAL;
-//   }
-//   size_t hashval = map->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-//   for(rhiuint i=0; i<map->size; ++i) {
-//     if( IS_EMPTY(map->nodes[prob]) ) {
-//       if( map->occupied<map->max ) {
-//         ++map->occupied;
-//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//         return DEFVAL;
-//       }
-//       RHIM_REPLACE(map, hashval, key, val, DEFVAL, DEFVAL);
-//     }
-//     if( hashval==map->nodes[prob].hashval &&
-//         map->equal(key, map->nodes[prob].key) ) {
-//       if( map->keyfree!=NULL )
-//         map->keyfree(map->nodes[prob].key);
-//       void* old_val = map->nodes[prob].val;
-//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//       return old_val;
-//     }
-//     prob = HASHVAL_PROB(prob, map->size);
-//   }
-//   return DEFVAL;
-// }
-
-// struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val) {
-//   if( key==DEFVAL ) {
-//     if( map->is_def_key ) {
-//       struct rhipair pair = PAIR(DEFVAL, map->def_val);
-//       map->def_val = val;
-//       return pair;
-//     }
-//     map->is_def_key = true;
-//     map->def_val = val;
-//     return DEFPAIR;
-//   }
-//   size_t hashval = map->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-//   for(rhiuint i=0; i<map->size; ++i) {
-//     if( IS_EMPTY(map->nodes[prob]) ) {
-//       if( map->occupied<map->max ) {
-//         ++map->occupied;
-//         map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//         return DEFPAIR;
-//       }
-//       RHIM_REPLACE(map, hashval, key, val, DEFPAIR, DEFPAIR);
-//     }
-//     if( hashval==map->nodes[prob].hashval &&
-//         map->equal(key, map->nodes[prob].key) ) {
-//       struct rhipair pair = PAIR(map->nodes[prob].key, map->nodes[prob].val);
-//       map->nodes[prob] = RHIM_NODE(hashval, key, val);
-//       return pair;
-//     }
-//     prob = HASHVAL_PROB(prob, map->size);
-//   }
-//   return DEFPAIR;
-// }
+/**
+ * \brief   Replace the value in the table.
+ * 
+ * If free_key() is not set as NULL, the old key is replaced by
+ * the given key. The old key was destroyed by free_key().
+ * 
+ * The old value is replaced by the given value. Replacement
+ * fails if the unique key is inserted when the mode is not set with
+ * RHI_EXTEND and the maximum number of elements is reached.
+ * 
+ * \param   set   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the old key is returned. On failure,
+ *          NULL is returned.
+ */
 
 // /**************************
 //  * Delete functions (map) *
@@ -1167,32 +1042,6 @@ struct rhiconstpair rhim_pair_search(const struct rhim* map, const void* key) {
 //   return DEFVAL;
 // }
 
-// struct rhipair rhim_kvdelete(struct rhim* map, void* key) {
-//   if( key==DEFVAL ) {
-//     if( map->is_def_key ) {
-//       map->is_def_key = false;
-//       return PAIR(DEFVAL, map->def_val);
-//     }
-//     return DEFPAIR;
-//   }
-//   size_t hashval = map->hash(key);
-//   rhiuint prob = HASHVAL_INDEX(hashval, map->size);
-//   for(rhiuint i=0; i<map->size; ++i) {
-//     if( IS_EMPTY(map->nodes[prob]) )
-//       return DEFPAIR;
-//     if( hashval==map->nodes[prob].hashval &&
-//         map->equal(key, map->nodes[prob].key) ) {
-//       struct rhipair pair = PAIR(map->nodes[prob].key, map->nodes[prob].val);
-//       BACKWARD_SHIFT(map, prob);
-//       if( --map->occupied<map->min && (map->mode&RHI_SHRINK) )
-//         SHRINK_NODES(map, struct rhimnode);
-//       return pair;
-//     }
-//     prob = HASHVAL_PROB(prob, map->size);
-//   }
-//   return DEFPAIR;
-// }
-
 
 // /*********************************
 //  * Miscellaneous functions (map) *
@@ -1244,23 +1093,3 @@ struct rhiconstpair rhim_pair_search(const struct rhim* map, const void* key) {
 // void* rhim_vcurrent(const struct rhim* map) {
 //   return RHIM_VGET(map, map->iter);
 // }
-
-
-// /***********************************
-//  * Random traverse functions (map) *
-//  ***********************************/
-
-// DECL_ITERS(rhim_iters, struct rhim)
-
-// struct rhiconstpair rhim_get(const struct rhim* map, rhiuint iter) {
-//   return RHIM_GET(map, iter);
-// }
-
-// const void* rhim_kget(const struct rhim* map, rhiuint iter) {
-//   return RHIM_KGET(map, iter);
-// }
-
-// void* rhim_vget(const struct rhim* map, rhiuint iter) {
-//   return RHIM_VGET(map, iter);
-// }
-
