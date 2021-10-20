@@ -4,9 +4,9 @@
 CL = cl
 LINK = link
 
-FLAGS = /O2
-RHI_FLAGS = /Wall /DRHI_PRIME_
-TEST_FLAGS =
+FLAGS = /Ox /W4
+RHI_FLAGS = /DRHI_PRIME_
+TEST_FLAGS = /std:c++17 /EHsc
 
 RHI_DIR = ..\src
 TEST_DIR = .
@@ -14,34 +14,30 @@ BUILD_DIR = build
 
 INCLUDES = /I$(RHI_DIR)
 LIBS =
-TARGET = tests.exe
+TARGET = main.exe
 
 RHI_HEADERS = \
 	$(RHI_DIR)\rhi.h
 
 TEST_HEADERS = \
-	$(TEST_DIR)\tests.h
+	$(TEST_DIR)\utils.hpp
 
 HEADERS = $(RHI_HEADERS) $(TEST_HEADERS)
 
 OBJS = \
 	$(BUILD_DIR)\rhi.obj \
-	$(BUILD_DIR)\tests.obj \
-	$(BUILD_DIR)\utils.obj \
-	$(BUILD_DIR)\set_init.obj \
-	$(BUILD_DIR)\set_reserve.obj \
-	$(BUILD_DIR)\set_insert.obj \
-	$(BUILD_DIR)\set_search.obj \
-	$(BUILD_DIR)\set_ksearch.obj \
-	$(BUILD_DIR)\set_replace.obj \
-	$(BUILD_DIR)\set_kreplace.obj \
-	$(BUILD_DIR)\set_delete.obj \
-	$(BUILD_DIR)\set_kdelete.obj
+	$(BUILD_DIR)\main.obj \
+	$(BUILD_DIR)\set\init.obj \
+	$(BUILD_DIR)\set\reserve.obj \
+	$(BUILD_DIR)\set\insert.obj
 
-all: $(OBJS) $(TARGET)
+all: build $(OBJS) $(TARGET)
+
+build:
+	@mkdir $(BUILD_DIR)\set $(BUILD_DIR)\map 2> nul || ver > nul
 
 clean:
-	del $(OBJS) $(TARGET)
+	@del $(OBJS) $(TARGET) 2> nul || ver > nul
 
 # Compile the source on src
 #
@@ -50,40 +46,19 @@ $(BUILD_DIR)\rhi.obj: $(RHI_DIR)\rhi.c $(RHI_HEADERS)
 
 # Compile the source on tests
 #
-$(BUILD_DIR)\tests.obj: $(TEST_DIR)\tests.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\tests.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\utils.obj: $(TEST_DIR)\utils.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\utils.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)\main.obj: $(TEST_DIR)\main.cpp $(HEADERS)
+	$(CL) /c $(TEST_DIR)\main.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Compile the source on tests\set
 #
-$(BUILD_DIR)\set_init.obj: $(TEST_DIR)\set\init.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\init.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)\set\init.obj: $(TEST_DIR)\set\init.cpp $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\init.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)\set_reserve.obj: $(TEST_DIR)\set\reserve.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\reserve.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)\set\reserve.obj: $(TEST_DIR)\set\reserve.cpp $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\reserve.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)\set_insert.obj: $(TEST_DIR)\set\insert.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\insert.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_search.obj: $(TEST_DIR)\set\search.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\search.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_ksearch.obj: $(TEST_DIR)\set\ksearch.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\ksearch.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_replace.obj: $(TEST_DIR)\set\replace.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\replace.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_kreplace.obj: $(TEST_DIR)\set\kreplace.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\kreplace.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_delete.obj: $(TEST_DIR)\set\delete.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\delete.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)\set_kdelete.obj: $(TEST_DIR)\set\kdelete.c $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\kdelete.c /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)\set\insert.obj: $(TEST_DIR)\set\insert.cpp $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\insert.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
 #

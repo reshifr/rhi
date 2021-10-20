@@ -1,11 +1,14 @@
 # Reshifr Hash Index
 # Make
 
-CC := cc
+CC := gcc
+CXX := g++
 
-FLAGS += -std=c99 -O2 -Wall -Wconversion -Wextra -Wshadow
-RHI_FLAGS += -Wpedantic -DRHI_PRIME_
-TEST_FLAGS +=
+FLAGS +=
+RHI_FLAGS += \
+	-O2 -std=c99 -Wall -Wextra \
+	-Wshadow -Wpedantic -Wconversion -DRHI_PRIME_
+TEST_FLAGS += -std=c++17 -Ofast
 
 RHI_DIR := ../src
 TEST_DIR := .
@@ -13,7 +16,14 @@ BUILD_DIR := build
 
 INCLUDES += -I$(RHI_DIR)
 LIBS +=
-TARGET := tests
+TARGET := main
+
+# If the compiler used is GCC
+#
+ifneq (,$(and $(filter $(CC),gcc),$(filter $(CXX),g++)))
+	TEST_FLAGS += -fopenmp
+	LIBS += -lgomp
+endif
 
 # Add the executable suffix for Windows
 #
@@ -25,36 +35,34 @@ RHI_HEADERS = \
 	$(RHI_DIR)/rhi.h
 
 TEST_HEADERS = \
-	$(TEST_DIR)/tests.h
+	$(TEST_DIR)/utils.hpp
 
 HEADERS := $(RHI_HEADERS) $(TEST_HEADERS)
 
 OBJS = \
 	$(BUILD_DIR)/rhi.o \
-	$(BUILD_DIR)/tests.o \
-	$(BUILD_DIR)/utils.o \
-	$(BUILD_DIR)/set_init.o \
-	$(BUILD_DIR)/set_reserve.o \
-	$(BUILD_DIR)/set_insert.o \
-	$(BUILD_DIR)/set_search.o \
-	$(BUILD_DIR)/set_ksearch.o \
-	$(BUILD_DIR)/set_replace.o \
-	$(BUILD_DIR)/set_kreplace.o \
-	$(BUILD_DIR)/set_delete.o \
-	$(BUILD_DIR)/set_kdelete.o
+	$(BUILD_DIR)/main.o \
+	$(BUILD_DIR)/set/init.o \
+	$(BUILD_DIR)/set/reserve.o \
+	$(BUILD_DIR)/set/insert.o
 
-.PHONY: all clean
+.PHONY: all build clean
 .NOTPARALLEL: $(TARGET)
 
-all: $(OBJS) $(TARGET)
+all: build $(OBJS) $(TARGET)
+
+build:
+ifneq (,$(filter Windows%,$(OS)))
+	@mkdir $(BUILD_DIR)\set $(BUILD_DIR)\map 2> nul || ver > nul
+else
+	@mkdir -p $(BUILD_DIR)/set $(BUILD_DIR)/map
+endif
 
 clean:
-# Change '/' to '\' for Windows
-#
 ifneq (,$(filter Windows%,$(OS)))
-	del $(subst /,\,$(OBJS) $(TARGET))
+	@del $(subst /,\,$(OBJS) $(TARGET)) 2> nul || ver > nul
 else
-	rm -f $(OBJS) $(TARGET)
+	@rm -f $(OBJS) $(TARGET)
 endif
 
 # Compile the source on src
@@ -64,42 +72,21 @@ $(BUILD_DIR)/rhi.o: $(RHI_DIR)/rhi.c $(RHI_HEADERS)
 
 # Compile the source on tests
 #
-$(BUILD_DIR)/tests.o: $(TEST_DIR)/tests.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/utils.o: $(TEST_DIR)/utils.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)/main.o: $(TEST_DIR)/main.cpp $(HEADERS)
+	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Compile the source on tests/set
 #
-$(BUILD_DIR)/set_init.o: $(TEST_DIR)/set/init.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)/set/init.o: $(TEST_DIR)/set/init.cpp $(HEADERS)
+	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)/set_reserve.o: $(TEST_DIR)/set/reserve.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)/set/reserve.o: $(TEST_DIR)/set/reserve.cpp $(HEADERS)
+	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
-$(BUILD_DIR)/set_insert.o: $(TEST_DIR)/set/insert.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_search.o: $(TEST_DIR)/set/search.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_ksearch.o: $(TEST_DIR)/set/ksearch.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_replace.o: $(TEST_DIR)/set/replace.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_kreplace.o: $(TEST_DIR)/set/kreplace.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_delete.o: $(TEST_DIR)/set/delete.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/set_kdelete.o: $(TEST_DIR)/set/kdelete.c $(HEADERS)
-	$(CC) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+$(BUILD_DIR)/set/insert.o: $(TEST_DIR)/set/insert.cpp $(HEADERS)
+	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable
 #
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LIBS)
