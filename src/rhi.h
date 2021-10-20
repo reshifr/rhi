@@ -60,8 +60,11 @@ extern "C" {
  * Data types *
  **************/
 
-typedef int32_t rhiint;  /* Signed integer data type. */
-typedef uint32_t rhiuint;  /* Unsigned integer data type. */
+/* Signed integer data type. */
+typedef int32_t rhiint;
+
+/* Unsigned integer data type. */
+typedef uint32_t rhiuint;
 
 /**
  * Suffix macros.
@@ -164,36 +167,21 @@ typedef size_t (*rhihash)(const void* key);
  */
 typedef bool (*rhiequal)(const void* first_key, const void* second_key);
 
-/**
- * \brief  Key destroyer function.
- * 
- * Destroy keys when replacing, deleting, or destructing them.
- * If the key is NULL, then this function is not called.
- * 
- * \param  key   Key
- */
-typedef void (*rhikeyfree)(void* key);
-
-/**
- * \brief  Value destroyer function.
- * 
- * Destroy values when replacing, deleting, or destructing
- * them.
- * 
- * \param  val   Value
- */
-typedef void (*rhivalfree)(void* val);
-
 /*******************
  * Data structures *
  *******************/
 
-struct rhis;  /* Set structure. */
-struct rhim;  /* Map structure. */
+/* Set structure. */
+struct rhis;
+
+/* Map structure. */
+struct rhim;
+
+/* Iterator pair. */
 struct rhipair {
-  const void* key;
-  void* val;
-};  /* Iterator pair. */
+  const void* key;  /* The key of the current iterator. */
+  void* val;  /* The value of the current iterator. */
+};
 
 /* ===== Set ===== */
 
@@ -208,32 +196,23 @@ struct rhipair {
  * 
  * \param   hash    Hash function
  * \param   equal   Equal function
- * \param   free    Key destroyer function. If not needed, set
- *                  the argument as NULL.
  * \param   mode    Mode
  * 
- * \return  On success, pointer of table is returned. On
+ * \return  On success, pointer of the table is returned. On
  *          failure, NULL is returned.
  */
-RHI_API struct rhis* rhis_init(
-  rhihash hash,
-  rhiequal equal,
-  rhikeyfree free,
-  int mode
-);
+RHI_API struct rhis* rhis_init(rhihash hash, rhiequal equal, int mode);
 
 /**
  * \brief   Reserve a table.
  * 
- * The table will be initialized to the specified size, the
- * size of which is set >= specified size. The maximum table
- * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
- * and the default is 1,546,188,226 + 1.
+ * The table will be initialized to the reserved size, the size
+ * of which is set >= the reserved size. The maximum possible
+ * table size (RHI_PRIME enabled) is 1,546,188,225 + 1
+ * (+ NULL key), and the default is 1,546,188,226 + 1.
  * 
  * \param   hash    Hash function
  * \param   equal   Equal function
- * \param   free    Key destroyer function. If not needed, set
- *                  the argument as NULL.
  * \param   size    Reserved size
  * \param   mode    Mode
  * 
@@ -243,7 +222,6 @@ RHI_API struct rhis* rhis_init(
 RHI_API struct rhis* rhis_reserve(
   rhihash hash,
   rhiequal equal,
-  rhikeyfree free,
   rhiuint size,
   int mode
 );
@@ -292,9 +270,7 @@ RHI_API bool rhis_search(const struct rhis* set, const void* key);
 /**
  * \brief   Delete the key from the table.
  * 
- * If free() is not set as NULL, the given key will be
- * destroyed by free(). Deletion failed because the given key
- * is not in the table.
+ * Deletion failed because the given key is not in the table.
  * 
  * \param   set   Table
  * \param   key   Key
@@ -372,8 +348,7 @@ RHI_API rhiuint rhis_count(const struct rhis* set);
 /**
  * \brief  Destroy the table.
  * 
- * Memory release used by the table. If free() is not set as
- * NULL, the whole key will be destroyed by free().
+ * Memory release used by the table.
  * 
  * \param  set   Table
  */
@@ -390,41 +365,27 @@ RHI_API void rhis_free(struct rhis* set);
  * 
  * The table will be initialized at default size.
  * 
- * \param   hash       Hash function
- * \param   equal      Equal function
- * \param   free_key   Key destroyer function. If not needed,
- *                     set the argument as NULL.
- * \param   free_val   Value destroyer function. If not needed,
- *                     set the argument as NULL.
- * \param   mode       Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   mode    Mode
  * 
- * \return  On success, pointer of table is returned. On
+ * \return  On success, pointer of the table is returned. On
  *          failure, NULL is returned.
  */
-RHI_API struct rhim* rhim_init(
-  rhihash hash,
-  rhiequal equal,
-  rhikeyfree free_key,
-  rhivalfree free_val,
-  int mode
-);
+RHI_API struct rhim* rhim_init(rhihash hash, rhiequal equal, int mode);
 
 /**
  * \brief   Reserve a table.
  * 
- * The table will be initialized to the specified size, the
- * size of which is set >= specified size. The maximum table
- * size (RHI_PRIME enabled) is 1,546,188,225 + 1 (+ NULL key),
- * and the default is 1,546,188,226 + 1.
+ * The table will be initialized to the reserved size, the size
+ * of which is set >= the reserved size. The maximum possible
+ * table size (RHI_PRIME enabled) is 1,546,188,225 + 1
+ * (+ NULL key), and the default is 1,546,188,226 + 1.
  * 
- * \param   hash       Hash function
- * \param   equal      Equal function
- * \param   free_key   Key destroyer function. If not needed,
- *                     set the argument as NULL.
- * \param   free_val   Value destroyer function. If not needed,
- *                     set the argument as NULL.
- * \param   size       Reserved size
- * \param   mode       Mode
+ * \param   hash    Hash function
+ * \param   equal   Equal function
+ * \param   size    Reserved size
+ * \param   mode    Mode
  * 
  * \return  On success, pointer of table is returned. On
  *          failure, NULL is returned.
@@ -432,129 +393,9 @@ RHI_API struct rhim* rhim_init(
 RHI_API struct rhim* rhim_reserve(
   rhihash hash,
   rhiequal equal,
-  rhikeyfree free_key,
-  rhivalfree free_val,
   rhiuint size,
   int mode
 );
-
-/***********************
- * Insertion functions *
- ***********************/
-
-/**
- * \brief   Insert the key and value into the table.
- * 
- * Insertion failed due to:
- *  - The key is already in the table,
- *  - When the mode is not set with RHI_EXTEND and the maximum
- *    number of elements is reached.
- * 
- * \param   map   Table
- * \param   key   Key
- * \param   val   Value
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
- */
-RHI_API bool rhim_insert(struct rhim* map, void* key, void* val);
-
-/********************
- * Search functions *
- ********************/
-
-/**
- * \brief   Search the key in the table.
- * 
- * Search failed because the given key is not in the table.
- * 
- * \param   map   Table
- * \param   key   Key
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
- */
-RHI_API bool rhim_search(const struct rhim* map, const void* key);
-
-/**
- * \brief   Search the value in the table.
- * 
- * Search failed because the given key is not in the table.
- * 
- * \param   map   Table
- * \param   key   Key
- * 
- * \return  On success, the searched value is returned. On
- *          failure, NULL is returned.
- */
-RHI_API void* rhim_search_val(const struct rhim* map, const void* key);
-
-/*************************
- * Replacement functions *
- *************************/
-
-/**
- * \brief   Replace the key and value in the table.
- * 
- * If free_key() is not set as NULL, the old key is replaced by
- * the given key. The old key was destroyed by free_key(). If
- * free_val() is not set as NULL, the old value is replaced by
- * the given value. The old value was destroyed by free_val().
- * 
- * Replacement fails if the unique key is inserted when the
- * mode is not set with RHI_EXTEND and the maximum number of
- * elements is reached.
- * 
- * \param   set   Table
- * \param   key   Key
- * \param   val   Value
- * 
- * \return  On success, true is returned. On failure, false is
- *          returned.
- */
-RHI_API bool rhim_replace(struct rhim* map, void* key, void* val);
-
-// RHI_API void* rhim_vreplace(struct rhim* map, void* key, void* val);
-// RHI_API struct rhipair rhim_kvreplace(struct rhim* map, void* key, void* val);
-
-
-// /**************************
-//  * Delete functions (map) *
-//  **************************/
-
-// RHI_API bool rhim_delete(struct rhim* map, void* key);
-// RHI_API void* rhim_vdelete(struct rhim* map, void* key);
-// RHI_API struct rhipair rhim_kvdelete(struct rhim* map, void* key);
-
-
-// /*********************************
-//  * Miscellaneous functions (map) *
-//  *********************************/
-
-// RHI_API rhiuint rhim_count(const struct rhim* map);
-// RHI_API void rhim_free(struct rhim* map);
-
-
-// /************************************
-//  * Forward traverse functions (map) *
-//  ************************************/
-
-// RHI_API void rhim_begin(struct rhim* map);
-// RHI_API void rhim_next(struct rhim* map);
-// RHI_API bool rhim_end(const struct rhim* map);
-// RHI_API struct rhiconstpair rhim_current(const struct rhim* map);
-// RHI_API const void* rhim_kcurrent(const struct rhim* map);
-// RHI_API void* rhim_vcurrent(const struct rhim* map);
-
-
-// /***********************************
-//  * Random traverse functions (map) *
-//  ***********************************/
-
-// RHI_API rhiuint* rhim_iters(const struct rhim* map);
-// RHI_API struct rhiconstpair rhim_get(const struct rhim* map, rhiuint iter);
-// RHI_API const void* rhim_kget(const struct rhim* map, rhiuint iter);
-// RHI_API void* rhim_vget(const struct rhim* map, rhiuint iter);
 
 #ifdef __cplusplus
 }
