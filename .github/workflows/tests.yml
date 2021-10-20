@@ -8,10 +8,6 @@ on:
     branches: [ master ]
     
   workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: ./tests
     
 jobs:
   tests:
@@ -19,3 +15,4 @@ jobs:
     steps:
       - run: |
           make
+        working-directory: tests
