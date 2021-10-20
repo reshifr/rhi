@@ -1,4 +1,4 @@
-name: Testing
+name: test
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
