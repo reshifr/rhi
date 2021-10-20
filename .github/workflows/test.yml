@@ -1,0 +1,23 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: sh
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          make
+          make clean
