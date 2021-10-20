@@ -1,4 +1,4 @@
-# librhi [![Build Status](https://travis-ci.com/reshifr/rhi.svg?branch=master)](https://travis-ci.com/reshifr/rhi)
+# librhi [![test](https://github.com/reshifr/rhi/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/reshifr/rhi/actions/workflows/test.yml)
 
 ## Implementation of linear probing hash table using LCFS hashing
 
