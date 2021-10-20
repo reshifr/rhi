@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          cd tests
+          ls
           ls
           make
