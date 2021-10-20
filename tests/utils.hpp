@@ -310,14 +310,14 @@ namespace utils {
         HANDLE(min>max, "Error: Minimum is greater than maximum.");
         auto seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::mt19937_64 rng(seed);
-        std::uniform_int_distribution<char> rand_ch;
+        std::uniform_int_distribution<int> rand_ch;
         std::uniform_int_distribution<int> rand_len(min, max);
         if constexpr( Case==utils::LOWER )
-          rand_ch = std::uniform_int_distribution<char>(0, 25);
+          rand_ch = std::uniform_int_distribution<int>(0, 25);
         if constexpr( Case==utils::UPPER )
-          rand_ch = std::uniform_int_distribution<char>(26, 51);
+          rand_ch = std::uniform_int_distribution<int>(26, 51);
         if constexpr( Case==utils::RANDOM )
-          rand_ch = std::uniform_int_distribution<char>(0, 51);
+          rand_ch = std::uniform_int_distribution<int>(0, 51);
         for(rhiuint i=0; i<count; ++i) {
           auto len = rand_len(rng);
           char* buf = new char[len+1]();
@@ -339,7 +339,7 @@ namespace utils {
               (const char*)second_obj)<0;
           });
 #endif
-        objs::uniqueness = std::distance(
+        objs::uniqueness = (rhiuint)std::distance(
           sorted.begin(),
           std::unique(sorted.begin(), sorted.end(),
             [](const void* first_obj, const void* second_obj) {
