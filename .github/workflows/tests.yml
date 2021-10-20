@@ -2,18 +2,24 @@ name: Testing
 
 on:
   push:
-    branches: [ master ]
-    
+    branches:
+      - master
+
   pull_request:
-    branches: [ master ]
-    
+    branches:
+      - master
+
   workflow_dispatch:
-    
+
 jobs:
   tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: sh
+        working-directory: tests
     steps:
       - uses: actions/checkout@v2
       - run: |
           make
-        working-directory: tests
+          make clean
