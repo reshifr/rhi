@@ -234,7 +234,7 @@ RHI_API struct rhis* rhis_reserve(
  * \brief   Insert the key into the table.
  * 
  * Insertion failed due to:
- *  - The key is already in the table,
+ *  - The key already exists in the table,
  *  - When the mode is not set with RHI_EXTEND and the maximum
  *    number of elements is reached.
  * 
@@ -253,7 +253,8 @@ RHI_API bool rhis_insert(struct rhis* set, void* key);
 /**
  * \brief   Search the key in the table.
  * 
- * Search failed because the given key is not in the table.
+ * Search failed because the given key does not exist in the
+ * table.
  * 
  * \param   set   Table
  * \param   key   Key
@@ -270,7 +271,8 @@ RHI_API bool rhis_search(const struct rhis* set, const void* key);
 /**
  * \brief   Delete the key from the table.
  * 
- * Deletion failed because the given key is not in the table.
+ * Deletion failed because the given key does not exist in the
+ * table.
  * 
  * \param   set   Table
  * \param   key   Key
@@ -278,7 +280,7 @@ RHI_API bool rhis_search(const struct rhis* set, const void* key);
  * \return  On success, true is returned. On failure, false is
  *          returned.
  */
-RHI_API bool rhis_delete(struct rhis* set, void* key);
+RHI_API bool rhis_delete(struct rhis* set, const void* key);
 
 /***********************
  * Traversal functions *
@@ -396,6 +398,148 @@ RHI_API struct rhim* rhim_reserve(
   rhiuint size,
   int mode
 );
+
+/***********************
+ * Insertion functions *
+ ***********************/
+
+/**
+ * \brief   Insert the key into the table.
+ * 
+ * Insertion failed due to:
+ *  - The key already exists in the table,
+ *  - When the mode is not set with RHI_EXTEND and the maximum
+ *    number of elements is reached.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * \param   val   Value
+ * 
+ * \return  On success, NULL is returned. On failure, the old
+ *          value is returned.
+ */
+RHI_API void* rhim_insert(struct rhim* map, void* key, void* val);
+
+/********************
+ * Search functions *
+ ********************/
+
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key does not exist in the
+ * table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, the old value is returned. On failure,
+ *          NULL is returned.
+ */
+RHI_API void* rhim_search(const struct rhim* map, const void* key);
+
+/**
+ * \brief   Search the key in the table.
+ * 
+ * Search failed because the given key does not exist in the
+ * table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * 
+ * \return  On success, true is returned. On failure, false is
+ *          returned.
+ */
+RHI_API bool rhim_contains(const struct rhim* map, const void* key);
+
+/**
+ * \brief   Delete the key from the table.
+ * 
+ * Deletion failed because the given key does not exist in the
+ * table.
+ * 
+ * \param   map   Table
+ * \param   key   Key
+ * \param   val   Value
+ * 
+ * \return  On success, the old value is returned. On failure,
+ *          NULL is returned.
+ */
+RHI_API void* rhim_delete(struct rhim* map, const void* key);
+
+/***********************
+ * Traversal functions *
+ ***********************/
+
+/**
+ * \brief  Initialize the iterator.
+ * 
+ * Iterator initialization on the first element, the first
+ * element at the beginning is NULL key.
+ * 
+ * \param  map   Table
+ */
+void rhim_begin(struct rhim* map);
+
+/**
+ * \brief  Shift the iterator.
+ * 
+ * The iterator will move towards the next element in the
+ * table.
+ * 
+ * \param  map   Table
+ */
+void rhim_next(struct rhim* map);
+
+/**
+ * \brief   Check the iterator.
+ * 
+ * Check if the iterator has ended.
+ * 
+ * \param   map   Table
+ * 
+ * \return  If ended, true is returned. Else, false is
+ *          returned.
+ */
+bool rhim_has_ended(const struct rhim* map);
+
+/**
+ * \brief   Get the current key.
+ * 
+ * Get the key by the current iterator position in the table.
+ * If the iterator is ended, NULL is returned.
+ * 
+ * \param   map   Table
+ * 
+ * \return  On success, the current pair is returned. On
+ *          failure, the empty pair is returned.
+ */
+struct rhipair rhim_current(const struct rhim* map);
+
+/***************************
+ * Miscellaneous functions *
+ ***************************/
+
+/**
+ * \brief   Get the number of elements in the table.
+ * 
+ * The number of elements acquired is the whole element,
+ * including NULL key.
+ * 
+ * \param   map   Table
+ * 
+ * \return  Number of elements in the table.
+ */
+RHI_API rhiuint rhim_count(const struct rhim* map);
+
+/**
+ * \brief  Destroy the table.
+ * 
+ * Memory release used by the table.
+ * 
+ * \param  map   Table
+ */
+RHI_API void rhim_free(struct rhim* map);
 
 #ifdef __cplusplus
 }
