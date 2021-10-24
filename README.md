@@ -15,7 +15,7 @@ This library is a C implementation of set and map data structure with raw pointe
 (...)
 
 ```c
-struct rhis* set = rhis_set(hash, equal, RHIS_SHRINK|RHI_EXTED);
+struct rhis* set = rhis_set(hash, equal, RHI_SHRINK|RHI_EXTED);
 if( rhis_search(set, "Hello") )
   printf("Hello World");
 ```
