@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <chrono>
 #include <random>
+#include <thread>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -124,8 +125,8 @@ namespace utils {
   constexpr int UNIT_MAX(1);
   constexpr rhiuint UNIT_RESERVE(10);
   constexpr rhiuint UNIT_COUNT(16);
-  constexpr int PERF_MIN(8);
-  constexpr int PERF_MAX(8);
+  constexpr int PERF_MIN(4);
+  constexpr int PERF_MAX(6);
   constexpr rhiuint PERF_RESERVE(24000000);
   constexpr rhiuint PERF_COUNT(24000000);
   constexpr const char* CHARS(
@@ -374,6 +375,12 @@ namespace utils {
 }
 
 namespace set {
+  void init(void);
+  void reserve(void);
+  void insert(void);
+}
+
+namespace map {
   void init(void);
   void reserve(void);
   void insert(void);

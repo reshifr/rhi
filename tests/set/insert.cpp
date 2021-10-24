@@ -93,11 +93,10 @@ void set::insert(void) {
   TEST(0, unit_reserve_test(RHI_SHRINK|RHI_EXTEND));
   TEST(0, perf_init_test(RHI_FIXED));
   TEST(0, perf_init_test(RHI_SHRINK));
-  TEST(1, perf_init_test(RHI_EXTEND));
-  TEST(0, perf_init_test(RHI_SHRINK|RHI_EXTEND));
+  TEST(0, perf_init_test(RHI_EXTEND));
+  TEST(1, perf_init_test(RHI_SHRINK|RHI_EXTEND));
   TEST(0, perf_reserve_test(RHI_FIXED));
   TEST(0, perf_reserve_test(RHI_SHRINK));
   TEST(0, perf_reserve_test(RHI_EXTEND));
   TEST(0, perf_reserve_test(RHI_SHRINK|RHI_EXTEND));
-  getchar();
 }
