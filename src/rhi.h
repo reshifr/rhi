@@ -42,11 +42,11 @@ extern "C" {
  * Windows import and export *
  *****************************/
 
-#if (defined _WIN32 || defined _WIN64) && \
-    (defined RHI_EXPORT || defined RHI_IMPORT)
+#if (defined(_WIN32) || defined(_WIN64)) && \
+    (defined(RHI_EXPORT) || defined(RHI_IMPORT))
 # ifdef RHI_EXPORT
 #  define RHI_API __declspec(dllexport)
-# elif defined RHI_IMPORT
+# elif defined(RHI_IMPORT)
 #  define RHI_API __declspec(dllimport)
 # endif
 #else
