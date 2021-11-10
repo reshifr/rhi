@@ -117,7 +117,7 @@ typedef uint32_t rhiuint;
  * 
  * The table size is fixed and will not change.
  */
-#define RHI_FIXED 0x00
+#define RHI_FIXED 0x01
 
 /**
  * \brief  Shrink mode.
@@ -125,7 +125,7 @@ typedef uint32_t rhiuint;
  * The table will shrink when the number of elements reaches
  * the minimum limit.
  */
-#define RHI_SHRINK 0x01
+#define RHI_SHRINK 0x02
 
 /**
  * \brief  Extend mode.
@@ -133,7 +133,7 @@ typedef uint32_t rhiuint;
  * The table will extend when the number of elements reaches
  * the maximum limit.
  */
-#define RHI_EXTEND 0x02
+#define RHI_EXTEND 0x04
 
 #endif /* _RHI_MACRO_DEFINED */
 

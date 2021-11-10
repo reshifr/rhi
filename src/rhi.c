@@ -296,7 +296,6 @@ struct rhim {
 
 #define SEARCH(_table, _key, _null_ret, _equal_ret, _fail_ret) \
   do { \
-    /* Handling NULL key. */ \
     if( (_key)==NULL ) \
       return _null_ret; \
     size_t _hashval = (_table)->hash(_key); \
@@ -463,7 +462,6 @@ struct rhis* rhis_reserve(
  *          returned.
  */
 bool rhis_insert(struct rhis* set, void* key) {
-  /* Handling NULL key. */
   if( key==NULL ) {
     if( set->has_null_inserted )
       return false;
@@ -561,7 +559,6 @@ bool rhis_search(const struct rhis* set, const void* key) {
  *          returned.
  */
 bool rhis_delete(struct rhis* set, const void* key) {
-  /* Handling NULL key. */
   if( key==NULL ) {
     if( set->has_null_inserted ) {
       set->has_null_inserted = false;
@@ -734,7 +731,6 @@ struct rhim* rhim_reserve(
  *          value is returned.
  */
 void* rhim_insert(struct rhim* map, void* key, void* val) {
-  /* Handling NULL key. */
   if( key==NULL ) {
     if( map->has_null_inserted )
       return map->null_val;
@@ -859,7 +855,6 @@ bool rhim_contains(const struct rhim* map, const void* key) {
  *          NULL is returned.
  */
 void* rhim_delete(struct rhim* map, const void* key) {
-  /* Handling NULL key. */
   if( key==NULL ) {
     if( map->has_null_inserted ) {
       map->has_null_inserted = false;
