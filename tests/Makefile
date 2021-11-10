@@ -49,7 +49,7 @@ OBJS = \
 .PHONY: all build clean
 .NOTPARALLEL: $(TARGET)
 
-all: $(OBJS) $(TARGET)
+all: build $(OBJS) $(TARGET)
 ifneq (,$(filter Windows%,$(OS)))
 	@$(TARGET)
 else

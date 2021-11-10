@@ -268,7 +268,7 @@ namespace utils {
           empty ? "" : (const char*)table->nodes[i].key,
           empty ? "" :
             table->nodes[i].val==NULL ? "" : (const char*)table->nodes[i].val,
-          empty ? RHIUINT_C(0) : (std::uint64_t)
+          empty ? RHIUINT_C(0) :
             HASHVAL_TO_INDEX(table->nodes[i].hashval, table->size)
         );
       }
