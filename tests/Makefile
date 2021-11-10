@@ -44,15 +44,18 @@ OBJS = \
 	$(BUILD_DIR)/main.o \
 	$(BUILD_DIR)/set/init.o \
 	$(BUILD_DIR)/set/reserve.o \
-	$(BUILD_DIR)/set/insert.o \
-	$(BUILD_DIR)/map/init.o \
-	$(BUILD_DIR)/map/reserve.o \
-	$(BUILD_DIR)/map/insert.o
+	$(BUILD_DIR)/set/insert.o
 
 .PHONY: all build clean
 .NOTPARALLEL: $(TARGET)
 
-all: build $(OBJS) $(TARGET)
+all: $(OBJS) $(TARGET)
+ifneq (,$(filter Windows%,$(OS)))
+	@$(TARGET)
+else
+	@chmod +x $(TARGET)
+	@./$(TARGET)
+endif
 
 build:
 ifneq (,$(filter Windows%,$(OS)))
@@ -87,17 +90,6 @@ $(BUILD_DIR)/set/reserve.o: $(TEST_DIR)/set/reserve.cpp $(HEADERS)
 	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)/set/insert.o: $(TEST_DIR)/set/insert.cpp $(HEADERS)
-	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-# Compile the source on tests/map
-#
-$(BUILD_DIR)/map/init.o: $(TEST_DIR)/map/init.cpp $(HEADERS)
-	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/map/reserve.o: $(TEST_DIR)/map/reserve.cpp $(HEADERS)
-	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
-
-$(BUILD_DIR)/map/insert.o: $(TEST_DIR)/map/insert.cpp $(HEADERS)
 	$(CXX) -c $< -o $@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
 
 # Create executable

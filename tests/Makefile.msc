@@ -5,7 +5,7 @@ CL = cl
 LINK = link
 
 FLAGS = /Ox /W4
-RHI_FLAGS = /DRHI_PRIME_
+RHI_FLAGS = /DRHI_PRIME
 TEST_FLAGS = /std:c++17 /EHsc
 
 RHI_DIR = ..\src
@@ -32,6 +32,7 @@ OBJS = \
 	$(BUILD_DIR)\set\insert.obj
 
 all: build $(OBJS) $(TARGET)
+	$(TARGET)
 
 build:
 	@mkdir $(BUILD_DIR)\set $(BUILD_DIR)\map 2> nul || ver > nul
