@@ -8,7 +8,7 @@ static void unit_test(int mode) {
   rhis_free(set);
 }
 
-void set::init(void) {
+void set::unit_init(void) {
   TEST(1, unit_test(RHI_FIXED));
   TEST(1, unit_test(RHI_SHRINK));
   TEST(1, unit_test(RHI_EXTEND));
