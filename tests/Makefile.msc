@@ -38,7 +38,8 @@ build:
 	@mkdir $(BUILD_DIR)\set $(BUILD_DIR)\map 2> nul || ver > nul
 
 clean:
-	@del $(OBJS) $(TARGET) 2> nul || ver > nul
+	@del /f /s /q $(TARGET) 1> nul 2> nul || ver > nul
+	@rmdir /s /q $(BUILD_DIR) 1> nul 2> nul || ver > nul
 
 # Compile the source on src
 #

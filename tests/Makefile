@@ -66,9 +66,10 @@ endif
 
 clean:
 ifneq (,$(filter Windows%,$(OS)))
-	@del $(subst /,\,$(OBJS) $(TARGET)) 2> nul || ver > nul
+	@del /f /s /q $(TARGET) 1> nul 2> nul || ver > nul
+	@rmdir /s /q $(BUILD_DIR) 1> nul 2> nul || ver > nul
 else
-	@rm -f $(OBJS) $(TARGET)
+	@rm -rf $(BUILD_DIR) $(TARGET)
 endif
 
 # Compile the source on src
