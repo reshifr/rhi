@@ -307,22 +307,22 @@ namespace utils {
       int min, max;
       std::vector<void*> list;
 
-      std::vector<void*> gen(int min, int max, rhiuint count) {
-        HANDLE((objs::min=min)==0, "Error: Minimum cannot be zero.");
-        HANDLE((objs::max=max)==0, "Error: Maximum cannot be zero.");
-        HANDLE(min>max, "Error: Minimum is greater than maximum.");
+      std::vector<void*> gen(int min_chars, int max_chars, rhiuint num_elm) {
+        HANDLE((objs::min=min_chars)==0, "Error: Minimum cannot be zero.");
+        HANDLE((objs::max=max_chars)==0, "Error: Maximum cannot be zero.");
+        HANDLE(min_chars>max_chars, "Error: Minimum is greater than maximum.");
         std::vector<void*> rand_list;
         auto seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::mt19937_64 rng(seed);
         std::uniform_int_distribution<int> rand_ch;
-        std::uniform_int_distribution<int> rand_len(min, max);
+        std::uniform_int_distribution<int> rand_len(min_chars, max_chars);
         if constexpr( Case==utils::LOWER )
           rand_ch = std::uniform_int_distribution<int>(0, 25);
         if constexpr( Case==utils::UPPER )
           rand_ch = std::uniform_int_distribution<int>(26, 51);
         if constexpr( Case==utils::RANDOM )
           rand_ch = std::uniform_int_distribution<int>(0, 51);
-        for(rhiuint i=0; i<count; ++i) {
+        for(rhiuint i=0; i<num_elm; ++i) {
           auto len = rand_len(rng);
           char* buf = new char[len+1]();
           for(int j=0; j<len; ++j)
@@ -333,23 +333,23 @@ namespace utils {
       }
 
       rhiuint unique(std::vector<void*> base_list) {
-        std::vector<void*> sorted(base_list);
+        std::vector<void*> sorted_list(base_list);
 #if defined __GNUG__
-        __gnu_parallel::stable_sort(sorted.begin(), sorted.end(),
+        __gnu_parallel::stable_sort(sorted_list.begin(), sorted_list.end(),
           [](const void* first_obj, const void* second_obj) {
             return std::strcmp((const char*)first_obj,
               (const char*)second_obj)<0;
           });
 #else
-        std::stable_sort(sorted.begin(), sorted.end(),
+        std::stable_sort(sorted_list.begin(), sorted_list.end(),
           [](const void* first_obj, const void* second_obj) {
             return std::strcmp((const char*)first_obj,
               (const char*)second_obj)<0;
           });
 #endif
         return (rhiuint)std::distance(
-          sorted.begin(),
-          std::unique(sorted.begin(), sorted.end(),
+          sorted_list.begin(),
+          std::unique(sorted_list.begin(), sorted_list.end(),
             [](const void* first_obj, const void* second_obj) {
               return utils::equal(first_obj, second_obj);
             })
@@ -357,9 +357,9 @@ namespace utils {
       }
 
     public:
-      objs(int min, int max, rhiuint count) {
-        objs::count = count;
-        objs::list = objs::gen(min, max, count);
+      objs(int min_chars, int max_chars, rhiuint num_elm) {
+        objs::count = num_elm;
+        objs::list = objs::gen(min_chars, max_chars, num_elm);
         objs::uniqueness = objs::unique(objs::list);
       }
 
@@ -372,9 +372,9 @@ namespace utils {
           callback(obj);
       }
 
-      void add(rhiuint count) {
-        objs::count += count;
-        std::vector<void*> add_list = objs::gen(objs::min, objs::max, count);
+      void add(rhiuint num_elm) {
+        objs::count += num_elm;
+        std::vector<void*> add_list = objs::gen(objs::min, objs::max, num_elm);
         objs::list.insert(objs::list.end(), add_list.begin(), add_list.end());
         objs::uniqueness = objs::unique(objs::list);
       }
