@@ -115,21 +115,22 @@ struct rhim {
   } while(0)
 
 namespace utils {
-  constexpr int SEED(7066463);
-  constexpr int LOWER(0x1);
-  constexpr int UPPER(0x2);
-  constexpr int RANDOM(0x3);
-  constexpr int UNIT_CASE(UPPER);
-  constexpr int PERF_CASE(RANDOM);
-  constexpr int UNIT_MIN(1);
-  constexpr int UNIT_MAX(1);
-  constexpr rhiuint UNIT_RESERVE(10);
-  constexpr rhiuint UNIT_COUNT(16);
-  constexpr int PERF_MIN(4);
-  constexpr int PERF_MAX(6);
-  constexpr rhiuint PERF_RESERVE(24000000);
-  constexpr rhiuint PERF_COUNT(24000000);
-  constexpr const char* CHARS(
+  constexpr auto SEED(7066463);
+  constexpr auto LOWER(0x1);
+  constexpr auto UPPER(0x2);
+  constexpr auto RANDOM(0x3);
+
+  constexpr auto UNIT_RESERVE(RHIUINT_C(10));
+  constexpr auto UNIT_COUNT(RHIUINT_C(16));
+  constexpr auto UNIT_SHRINK(RHIUINT_C(5));
+  constexpr auto UNIT_EXTEND(RHIUINT_C(5));
+
+  constexpr auto AUTO_RESERVE(RHIUINT_C(600000));
+  constexpr auto AUTO_COUNT(RHIUINT_C(600000));
+  constexpr auto AUTO_SHRINK(RHIUINT_C(300000));
+  constexpr auto AUTO_EXTEND(RHIUINT_C(300000));
+
+  constexpr auto CHARS(
     "abcdefghijklmnopqrstuvwxyz"
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   );
@@ -299,16 +300,18 @@ namespace utils {
   template <int Case=utils::RANDOM, bool Free=true>
   class objs {
     public:
+      rhiuint count;
       rhiuint uniqueness;
 
     private:
+      int min, max;
       std::vector<void*> list;
 
-    public:
-      objs(int min, int max, rhiuint count) {
-        HANDLE(min==0, "Error: Minimum cannot be zero.");
-        HANDLE(max==0, "Error: Maximum cannot be zero.");
+      std::vector<void*> gen(int min, int max, rhiuint count) {
+        HANDLE((objs::min=min)==0, "Error: Minimum cannot be zero.");
+        HANDLE((objs::max=max)==0, "Error: Maximum cannot be zero.");
         HANDLE(min>max, "Error: Minimum is greater than maximum.");
+        std::vector<void*> rand_list;
         auto seed = std::chrono::system_clock::now().time_since_epoch().count();
         std::mt19937_64 rng(seed);
         std::uniform_int_distribution<int> rand_ch;
@@ -324,9 +327,13 @@ namespace utils {
           char* buf = new char[len+1]();
           for(int j=0; j<len; ++j)
             buf[j] = utils::CHARS[rand_ch(rng)];
-          objs::list.push_back(buf);
+          rand_list.push_back(buf);
         }
-        auto sorted(objs::list);
+        return rand_list;
+      }
+
+      rhiuint unique(std::vector<void*> base_list) {
+        std::vector<void*> sorted(base_list);
 #if defined __GNUG__
         __gnu_parallel::stable_sort(sorted.begin(), sorted.end(),
           [](const void* first_obj, const void* second_obj) {
@@ -340,7 +347,7 @@ namespace utils {
               (const char*)second_obj)<0;
           });
 #endif
-        objs::uniqueness = (rhiuint)std::distance(
+        return (rhiuint)std::distance(
           sorted.begin(),
           std::unique(sorted.begin(), sorted.end(),
             [](const void* first_obj, const void* second_obj) {
@@ -349,13 +356,27 @@ namespace utils {
         );
       }
 
-      void reverse(void) {
+    public:
+      objs(int min, int max, rhiuint count) {
+        objs::count = count;
+        objs::list = objs::gen(min, max, count);
+        objs::uniqueness = objs::unique(objs::list);
+      }
+
+      void shuffle(void) {
         std::reverse(objs::list.begin(), objs::list.end());
       }
 
       void load(std::function<void (void* obj)> callback) const {
         for(auto obj : objs::list)
           callback(obj);
+      }
+
+      void add(rhiuint count) {
+        objs::count += count;
+        std::vector<void*> add_list = objs::gen(objs::min, objs::max, count);
+        objs::list.insert(objs::list.end(), add_list.begin(), add_list.end());
+        objs::uniqueness = objs::unique(objs::list);
       }
 
       ~objs(void) {
@@ -375,15 +396,23 @@ namespace utils {
 }
 
 namespace set {
-  void init(void);
-  void reserve(void);
-  void insert(void);
+  void unit_init(void);
+  void unit_reserve(void);
+  void unit_insert(void);
+  void unit_search(void);
+
+  void auto_insert(void);
+  void auto_search(void);
+
+  void perf_insert(void);
 }
 
 namespace map {
-  void init(void);
-  void reserve(void);
-  void insert(void);
+  void unit_init(void);
+  void unit_reserve(void);
+  void unit_insert(void);
+
+  void auto_insert(void);
 }
 
 #endif /* TEST_H */
