@@ -4,9 +4,9 @@
 CL = cl
 LINK = link
 
-FLAGS = /Ox /W4
-RHI_FLAGS = /DRHI_PRIME
-TEST_FLAGS = /std:c++17 /EHsc
+FLAGS =
+RHI_FLAGS = /Ox /W4
+TEST_FLAGS = /Ox /W4 /std:c++17 /EHsc
 
 RHI_DIR = ..\src
 TEST_DIR = .
@@ -29,7 +29,8 @@ OBJS = \
 	$(BUILD_DIR)\main.obj \
 	$(BUILD_DIR)\set\init.obj \
 	$(BUILD_DIR)\set\reserve.obj \
-	$(BUILD_DIR)\set\insert.obj
+	$(BUILD_DIR)\set\insert.obj \
+	$(BUILD_DIR)\set\search.obj
 
 all: build $(OBJS) $(TARGET)
 	$(TARGET)
@@ -41,28 +42,31 @@ clean:
 	@del /f /s /q $(TARGET) 1> nul 2> nul || ver > nul
 	@rmdir /s /q $(BUILD_DIR) 1> nul 2> nul || ver > nul
 
-# Compile the source on src
+# Compile the source on src.
 #
 $(BUILD_DIR)\rhi.obj: $(RHI_DIR)\rhi.c $(RHI_HEADERS)
 	$(CL) /c $(RHI_DIR)\rhi.c /Fo:$@ $(FLAGS) $(RHI_FLAGS) $(INCLUDES)
 
-# Compile the source on tests
+# Compile the source on tests.
 #
 $(BUILD_DIR)\main.obj: $(TEST_DIR)\main.cpp $(HEADERS)
-	$(CL) /c $(TEST_DIR)\main.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+	$(CL) /c $(TEST_DIR)\main.cpp /Fo:$@ $(TEST_FLAGS) $(INCLUDES)
 
-# Compile the source on tests\set
+# Compile the source on tests\set.
 #
 $(BUILD_DIR)\set\init.obj: $(TEST_DIR)\set\init.cpp $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\init.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+	$(CL) /c $(TEST_DIR)\set\init.cpp /Fo:$@ $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)\set\reserve.obj: $(TEST_DIR)\set\reserve.cpp $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\reserve.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+	$(CL) /c $(TEST_DIR)\set\reserve.cpp /Fo:$@ $(TEST_FLAGS) $(INCLUDES)
 
 $(BUILD_DIR)\set\insert.obj: $(TEST_DIR)\set\insert.cpp $(HEADERS)
-	$(CL) /c $(TEST_DIR)\set\insert.cpp /Fo:$@ $(FLAGS) $(TEST_FLAGS) $(INCLUDES)
+	$(CL) /c $(TEST_DIR)\set\insert.cpp /Fo:$@ $(TEST_FLAGS) $(INCLUDES)
 
-# Create executable
+$(BUILD_DIR)\set\search.obj: $(TEST_DIR)\set\search.cpp $(HEADERS)
+	$(CL) /c $(TEST_DIR)\set\search.cpp /Fo:$@ $(TEST_FLAGS) $(INCLUDES)
+
+# Create executable.
 #
 $(TARGET): $(OBJS)
 	$(LINK) $(OBJS) /OUT:$(TARGET)
