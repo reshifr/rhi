@@ -74,17 +74,19 @@ jobs:
       run:
         shell: cmd
         working-directory: tests
-    strategy:
-      matrix:
-        arch:
-          - x86_arm
-          - x64_arm64
     steps:
       - uses: actions/checkout@v2
-      - uses: ilammy/msvc-dev-cmd@v1
+      - name: msvc x86
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ${{ matrix.arch }}
-      - name: msvc
-        run: |
+          arch: x86
+      - run: |
+          nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
+          nmake /F Makefile.msc clean
+      - name: msvc x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
