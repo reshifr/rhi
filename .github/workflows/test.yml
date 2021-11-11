@@ -68,3 +68,16 @@ jobs:
             -e 'CC = clang' \
             -e 'CXX = clang++' all
           make clean
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: msvc
+        run: |
+          nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
+          nmake /F Makefile.msc clean
