@@ -19,5 +19,7 @@ void set::unit_reserve(void) {
   TEST(1, unit_test(100, RHI_SHRINK|RHI_EXTEND));
   TEST(1, unit_test(10000, RHI_SHRINK|RHI_EXTEND));
   TEST(1, unit_test(1000000, RHI_SHRINK|RHI_EXTEND));
+#if SIZE_MAX == UINT64_MAX
   TEST(1, unit_test(100000000, RHI_SHRINK|RHI_EXTEND));
+#endif
 }
