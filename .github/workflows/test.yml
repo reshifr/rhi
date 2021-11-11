@@ -1,3 +1,6 @@
+# Reshifr Hash Index
+# Github Actions
+
 name: test
 
 on:
@@ -23,28 +26,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install gcc gcc-multilib clang
       - name: gcc x86
-      - run: |
+        run: |
           make \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m32' \
             -e 'CXX = g++ -m32' all
           make clean
       - name: gcc x64
-      - run: |
+        run: |
           make \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m64' \
             -e 'CXX = g++ -m64' all
           make clean
       - name: clang x86
-      - run: |
+        run: |
           make \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang -m32' \
             -e 'CXX = clang++ -m32' all
           make clean
       - name: clang x64
-      - run: |
+        run: |
           make \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang -m64' \
@@ -59,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: clang
-      - run: |
+        run: |
           make \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang' \
