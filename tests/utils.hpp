@@ -10,7 +10,7 @@
 #include <cstring>
 #include <functional>
 
-#if defined __GNUG__
+#if defined(__GNUG__) && defined(_OPENMP)
 # include <parallel/algorithm>
 #endif
 
@@ -334,7 +334,7 @@ namespace utils {
 
       rhiuint unique(std::vector<void*> base_list) {
         std::vector<void*> sorted_list(base_list);
-#if defined __GNUG__
+#if defined(__GNUG__) && defined(_OPENMP)
         __gnu_parallel::stable_sort(sorted_list.begin(), sorted_list.end(),
           [](const void* first_obj, const void* second_obj) {
             return std::strcmp((const char*)first_obj,
@@ -381,7 +381,7 @@ namespace utils {
 
       ~objs(void) {
         if constexpr( Free ) {
-#if defined __GNUG__
+#if defined(__GNUG__) && defined(_OPENMP)
           __gnu_parallel::for_each(objs::list.begin(), objs::list.end(),
             [](void* obj) {
               delete[] (char*)obj;
