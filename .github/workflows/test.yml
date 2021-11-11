@@ -24,7 +24,7 @@ jobs:
       - name: package preparation
         run: |
           sudo apt-get update
-          sudo apt-get install gcc g++ gcc-multilib g++-multilib clang clang++
+          sudo apt-get install gcc-multilib g++-multilib clang
       - name: gcc x86
         run: |
           make \
