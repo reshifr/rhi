@@ -76,17 +76,17 @@ jobs:
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
-      - name: msvc x86
-        uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
-      - run: |
+      - name: msvc x86
+        run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
-      - name: msvc x64
-        uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
-      - run: |
+      - name: msvc x64
+        run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
