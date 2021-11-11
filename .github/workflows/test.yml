@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
+        shell: sh
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
@@ -53,7 +54,10 @@ jobs:
     runs-on: macos-latest
     defaults:
       run:
+        shell: sh
         working-directory: tests
+    steps:
+      - uses: actions/checkout@v2
       - name: clang
       - run: |
           make \
