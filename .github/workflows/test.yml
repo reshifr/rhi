@@ -8,9 +8,9 @@ on:
     branches:
       - master
   workflow_dispatch:
-  
+
 jobs:
-  test:
+  linux:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -18,6 +18,48 @@ jobs:
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
+      - name: package preparation
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc gcc-multilib clang
+      - name: gcc x86
       - run: |
-          make
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m32' \
+            -e 'CXX = g++ -m32' all
+          make clean
+      - name: gcc x64
+      - run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m64' \
+            -e 'CXX = g++ -m64' all
+          make clean
+      - name: clang x86
+      - run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m32' \
+            -e 'CXX = clang++ -m32' all
+          make clean
+      - name: clang x64
+      - run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m64' \
+            -e 'CXX = clang++ -m64' all
+          make clean
+  macos:
+    runs-on: macos-latest
+    defaults:
+      run:
+        shell: sh
+        working-directory: tests
+      - name: clang
+      - run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang' \
+            -e 'CXX = clang++' all
           make clean
