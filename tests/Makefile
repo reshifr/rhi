@@ -73,8 +73,8 @@ clean:
 # Remove the build directory and target.
 #
 ifneq (,$(filter Windows%,$(OS)))
-	@del /f /s /q $(TARGET) 1> nul 2> nul || ver > nul
-	@rmdir /s /q $(BUILD_DIR) 1> nul 2> nul || ver > nul
+	@del /F /S /Q $(TARGET) 1> nul 2> nul || ver > nul
+	@rmdir /S /Q $(BUILD_DIR) 1> nul 2> nul || ver > nul
 else
 	@rm -rf $(BUILD_DIR) $(TARGET) &> /dev/null
 endif
