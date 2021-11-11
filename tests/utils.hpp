@@ -400,19 +400,8 @@ namespace set {
   void unit_reserve(void);
   void unit_insert(void);
   void unit_search(void);
-
   void auto_insert(void);
-  void auto_search(void);
-
   void perf_insert(void);
-}
-
-namespace map {
-  void unit_init(void);
-  void unit_reserve(void);
-  void unit_insert(void);
-
-  void auto_insert(void);
 }
 
 #endif /* TEST_H */
