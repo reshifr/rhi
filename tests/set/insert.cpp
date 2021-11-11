@@ -3,14 +3,17 @@
 #define UNIT_INSERT() \
   do { \
     printf("\n"); \
-    bool success = rhis_insert(set, NULL); \
-    printf("%sNULL ", success ? "@" : ""); \
-    keys.load([&set](void* obj) { \
-      bool success = rhis_insert(set, obj); \
-      printf("%s%s ", success ? "@" : "", (const char*)obj); \
+    rhiuint n = 0; \
+    bool ret = false; \
+    printf("%snull ", rhis_insert(set, NULL) ? "@" : ""); \
+    keys.load([&](void* obj) { \
+      ret = rhis_insert(set, obj); \
+      printf("%s%s ", ret ? "@" : "", (const char*)obj); \
+      if( ret ) \
+        ++n; \
     }); \
-    std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu, \
-      keys.uniqueness, keys.count); \
+    std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu \
+      " insert=%" PRIrhiu, keys.uniqueness, keys.count, n); \
     utils::print(set); \
   } while(0)
 
@@ -42,13 +45,20 @@ static void unit_reserve_test(int mode) {
 
 #define AUTO_INSERT() \
   do { \
+    rhiuint n = 0; \
+    rhiuint old_occupied = set->occupied; \
+    bool ret = false; \
     rhis_insert(set, NULL); \
-    keys.load([&set](void* obj) { \
-      rhis_insert(set, obj); \
+    keys.load([&](void* obj) { \
+      ret = rhis_insert(set, obj); \
+      if( ret ) \
+        ++n; \
     }); \
-    std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu, \
-      keys.uniqueness, keys.count); \
+    std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu \
+      " insert=%" PRIrhiu, keys.uniqueness, keys.count, n); \
     utils::mprint(set); \
+    HANDLE((set->occupied-old_occupied)!=n, \
+      "Failed: rhis_insert() occupied in trouble."); \
     HANDLE((set->mode&RHI_FIXED) && \
       set->occupied!=keys.uniqueness && set->occupied!=set->max, \
       "Failed: rhis_insert() occupied in trouble."); \
@@ -68,16 +78,13 @@ static void auto_init_test(int mode) {
     "Failed: rhis_insert() has_null_inserted in trouble.");
   keys.add(utils::AUTO_COUNT);
   AUTO_INSERT();
-  HANDLE(!set->has_null_inserted,
-    "Failed: rhis_insert() has_null_inserted in trouble.");
   rhis_free(set);
 }
 
 static void auto_reserve_test(int mode) {
   struct rhis* set;
   HANDLE((set=rhis_reserve(utils::hash, utils::equal,
-    utils::UNIT_RESERVE, mode))==NULL, "Error: rhis_reserve() failed.");
-  utils::timer clock;
+    utils::AUTO_RESERVE, mode))==NULL, "Error: rhis_reserve() failed.");
   utils::objs keys(3, 15, utils::AUTO_COUNT);
   AUTO_INSERT();
   keys.shuffle();
@@ -85,15 +92,13 @@ static void auto_reserve_test(int mode) {
     "Failed: rhis_insert() has_null_inserted in trouble.");
   keys.add(utils::AUTO_COUNT);
   AUTO_INSERT();
-  HANDLE(!set->has_null_inserted,
-    "Failed: rhis_insert() has_null_inserted in trouble.");
   rhis_free(set);
 }
 
 #define PERF_INSERT() \
   do { \
     clock.start(); \
-    keys.load([&set](void* obj) { \
+    keys.load([&](void* obj) { \
       rhis_insert(set, obj); \
     }); \
     std::printf("\n%" PRId64 " milliseconds\n", \
