@@ -27,28 +27,28 @@ jobs:
           sudo apt-get install gcc-multilib g++-multilib clang
       - name: gcc x86
         run: |
-          make \
+          make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m32' \
             -e 'CXX = g++ -m32' all
           make clean
       - name: gcc x64
         run: |
-          make \
+          make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m64' \
             -e 'CXX = g++ -m64' all
           make clean
       - name: clang x86
         run: |
-          make \
+          make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang -m32' \
             -e 'CXX = clang++ -m32' all
           make clean
       - name: clang x64
         run: |
-          make \
+          make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang -m64' \
             -e 'CXX = clang++ -m64' all
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: clang
         run: |
-          make \
+          make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang' \
             -e 'CXX = clang++' all
