@@ -74,19 +74,15 @@ jobs:
       run:
         shell: cmd
         working-directory: tests
+    strategy:
+      matrix:
+        arch:
+          - x86_arm
+          - x64_arm64
     steps:
       - uses: actions/checkout@v2
-      - name: msvc arm
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x86_arm
-      - run: |
-          nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
-          nmake /F Makefile.msc clean
-      - name: msvc arm64
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64_arm64
-      - run: |
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: msvc
+        run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
