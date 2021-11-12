@@ -21,32 +21,32 @@ jobs:
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
-      - name: package preparation
+      - name: Package Preparation
         run: |
           sudo apt-get update
           sudo apt-get install gcc-multilib g++-multilib clang
-      - name: gcc x86
+      - name: GCC x86
         run: |
           make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m32' \
             -e 'CXX = g++ -m32' all
           make clean
-      - name: gcc x64
+      - name: GCC x64
         run: |
           make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = gcc -m64' \
             -e 'CXX = g++ -m64' all
           make clean
-      - name: clang x86
+      - name: Clang x86
         run: |
           make -j \
             -e 'FLAGS = -DRHI_PRIME' \
             -e 'CC = clang -m32' \
             -e 'CXX = clang++ -m32' all
           make clean
-      - name: clang x64
+      - name: Clang x64
         run: |
           make -j \
             -e 'FLAGS = -DRHI_PRIME' \
@@ -61,7 +61,7 @@ jobs:
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
-      - name: clang
+      - name: Clang
         run: |
           make -j \
             -e 'FLAGS = -DRHI_PRIME' \
@@ -76,17 +76,19 @@ jobs:
         working-directory: tests
     steps:
       - uses: actions/checkout@v2
-      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Set up MSVC x86
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
-      - name: msvc x86
+      - name: MSVC x86
         run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
-      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Set up MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
-      - name: msvc x64
+      - name: MSVC x64
         run: |
           nmake /F Makefile.msc /E "FLAGS = /DRHI_PRIME"
           nmake /F Makefile.msc clean
