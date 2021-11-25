@@ -345,8 +345,8 @@ class objs {
       m_list(gen(min, max, n))
       { m_uniqueness = uniqueness(m_list); }
 
-    size(void) const { return m_size; }
-    uniqueness(void) const { return m_uniqueness; }
+    rhiuint size(void) const { return m_size; }
+    rhiuint uniqueness(void) const { return m_uniqueness; }
 
     void shuffle(void)
       { std::reverse(m_list.begin(), m_list.end()); }
