@@ -285,7 +285,7 @@ template <int Case=RANDOM>
 class objs {
   private:
     int m_min, m_max;
-    rhiuint m_count, m_uniqueness;
+    rhiuint m_size, m_uniqueness;
     std::vector<void*> m_list;
     
     std::vector<void*> gen(int min, int max, rhiuint n) {
@@ -341,9 +341,12 @@ class objs {
     objs(int min, int max, rhiuint n) :
       m_min(min),
       m_max(max),
-      m_count(n),
-      m_list(gen(min, max, n)),
-      m_uniqueness(uniqueness(m_list)) {}
+      m_size(n),
+      m_list(gen(min, max, n))
+      { m_uniqueness = uniqueness(m_list); }
+
+    size(void) const { return m_size; }
+    uniqueness(void) const { return m_uniqueness; }
 
     void shuffle(void)
       { std::reverse(m_list.begin(), m_list.end()); }
@@ -354,7 +357,7 @@ class objs {
     }
 
     void add(rhiuint n) {
-      m_count += n;
+      m_size += n;
       std::vector<void*> add_list = gen(m_min, m_max, n);
       m_list.insert(m_list.end(), add_list.begin(), add_list.end());
       m_uniqueness = uniqueness(m_list);
