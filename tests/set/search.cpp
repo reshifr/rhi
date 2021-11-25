@@ -10,7 +10,7 @@
       printf("%s%s ", success ? "@" : "", (const char*)obj); \
     }); \
     std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu, \
-      keys.uniqueness, keys.count); \
+      keys.uniqueness(), keys.size()); \
     utils::print(set); \
   } while(0)
 
