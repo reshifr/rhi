@@ -13,7 +13,7 @@
         ++n; \
     }); \
     std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu \
-      " insert=%" PRIrhiu, keys.uniqueness, keys.count, n); \
+      " insert=%" PRIrhiu, keys.uniqueness(), keys.size(), n); \
     utils::print(set); \
   } while(0)
 
@@ -55,14 +55,14 @@ static void unit_reserve_test(int mode) {
         ++n; \
     }); \
     std::printf("\nuniqueness=%" PRIrhiu " count=%" PRIrhiu \
-      " insert=%" PRIrhiu, keys.uniqueness, keys.count, n); \
+      " insert=%" PRIrhiu, keys.uniqueness(), keys.size(), n); \
     utils::mprint(set); \
     HANDLE((set->occupied-old_occupied)!=n, \
       "Failed: rhis_insert() occupied in trouble."); \
     HANDLE((set->mode&RHI_FIXED) && \
-      set->occupied!=keys.uniqueness && set->occupied!=set->max, \
+      set->occupied!=keys.uniqueness() && set->occupied!=set->max, \
       "Failed: rhis_insert() occupied in trouble."); \
-    HANDLE((set->mode&RHI_EXTEND) && set->occupied!=keys.uniqueness, \
+    HANDLE((set->mode&RHI_EXTEND) && set->occupied!=keys.uniqueness(), \
       "Failed: rhis_insert() occupied in trouble."); \
   } while(0)
 
@@ -104,7 +104,7 @@ static void auto_reserve_test(int mode) {
     std::printf("\n%" PRId64 " milliseconds\n", \
       clock.result<utils::timer::mili>()); \
     std::printf("uniqueness=%" PRIrhiu " count=%" PRIrhiu, \
-      keys.uniqueness, keys.count); \
+      keys.uniqueness(), keys.size()); \
     utils::mprint(set); \
   } while(0)
 
