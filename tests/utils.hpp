@@ -13,9 +13,7 @@
 # include <parallel/algorithm>
 #endif
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 #define IS_EMPTY(_node) ((_node).key==NULL)
 #define NOT_EMPTY(_node) ((_node).key!=NULL)
@@ -81,10 +79,6 @@ struct rhim {
   struct rhimnode* nodes;  /* An array of nodes. */
 };
 
-#ifdef __cplusplus
-}
-#endif
-
 #define TEST(_exp, _callback)  \
   do { \
     if( _exp ) \
@@ -104,6 +98,8 @@ struct rhim {
       std::exit(EXIT_FAILURE); \
     } \
   } while(0)
+
+}
 
 namespace utils {
 
