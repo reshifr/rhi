@@ -1,4 +1,4 @@
-# rhi [![test](https://github.com/reshifr/rhi/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/reshifr/rhi/actions/workflows/test.yml)
+# rhi [![build](https://github.com/reshifr/rhi/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/reshifr/rhi/actions/workflows/build.yml) [![test](https://github.com/reshifr/rhi/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/reshifr/rhi/actions/workflows/test.yml)
 
 ## Implementation of linear probing hash table using LCFS hashing
 
