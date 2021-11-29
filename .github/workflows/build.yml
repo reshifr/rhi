@@ -1,0 +1,75 @@
+# Reshifr Hash Index
+# Github Actions
+
+name: build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: sh
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v2
+      - name: Package Preparation
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-multilib clang
+      - name: GCC x86 Static
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m32' static
+          make clean
+      - name: GCC x86 Dynamic
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m32' dynamic
+          make clean
+      - name: GCC x64 Static
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m64' static
+          make clean
+      - name: GCC x64 Dynamic
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = gcc -m64' dynamic
+          make clean
+      - name: Clang x86 Static
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m32' static
+          make clean
+      - name: Clang x86 Dynamic
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m32' dynamic
+          make clean
+      - name: Clang x64 Static
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m64' static
+          make clean
+      - name: Clang x64 Dynamic
+        run: |
+          make \
+            -e 'FLAGS = -DRHI_PRIME' \
+            -e 'CC = clang -m64' dynamic
+          make clean
