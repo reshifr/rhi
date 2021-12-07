@@ -227,12 +227,12 @@ struct rhim {
  * this until it finds an empty node, and place the current
  * element into that empty node.
  */
-#define FORWARD_SHIFT(_nodes, _size, _prob, _elm, _curr_origin, __node) \
+#define FORWARD_SHIFT(_nodes, _size, _prob, _elm, _curr_origin, _node_type) \
   do { \
     while( NOT_EMPTY((_nodes)[_prob]) ) { \
       rhiuint _cmp_origin = HASHVAL_TO_INDEX((_nodes)[_prob].hashval, _size); \
       if( (_curr_origin)<_cmp_origin ) { \
-        __node _tmp_elm = (_elm); \
+        _node_type _tmp_elm = (_elm); \
         (_elm) = (_nodes)[_prob]; \
         (_nodes)[_prob] = _tmp_elm; \
         (_curr_origin) = _cmp_origin; \
@@ -245,15 +245,16 @@ struct rhim {
 /**
  * Move current elements to the new array of nodes.
  */
-#define MOVE_NODES(_table, _new_size, _new_nodes, __node) \
+#define MOVE_NODES(_table, _new_size, _new_nodes, _node_type) \
   do { \
     for(rhiuint _i=RHIUINT_C(0); _i<(_table)->size; ++_i) { \
       if( IS_EMPTY((_table)->nodes[_i]) ) \
         continue; \
-      __node _elm = (_table)->nodes[_i]; \
+      _node_type _elm = (_table)->nodes[_i]; \
       rhiuint _curr_origin = HASHVAL_TO_INDEX(_elm.hashval, _new_size); \
       rhiuint _prob = _curr_origin; \
-      FORWARD_SHIFT(_new_nodes, _new_size, _prob, _elm, _curr_origin, __node); \
+      FORWARD_SHIFT(_new_nodes, _new_size, \
+        _prob, _elm, _curr_origin, _node_type); \
     } \
     free((_table)->nodes); \
     (_table)->nodes = (_new_nodes); \
@@ -263,26 +264,28 @@ struct rhim {
  * Extend the current array of nodes when it reaches its size >
  * its maximum size.
  */
-#define EXTEND_NODES(_table, __node) \
+#define EXTEND_NODES(_table, _node_type) \
   do { \
     if( (_table)->curr_range==END_RANGE ) \
       ERROR(RANGE_ERROR_MESSAGE); \
-    __node* _new_nodes; \
+    _node_type* _new_nodes; \
     int _new_range = (_table)->curr_range+1; \
     rhiuint _new_size = GET_SIZE(_new_range); \
-    if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
+    if( (_new_nodes=(_node_type*)calloc( \
+         _new_size, sizeof(_node_type)))==NULL ) \
       ERROR(OOM_ERROR_MESSAGE); \
-    MOVE_NODES(_table, _new_size, _new_nodes, __node); \
+    MOVE_NODES(_table, _new_size, _new_nodes, _node_type); \
     SET_BOUNDARY(_table, _new_range, _new_size); \
   } while(0)
 
-#define INIT(_hash, _equal, _mode, _curr_range, __table, __node) \
+#define INIT(_hash, _equal, _mode, _curr_range, _table_type, _node_type) \
   do { \
-    __table* _table; \
-    if( (_table=(__table*)calloc(1, sizeof(__table)))==NULL ) \
+    _table_type* _table; \
+    if( (_table=(_table_type*)calloc(1, sizeof(_table_type)))==NULL ) \
       return NULL; \
     rhiuint _init_size = GET_SIZE(_curr_range); \
-    if( (_table->nodes=(__node*)calloc(_init_size, sizeof(__node)))==NULL ) { \
+    if( (_table->nodes=(_node_type*)calloc( \
+         _init_size, sizeof(_node_type)))==NULL ) { \
       free(_table); \
       return NULL; \
     } \
@@ -316,16 +319,17 @@ struct rhim {
  * Shrink the current array of nodes when it reaches its size <
  * its minimum size.
  */
-#define SHRINK_NODES(_table, __node) \
+#define SHRINK_NODES(_table, _node_type) \
   do { \
     if( (_table)->curr_range==(_table)->begin_range ) \
       break; \
-    __node* _new_nodes; \
+    _node_type* _new_nodes; \
     int _new_range = (_table)->curr_range-1; \
     rhiuint _new_size = GET_SIZE(_new_range); \
-    if( (_new_nodes=(__node*)calloc(_new_size, sizeof(__node)))==NULL ) \
+    if( (_new_nodes=(_node_type*)calloc( \
+         _new_size, sizeof(_node_type)))==NULL ) \
       break; \
-    MOVE_NODES(_table, _new_size, _new_nodes, __node); \
+    MOVE_NODES(_table, _new_size, _new_nodes, _node_type); \
     SET_BOUNDARY(_table, _new_range, _new_size); \
   } while(0)
 
@@ -354,13 +358,13 @@ struct rhim {
     } \
   } while(0)
 
-#define __COUNT(__func, __table) \
-  rhiuint __func(const __table* table) { \
+#define _DECLARE_COUNT(_func_name, _table_type) \
+  rhiuint _func_name(const _table_type* table) { \
     return COUNT(table); \
   }
 
-#define __BEGIN(__func, __table) \
-  void __func(__table* table) { \
+#define _DECLARE_BEGIN(_func_name, _table_type) \
+  void _func_name(_table_type* table) { \
     if( table->has_null_inserted ) { \
       table->has_iter_ended = false; \
       table->iter_index = NULL_ITER; \
@@ -376,8 +380,8 @@ struct rhim {
     table->has_iter_ended = true; \
   }
 
-#define __NEXT(__func, __table) \
-  void __func(__table* table) { \
+#define _DECLARE_NEXT(_func_name, _table_type) \
+  void _func_name(_table_type* table) { \
     rhiuint i = table->iter_index==NULL_ITER ? \
       RHIUINT_C(0) : table->iter_index+1; \
     for(; i<table->size; ++i) { \
@@ -389,8 +393,8 @@ struct rhim {
     table->has_iter_ended = true; \
   }
 
-#define __HAS_ENDED(__func, __table) \
-  bool __func(const __table* table) { \
+#define _DECLARE_HAS_ENDED(_func_name, _table_type) \
+  bool _func_name(const _table_type* table) { \
     return table->has_iter_ended; \
   }
 
@@ -595,7 +599,7 @@ bool rhis_delete(struct rhis* set, const void* key) {
  * 
  * \param  set   Table
  */
-__BEGIN(rhis_begin, struct rhis)
+_DECLARE_BEGIN(rhis_begin, struct rhis)
 
 /**
  * \brief  Shift the iterator.
@@ -605,7 +609,7 @@ __BEGIN(rhis_begin, struct rhis)
  * 
  * \param  set   Table
  */
-__NEXT(rhis_next, struct rhis)
+_DECLARE_NEXT(rhis_next, struct rhis)
 
 /**
  * \brief   Check the iterator.
@@ -617,7 +621,7 @@ __NEXT(rhis_next, struct rhis)
  * \return  If ended, true is returned. Else, false is
  *          returned.
  */
-__HAS_ENDED(rhis_has_ended, struct rhis)
+_DECLARE_HAS_ENDED(rhis_has_ended, struct rhis)
 
 /**
  * \brief   Get the current key.
@@ -648,7 +652,7 @@ const void* rhis_current(const struct rhis* set) {
  * 
  * \return  Number of elements in the table.
  */
-__COUNT(rhis_count, struct rhis)
+_DECLARE_COUNT(rhis_count, struct rhis)
 
 /**
  * \brief  Destroy the table.
@@ -892,7 +896,7 @@ void* rhim_delete(struct rhim* map, const void* key) {
  * 
  * \param  map   Table
  */
-__BEGIN(rhim_begin, struct rhim)
+_DECLARE_BEGIN(rhim_begin, struct rhim)
 
 /**
  * \brief  Shift the iterator.
@@ -902,7 +906,7 @@ __BEGIN(rhim_begin, struct rhim)
  * 
  * \param  map   Table
  */
-__NEXT(rhim_next, struct rhim)
+_DECLARE_NEXT(rhim_next, struct rhim)
 
 /**
  * \brief   Check the iterator.
@@ -914,7 +918,7 @@ __NEXT(rhim_next, struct rhim)
  * \return  If ended, true is returned. Else, false is
  *          returned.
  */
-__HAS_ENDED(rhim_has_ended, struct rhim)
+_DECLARE_HAS_ENDED(rhim_has_ended, struct rhim)
 
 /**
  * \brief   Get the current key.
@@ -947,7 +951,7 @@ struct rhipair rhim_current(const struct rhim* map) {
  * 
  * \return  Number of elements in the table.
  */
-__COUNT(rhim_count, struct rhim)
+_DECLARE_COUNT(rhim_count, struct rhim)
 
 /**
  * \brief  Destroy the table.
