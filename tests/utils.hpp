@@ -218,7 +218,7 @@ template <class Table>
 void print(Table table) {
   mprint(table);
   auto null = !table->has_null_inserted;
-  if constexpr( std::is_same_v<Table, struct rhis*> ) {
+  if constexpr( std::is_same<Table, struct rhis*>::value ) {
     std::printf(
       "|%s|    #|0x%.16" PRIx64 "|%5s|    #|\n\n",
       null ? "-" : "O", UINT64_C(0), ""
