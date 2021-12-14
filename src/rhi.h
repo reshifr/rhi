@@ -479,7 +479,7 @@ RHI_API void* rhim_delete(struct rhim* map, const void* key);
  * 
  * \param  map   Table
  */
-void rhim_begin(struct rhim* map);
+RHI_API void rhim_begin(struct rhim* map);
 
 /**
  * \brief  Shift the iterator.
@@ -489,7 +489,7 @@ void rhim_begin(struct rhim* map);
  * 
  * \param  map   Table
  */
-void rhim_next(struct rhim* map);
+RHI_API void rhim_next(struct rhim* map);
 
 /**
  * \brief   Check the iterator.
@@ -501,7 +501,7 @@ void rhim_next(struct rhim* map);
  * \return  If ended, true is returned. Else, false is
  *          returned.
  */
-bool rhim_has_ended(const struct rhim* map);
+RHI_API bool rhim_has_ended(const struct rhim* map);
 
 /**
  * \brief   Get the current key.
@@ -514,7 +514,7 @@ bool rhim_has_ended(const struct rhim* map);
  * \return  On success, the current pair is returned. On
  *          failure, the empty pair is returned.
  */
-struct rhipair rhim_current(const struct rhim* map);
+RHI_API struct rhipair rhim_current(const struct rhim* map);
 
 /***************************
  * Miscellaneous functions *
