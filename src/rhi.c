@@ -89,7 +89,7 @@ static const rhiuint range[] = {
  ***************/
 
 struct rhisnode {
-  size_t hashval;  /* The hash value of the key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
 };
 
@@ -125,7 +125,7 @@ struct rhis {
  ***************/
 
 struct rhimnode {
-  size_t hashval;  /* The hash value of the key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
   void* val;  /* The value that was stored. */
 };
@@ -147,7 +147,7 @@ struct rhim {
   rhiuint occupied;  /* The number of elements occupied in the nodes. */
   rhihash hash;  /* The key hash function applied to the table. */
   rhiequal equal;  /* The key equal function is applied to the table. */
-  void* null_val;  /* The value pair of NULL key. */
+  void* null_val;  /* The value pair of NULL key. */
   struct rhimnode* nodes;  /* An array of nodes. */
 };
 
@@ -261,7 +261,7 @@ struct rhim {
   } while(0)
 
 /**
- * Extend the current array of nodes when it reaches its size >
+ * Extend the current array of nodes when it reaches its size >
  * its maximum size.
  */
 #define EXTEND_NODES(_table, _node_type) \
@@ -316,7 +316,7 @@ struct rhim {
   } while(0)
 
 /**
- * Shrink the current array of nodes when it reaches its size <
+ * Shrink the current array of nodes when it reaches its size <
  * its minimum size.
  */
 #define SHRINK_NODES(_table, _node_type) \

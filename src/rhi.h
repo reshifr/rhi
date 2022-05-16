@@ -122,8 +122,8 @@ typedef uint32_t rhiuint;
 /**
  * \brief  Shrink mode.
  * 
- * The table will shrink when the number of elements reaches
- * the minimum limit.
+ * The table will shrink when the number of elements reaches
+ * the minimum limit.
  */
 #define RHI_SHRINK 0x02
 
@@ -131,14 +131,14 @@ typedef uint32_t rhiuint;
  * \brief  Extend mode.
  * 
  * The table will extend when the number of elements reaches
- * the maximum limit.
+ * the maximum limit.
  */
 #define RHI_EXTEND 0x04
 
 #endif /* _RHI_MACRO_DEFINED */
 
 /************************
- * Overridden functions *
+ * Overridden functions *
  ************************/
 
 /**
@@ -162,7 +162,7 @@ typedef size_t (*rhihash)(const void* key);
  * \param   first_key    First key
  * \param   second_key   Second key
  * 
- * \return  Equal, true is returned. Not equal, false is
+ * \return  Equal, true is returned. Not equal, false is
  *          returned.
  */
 typedef bool (*rhiequal)(const void* first_key, const void* second_key);
