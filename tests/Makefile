@@ -1,11 +1,11 @@
 # Reshifr Hash Index
 # Make
 
-CC = gcc
-CXX = g++
+CC = cc
+CXX = c++
 
 FLAGS =
-RHI_FLAGS += -std=c99 -O3 -Wall -Wextra -Wshadow -Wpedantic -Wconversion
+RHI_FLAGS += -std=c99 -O3 -Wall -Wextra -Wshadow -Wconversion
 TEST_FLAGS += -std=c++17 -O3
 
 RHI_DIR := ../src
@@ -15,13 +15,6 @@ BUILD_DIR := build
 INCLUDES += -I$(RHI_DIR)
 LIBS +=
 TARGET := main
-
-# If the compiler used is GCC.
-#
-ifneq (,$(and $(filter $(CC),gcc),$(filter $(CXX),g++)))
-	TEST_FLAGS += -fopenmp
-	LIBS += -lgomp
-endif
 
 # Add the executable suffix for Windows.
 #
