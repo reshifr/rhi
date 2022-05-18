@@ -7,10 +7,14 @@
 #include <random>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
 #include <functional>
 
-#if defined(__GNUG__) && defined(_OPENMP)
-# include <parallel/algorithm>
+#define STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED \
+  (__GNUC__ >= 10 || __GNUG__ >= 10)
+
+#if STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED
+#include <execution>
 #endif
 
 extern "C" {
@@ -24,7 +28,7 @@ extern "C" {
  ***************/
 
 struct rhisnode {
-  size_t hashval;  /* The hash value of the key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
 };
 
@@ -53,7 +57,7 @@ struct rhis {
  ***************/
 
 struct rhimnode {
-  size_t hashval;  /* The hash value of the key. */
+  size_t hashval;  /* The hash value of the key. */
   void* key;  /* The key that was stored. */
   void* val;  /* The value that was stored. */
 };
@@ -75,7 +79,7 @@ struct rhim {
   rhiuint occupied;  /* The number of elements occupied in the nodes. */
   rhihash hash;  /* The key hash function applied to the table. */
   rhiequal equal;  /* The key equal function is applied to the table. */
-  void* null_val;  /* The value pair of NULL key. */
+  void* null_val;  /* The value pair of NULL key. */
   struct rhimnode* nodes;  /* An array of nodes. */
 };
 
@@ -191,6 +195,8 @@ inline std::size_t hash(const void* obj) {
 
 inline bool equal(const void* first_obj, const void* second_obj)
   { return std::strcmp((const char*)first_obj, (const char*)second_obj)==0; }
+inline bool compare(const void* first_obj, const void* second_obj)
+  { return std::strcmp((const char*)first_obj, (const char*)second_obj)<0; }
 
 inline const char* mode(int mode) {
   if( mode==RHI_FIXED )
@@ -218,7 +224,7 @@ template <class Table>
 void print(Table table) {
   mprint(table);
   auto null = !table->has_null_inserted;
-  if constexpr( std::is_same<Table, struct rhis*>::value ) {
+  if constexpr( std::is_same_v<Table, struct rhis*> ) {
     std::printf(
       "|%s|    #|0x%.16" PRIx64 "|%5s|    #|\n\n",
       null ? "-" : "O", UINT64_C(0), ""
@@ -254,7 +260,7 @@ void print(Table table) {
       );
     }
   }
-  printf("\n");
+  std::printf("\n");
 }
 
 class timer {
@@ -264,24 +270,25 @@ class timer {
     using mili = std::chrono::milliseconds;
 
   private:
-    decltype(std::chrono::high_resolution_clock::now()) x, y;
+    decltype(std::chrono::high_resolution_clock::now()) m_x, m_y;
 
   public:
     void start(void)
-      { timer::x = std::chrono::high_resolution_clock::now(); }
+      { m_x = std::chrono::high_resolution_clock::now(); }
 
     template <typename Precision>
     std::int64_t result(void) {
-      timer::y = std::chrono::high_resolution_clock::now();
-      return std::chrono::duration_cast<Precision>(timer::y-timer::x).count();
+      m_y = std::chrono::high_resolution_clock::now();
+      return std::chrono::duration_cast<Precision>(m_y-m_x).count();
     }
 };
 
 template <int Case=RANDOM>
 class objs {
   private:
-    int m_min, m_max;
-    rhiuint m_size, m_uniqueness;
+    int m_min;
+    int m_max;
+    rhiuint m_uniqueness;
     std::vector<void*> m_list;
     
     std::vector<void*> gen(int min, int max, rhiuint n) {
@@ -311,41 +318,27 @@ class objs {
     
     rhiuint uniqueness(std::vector<void*>& base_list) {
       std::vector<void*> sorted_list(base_list);
-#if defined(__GNUG__) && defined(_OPENMP)
-      __gnu_parallel::stable_sort(sorted_list.begin(), sorted_list.end(),
-        [](const void* first_obj, const void* second_obj) {
-          return std::strcmp(
-            (const char*)first_obj, (const char*)second_obj)<0;
-        });
+#if STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED
+      std::stable_sort(std::execution::par_unseq,
+        sorted_list.begin(), sorted_list.end(), utils::compare);
+      return (rhiuint)std::distance(sorted_list.begin(),
+        std::unique(std::execution::par_unseq,
+        sorted_list.begin(), sorted_list.end(), utils::equal));
 #else
-      std::stable_sort(sorted_list.begin(), sorted_list.end(),
-        [](const void* first_obj, const void* second_obj) {
-          return std::strcmp(
-            (const char*)first_obj, (const char*)second_obj)<0;
-        });
+      std::stable_sort(sorted_list.begin(), sorted_list.end(), utils::compare);
+      return (rhiuint)std::distance(sorted_list.begin(),
+        std::unique(sorted_list.begin(), sorted_list.end(), utils::equal));
 #endif
-      return (rhiuint)std::distance(
-        sorted_list.begin(),
-        std::unique(sorted_list.begin(), sorted_list.end(),
-          [](const void* first_obj, const void* second_obj) {
-            return utils::equal(first_obj, second_obj);
-          })
-      );
     }
 
   public:
     objs(int min, int max, rhiuint n) :
-      m_min(min),
-      m_max(max),
-      m_size(n),
-      m_list(gen(min, max, n))
+      m_min(min), m_max(max), m_list(gen(min, max, n))
       { m_uniqueness = uniqueness(m_list); }
 
-    rhiuint size(void) const { return m_size; }
+    rhiuint size(void) const { return m_list.size(); }
     rhiuint uniqueness(void) const { return m_uniqueness; }
-
-    void shuffle(void)
-      { std::reverse(m_list.begin(), m_list.end()); }
+    void shuffle(void) { std::reverse(m_list.begin(), m_list.end()); }
 
     void load(std::function<void (void* obj)> callback) const {
       for(auto obj : m_list)
@@ -353,19 +346,18 @@ class objs {
     }
 
     void add(rhiuint n) {
-      m_size += n;
       std::vector<void*> add_list = gen(m_min, m_max, n);
       m_list.insert(m_list.end(), add_list.begin(), add_list.end());
       m_uniqueness = uniqueness(m_list);
     }
 
     ~objs(void) {
-#if defined(__GNUG__) && defined(_OPENMP)
-      __gnu_parallel::for_each(m_list.begin(), m_list.end(),
-        [](void* obj) { delete[] (char*)obj; });
+#if STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED
+      std::for_each(std::execution::par_unseq, m_list.begin(),
+        m_list.end(), [](void* obj) { delete[] (char*)obj; });
 #else
-      for(auto obj : m_list)
-        delete[] (char*)obj;
+      std::for_each(m_list.begin(),
+        m_list.end(), [](void* obj) { delete[] (char*)obj; });
 #endif
     }
 };
