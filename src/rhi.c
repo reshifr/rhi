@@ -155,7 +155,8 @@ struct rhim {
  * Map macros *
  **************/
 
-#define PAIR(_key, _val) ((struct rhipair){ .key=(_key), .val=(_val) })
+#define PAIR(_key, _val) \
+  ((struct rhipair){ .key=(_key), .val=(_val) })
 #define RHIM_NODE(_hashval, _key, _val) \
   ((struct rhimnode){ .hashval=(_hashval), .key=(_key), .val=(_val) })
 
