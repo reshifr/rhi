@@ -42,6 +42,8 @@ OBJS = \
 
 all: check $(OBJS) $(TARGET)
 
+run: all
+
 # Run target.
 #
 ifneq (,$(filter Windows%,$(OS)))
