@@ -11,7 +11,9 @@
 #include <functional>
 
 #define STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED \
-  (__GNUC__ >= 10 || __GNUG__ >= 10)
+  ((defined(__GNUC__) && defined(__GNUG__)) && \
+    (__GNUC__ >= 10 && __GNUG__ >= 10)) || \
+  (defined(_MSC_VER) || _MSC_VER >= 1928)
 
 #if STD_EXECUTION_PAR_UNSEQ_IMPLEMENTED
 #include <execution>
@@ -115,10 +117,10 @@ constexpr auto UNIT_RESERVE(RHIUINT_C(10));
 constexpr auto UNIT_COUNT(RHIUINT_C(16));
 constexpr auto UNIT_SHRINK(RHIUINT_C(5));
 constexpr auto UNIT_EXTEND(RHIUINT_C(5));
-constexpr auto AUTO_RESERVE(RHIUINT_C(600000));
-constexpr auto AUTO_COUNT(RHIUINT_C(600000));
-constexpr auto AUTO_SHRINK(RHIUINT_C(300000));
-constexpr auto AUTO_EXTEND(RHIUINT_C(300000));
+constexpr auto AUTO_RESERVE(RHIUINT_C(600'000));
+constexpr auto AUTO_COUNT(RHIUINT_C(600'000));
+constexpr auto AUTO_SHRINK(RHIUINT_C(300'000));
+constexpr auto AUTO_EXTEND(RHIUINT_C(300'000));
 constexpr auto CHARS("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
 inline std::size_t hash(const void* obj) {
@@ -336,7 +338,7 @@ class objs {
       m_min(min), m_max(max), m_list(gen(min, max, n))
       { m_uniqueness = uniqueness(m_list); }
 
-    rhiuint size(void) const { return m_list.size(); }
+    rhiuint size(void) const { return (rhiuint)m_list.size(); }
     rhiuint uniqueness(void) const { return m_uniqueness; }
     void shuffle(void) { std::reverse(m_list.begin(), m_list.end()); }
 
@@ -371,7 +373,7 @@ void unit_reserve(void);
 void unit_insert(void);
 void unit_search(void);
 void auto_insert(void);
-void perf_insert(void);
+void perfom_insert(void);
 
 }
 
