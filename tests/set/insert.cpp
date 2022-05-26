@@ -95,7 +95,7 @@ static void auto_reserve_test(int mode) {
   rhis_free(set);
 }
 
-#define PERF_INSERT() \
+#define PERFOM_INSERT() \
   do { \
     clock.start(); \
     keys.load([&](void* obj) { \
@@ -108,25 +108,25 @@ static void auto_reserve_test(int mode) {
     utils::mprint(set); \
   } while(0)
 
-static void perf_init_test(int mode) {
+static void perfom_init_test(int mode) {
   struct rhis* set;
   HANDLE((set=rhis_init(utils::hash, utils::equal,
     mode))==NULL, "Error: rhis_init() failed.");
   utils::timer clock;
   utils::objs keys(3, 15, utils::AUTO_COUNT);
-  PERF_INSERT();
-  PERF_INSERT();
+  PERFOM_INSERT();
+  PERFOM_INSERT();
   rhis_free(set);
 }
 
-static void perf_reserve_test(int mode) {
+static void perfom_reserve_test(int mode) {
   struct rhis* set;
   HANDLE((set=rhis_reserve(utils::hash, utils::equal,
     utils::UNIT_RESERVE, mode))==NULL, "Error: rhis_reserve() failed.");
   utils::timer clock;
   utils::objs keys(3, 15, utils::AUTO_COUNT);
-  PERF_INSERT();
-  PERF_INSERT();
+  PERFOM_INSERT();
+  PERFOM_INSERT();
   rhis_free(set);
 }
 
@@ -152,13 +152,13 @@ void set::auto_insert(void) {
   TEST(1, auto_reserve_test(RHI_SHRINK|RHI_EXTEND));
 }
 
-void set::perf_insert(void) {
-  TEST(1, perf_init_test(RHI_FIXED));
-  TEST(1, perf_init_test(RHI_SHRINK));
-  TEST(1, perf_init_test(RHI_EXTEND));
-  TEST(1, perf_init_test(RHI_SHRINK|RHI_EXTEND));
-  TEST(1, perf_reserve_test(RHI_FIXED));
-  TEST(1, perf_reserve_test(RHI_SHRINK));
-  TEST(1, perf_reserve_test(RHI_EXTEND));
-  TEST(1, perf_reserve_test(RHI_SHRINK|RHI_EXTEND));
+void set::perfom_insert(void) {
+  TEST(1, perfom_init_test(RHI_FIXED));
+  TEST(1, perfom_init_test(RHI_SHRINK));
+  TEST(1, perfom_init_test(RHI_EXTEND));
+  TEST(1, perfom_init_test(RHI_SHRINK|RHI_EXTEND));
+  TEST(1, perfom_reserve_test(RHI_FIXED));
+  TEST(1, perfom_reserve_test(RHI_SHRINK));
+  TEST(1, perfom_reserve_test(RHI_EXTEND));
+  TEST(1, perfom_reserve_test(RHI_SHRINK|RHI_EXTEND));
 }
